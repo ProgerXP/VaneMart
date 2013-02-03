@@ -1,3 +1,5 @@
+/.htaccess
+
 # Numerous always-ignore extensions
 *.diff
 *.err
@@ -35,3 +37,4 @@ dwsync.xml
 intermediate
 publish
 .idea
+/bundles/plarx
