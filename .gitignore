@@ -1,4 +1,9 @@
+# Place to keep private unversioned project-related files
+/ignore/
+# Necessary if running locally under Apache/XAMPP
 /.htaccess
+# External dependency
+/bundles/plarx
 
 # Numerous always-ignore extensions
 *.diff
@@ -37,4 +42,3 @@ dwsync.xml
 intermediate
 publish
 .idea
-/bundles/plarx

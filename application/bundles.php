@@ -2,10 +2,14 @@
 return array(
   'plarx'                 => array(
     'init'                => array(
-      'supersede'         => true,
+      //'supersede'         => true,
       'startApp'          => true,
     ),
   ),
 
-  'vanemart' => array('handles' => '/'),
+  'vane',
+
+  'vanemart'              => array(
+    'handles'             => '/',
+  ),
 );
