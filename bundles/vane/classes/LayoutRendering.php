@@ -2,13 +2,17 @@
 
 // Intermediate class storing context of current Layout rendering.
 class LayoutRendering {
-  public $main;             //= Layout
+  public $main;             //= Layout, LayoutBlocks
   public $onlyBlocks;       //= null, array
   public $served;           //= Laravel\Response
   // array( '<open>', key => Response, k2 => ..., '</close>', '<op>', ... )
   public $result = array();
 
-  function __construct(Layout $main, $onlyBlocks = null) {
+  static function make($main, $onlyBlocks = null) {
+    return new static($main, $onlyBlocks);
+  }
+
+  function __construct($main, $onlyBlocks = null) {
     $this->main = $main;
     $this->onlyBlocks = $onlyBlocks;
 

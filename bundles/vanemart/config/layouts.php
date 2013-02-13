@@ -1,7 +1,10 @@
 <?php
 return array(
   null                    => array(
-    null                  => 'vanemart::full',
+    null                  => array(
+      null                => 'vanemart::full',
+      'title'             => 'VaneMart',
+    ),
     '-head'               => array('Vane::menu main', 'Vane::menu user'),
     '|nav goldn'          => array(
       '|menu goldn'       => array('Vane::logo', 'Vane::menu groups'),

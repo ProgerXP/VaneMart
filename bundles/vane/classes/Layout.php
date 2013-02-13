@@ -5,7 +5,6 @@ class Layout implements \IteratorAggregate {
   static $blockPrefixes = '|-=+^';
 
   public $blocks = array();           //= array of LayoutItem
-  public $fullView;                   //= null none, LayoutWrapper
 
   protected $served;                  //= null, mixed
 
@@ -34,12 +33,11 @@ class Layout implements \IteratorAggregate {
   //* $get null return all, str key of returned member
   //= array
   static function parse($blocks, $get = null) {
-    $fullView = null;
     $append = $alter = array();
 
     foreach ((array) $blocks as $name => $block) {
       if ($name === '') {
-        $fullView = is_object($block) ? $block : new LayoutWrapper($block);
+        $append[] = LayoutView::from($block);
       } elseif (is_object($block)) {
         if ($block instanceof LayoutAlter) {
           $alter[] = $block;
@@ -49,7 +47,7 @@ class Layout implements \IteratorAggregate {
         } else {
           $append[] = $block;
         }
-      } elseif (is_int($name) or !$name) {
+      } elseif (is_int($name)) {
         // $block can be empty string as a shortcut to 'empty block' (no handlers).
         $block and $append[] = new LayoutHandler($block, array());
       } elseif (strpbrk($name[0], static::$blockPrefixes) === false) {
@@ -61,7 +59,7 @@ class Layout implements \IteratorAggregate {
       }
     }
 
-    return $get ? $$get : compact('append', 'alter', 'fullView');
+    return $get ? $$get : compact('append', 'alter');
   }
 
   static function make($blocks) {
@@ -82,45 +80,21 @@ class Layout implements \IteratorAggregate {
     }
 
     $this->blocks = array_merge($this->blocks, $parsed['append']);
-    return $this->fullView($parsed['fullView']);
+    return $this;
   }
 
   function alter($blocks) {
     $parsed = static::parse($blocks);
 
-    foreach ($parsed['alter'] as $block) {
-      $blocks = $block->blocks;
-      $matched = $block->findIn($this);
-
-      if (!$matched) {
-        Log::info_Layout("No matching block [".$block->pathStr()."] to {$block->type}.");
-      } else {
-        switch ($block->type) {
-        case 'append':
-          $matched->blocks = array_merge($matched->blocks, $blocks);
-          break;
-        case 'prepend':
-          $matched->blocks = array_merge($blocks, $matched->blocks);
-          break;
-        default:
-          $matched->blocks = $blocks;
-          break;
-        }
-      }
-    }
+    foreach ($parsed['alter'] as $block) { $block->alter($this); }
 
     $this->add($parsed['append']);
-    return $this->fullView($parsed['fullView']);
+    return $this;
   }
 
   function served($data = null) {
     func_num_args() and $this->served = $data;
     return func_num_args() ? $this : $this->served;
-  }
-
-  function fullView($new = null) {
-    isset($new) and $this->fullView = $new;
-    return func_num_args()? $this : $this->fullView;
   }
 
   //= Laravel\Response
@@ -161,8 +135,8 @@ class Layout implements \IteratorAggregate {
     $response = $rendering->served;
     $response->content = $rendering->join($ajax);
 
-    if (is_scalar($response->content) and $full = $this->fullView) {
-      $response->content = $full->wrap($response->render());
+    if (is_scalar($response->content) and $full = $this->fullView()) {
+      $response->content = $full->with(array('content' => $response->render()));
     }
 
     return $response;
@@ -175,6 +149,18 @@ class Layout implements \IteratorAggregate {
              (method_exists($this->served, 'status') and
               ($status = $this->served->status() >= 300 or $status < 400));
     }
+  }
+
+  //= null, View
+  function fullView() {
+    if ($block = $this->fullViewBlock()) {
+      return $block->view();
+    }
+  }
+
+  //= null, LayoutView
+  function fullViewBlock() {
+    return LayoutAlter::findBy('', $this);
   }
 
   function children() {

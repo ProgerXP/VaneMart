@@ -96,7 +96,7 @@ class LayoutBlocks extends LayoutItem implements \IteratorAggregate {
     $this->classes = static::splitClasses( strtok($position, ' ') );
     $this->size = ''.strtok(null);
 
-    $this->blocks = (array) $blocks;
+    $this->blocks = \Px\arrize($blocks);
   }
 
   //= array of LayoutItem
@@ -106,6 +106,40 @@ class LayoutBlocks extends LayoutItem implements \IteratorAggregate {
 
   function getIterator() {
     return new \ArrayIterator($this->children());
+  }
+}
+
+class LayoutView extends LayoutBlocks {
+  static function from($vars, $compat = null) {
+    isset($compat) and $vars = $compat;
+    return new static($vars);
+  }
+
+  function __construct($vars) {
+    if ($vars instanceof \Laravel\View) {
+      $vars = array('' => $vars) + $vars->data();
+    }
+
+    parent::__construct('', \Px\arrize($vars, ''));
+  }
+
+  //= View, null if no wrapping view is set
+  function view(array $data = null) {
+    $view = array_get($this->blocks, '');
+
+    if (isset($view) and is_scalar($view)) {
+      $view = \View::make($view);
+    } elseif (! $view instanceof \Laravel\View) {
+      return null;
+    }
+
+    foreach ($this as $name => $block) {
+      if ($name !== '') {
+        $view->with($name, LayoutRendering::make($block)->render($this)->join());
+      }
+    }
+
+    return $view->with((array) $data);
   }
 }
 

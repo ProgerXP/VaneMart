@@ -12,6 +12,40 @@ class LayoutAlter {
     return join(array_keys(static::$typeChars));
   }
 
+  //= null if nothing found, LayoutItem
+  static function findBy($path, $layout) {
+    $path = \Px\arrize($path);
+
+    if (!$layout) {
+      return null;
+    } elseif (!$path) {
+      return $layout;
+    } elseif (!property_exists($layout, 'blocks')) {
+      $layout = get_class($layout);
+      throw new Error("Invalid object [$layout] given to LayoutAlter->find().");
+    }
+
+    $matched = null;
+    $classes = array_shift($path);
+
+    if ($classes === array('*')) {
+      $matched = head($layout->children());
+    } else {
+      $matched = array_first($layout, function ($i, $block) use (&$classes) {
+        return ($block instanceof LayoutView) or
+               ($classes and
+                ($block instanceof LayoutBlocks) and
+                LayoutItem::classesMatch($block->classes, $classes));
+      });
+    }
+
+    if ($path and $matched instanceof LayoutView) {
+      $matched = array_get($matched->blocks, join(' ', array_shift($path)));
+    }
+
+    return static::findBy($path, $matched);
+  }
+
   static function from($position, $blocks) {
     $obj = new static(ltrim($position, static::chars()), $blocks);
     $obj->type = array_get(static::$typeChars, $position[0], $obj->type);
@@ -31,31 +65,28 @@ class LayoutAlter {
     return join(' ', array_map($joiner, $this->path));
   }
 
-  function findIn($layout, array $path = null) {
-    if (!$layout) {
-      return null;
-    } elseif (empty($path) and $path !== null) {
-      return $layout;
-    } elseif (!property_exists($layout, 'blocks')) {
-      $layout = get_class($layout);
-      throw new Error("Invalid object [$layout] given to LayoutAlter->find().");
-    }
+  function alter(Layout $layout) {
+    $matched = $this->findIn($layout);
 
-    $matched = null;
-    $path === null and $path = $this->path;
-
-    if ($classes = head($path)) {
-      foreach ($layout as $block) {
-        if ($block instanceof LayoutBlocks and
-            LayoutItem::classesMatch($block->classes, $classes)) {
-          $matched = $block;
-          break;
-        }
-      }
+    if (!$matched) {
+      Log::info_Alter("No matching block [{$this->pathStr()}] to {$this->type}.");
     } else {
-      $matched = head($layout->children());
+      switch ($block->type) {
+      case 'append':
+        $matched and $matched->blocks = array_merge($matched->blocks, $this->blocks);
+        break;
+      case 'prepend':
+        $matched and $matched->blocks = array_merge($this->blocks, $matched->blocks);
+        break;
+      default:
+        $matched->blocks = $this->blocks;
+      }
     }
 
-    return $this->findIn($matched, array_slice($path, 1));
+    return $matched;
+  }
+
+  function findIn($layout) {
+    return static::findBy($this->path, $layout);
   }
 }
