@@ -2,7 +2,6 @@
 
 use Vane\Layout;
 use Vane\LayoutItem;
-use Vane\LayoutBlocks;
 use Vane\LayoutHandler;
 use Vane\LayoutAlter;
 
@@ -71,13 +70,31 @@ class Vane_Test_Task extends \Task {
     );
   }
 
+  function viewLayout() {
+    return array(
+      ''                            => array(
+        ''                          => 'vane::block.logo',
+        'scalar'                    => 'var',
+        'nested'                    => array(
+          '-row.cl-1'               => 'rowctl@actn',
+          '-row.cl-2'               => array('rowctl main', 'extra'),
+        ),
+      ),
+      '-normal'                     => array(
+        'block',
+      ),
+    );
+  }
+
   function test_layout($l = null) {
     $this->start();
-    $l = ($l instanceof Layout) ? $l : new Layout($this->baseLayout());
+
+    $l = ($l instanceof Layout) ? $l : Layout::make($this->baseLayout());
+    $l->parseAll();
 
     assert(count($l->blocks) == 2);
-    assert($l->blocks[0] instanceof LayoutBlocks);
-    assert($l->blocks[1] instanceof LayoutBlocks);
+    assert($l->blocks[0] instanceof Layout);
+    assert($l->blocks[1] instanceof Layout);
 
     assert($l->blocks[0]->column === false);
     assert($l->blocks[0]->row === true);
@@ -98,11 +115,11 @@ class Vane_Test_Task extends \Task {
     //
     // -header/top.cl-1.cl-2 150px
     //
-    $row = new Layout($l->blocks[0]->blocks);
+    $row = $l->blocks[0]->parseAll();
 
       assert(count($row->blocks) == 2);
-      assert($row->blocks[0] instanceof LayoutBlocks);
-      assert($row->blocks[1] instanceof LayoutBlocks);
+      assert($row->blocks[0] instanceof Layout);
+      assert($row->blocks[1] instanceof Layout);
 
       assert($row->blocks[0]->column === true);
       assert($row->blocks[0]->row === false);
@@ -110,7 +127,7 @@ class Vane_Test_Task extends \Task {
 
       //
       // |logo 100px
-      $handlers = new Layout($row->blocks[0]->blocks);
+      $handlers = $row->blocks[0]->parseAll();
 
         assert(count($handlers->blocks) == 1);
         assert($handlers->blocks[0] instanceof LayoutHandler);
@@ -131,7 +148,7 @@ class Vane_Test_Task extends \Task {
 
       //
       // |menu.main goldn
-      $handlers = new Layout($row->blocks[1]->blocks);
+      $handlers = $row->blocks[1]->parseAll();
 
         assert(count($handlers->blocks) == 2);
         assert($handlers->blocks[0] instanceof LayoutHandler);
@@ -158,17 +175,17 @@ class Vane_Test_Task extends \Task {
     //
     // -page
     //
-    $row = new Layout($l->blocks[1]->blocks);
+    $row = $l->blocks[1]->parseAll();
 
       assert(count($row->blocks) == 2);
-      assert($row->blocks[0] instanceof LayoutBlocks);
-      assert($row->blocks[1] instanceof LayoutBlocks);
+      assert($row->blocks[0] instanceof Layout);
+      assert($row->blocks[1] instanceof Layout);
 
       assert($row->blocks[0]->column === true);
       assert($row->blocks[0]->row === false);
       assert(trim($row->blocks[0]->openTag()) === '<nav class="menu-block left span-3">');
 
-      $handlers = new Layout($row->blocks[0]->blocks);
+      $handlers = $row->blocks[0]->parseAll();
 
         assert(count($handlers->blocks) == 1);
         assert($handlers->blocks[0] instanceof LayoutHandler);
@@ -183,7 +200,7 @@ class Vane_Test_Task extends \Task {
       assert($row->blocks[1]->row === false);
       assert(trim($row->blocks[1]->openTag()) === '<div class="content-block span-9">');
 
-      $handlers = new Layout($row->blocks[1]->blocks);
+      $handlers = $row->blocks[1]->parseAll();
 
         assert(count($handlers->blocks) == 0);
   }
@@ -192,10 +209,15 @@ class Vane_Test_Task extends \Task {
     $this->start();
 
     // Warning when creating Layout with alter block(s).
-    new Layout(array('|top' => '', '=alter' => 'x', '^prepend' => 'x'));
+    Layout
+      ::make(array('|top' => '', '=alter' => 'x', '^prepend' => 'x'))
+      ->parseAll();
     logged('Ignoring 2 Alter blocks');
 
-    $l = new Layout($this->baseLayout());
+    $l = Layout::make($this->baseLayout());
+    // Multiple reparsings should not affect already parsed blocks.
+    $l->parseAll()->parseAll()->parseAll();
+    $this->test_layout($l);
 
     $l->alter(array('=top menu.right' => 'x'));
     logged('No matching block');
@@ -203,13 +225,13 @@ class Vane_Test_Task extends \Task {
 
     // Different alter modes.
     $l->alter(array('=page content' => 'textpage'));
-    assert(Layout::make($l->blocks[1]->blocks)->blocks[1]->blocks === array('textpage'));
+    assert($l->blocks[1]->parseAll()->blocks[1]->blocks === array('textpage'));
     $l->alter(array('=page content' => array('replaced')));
-    assert(Layout::make($l->blocks[1]->blocks)->blocks[1]->blocks === array('replaced'));
+    assert($l->blocks[1]->parseAll()->blocks[1]->blocks === array('replaced'));
     $l->alter(array('+page content' => array('appended')));
-    assert(Layout::make($l->blocks[1]->blocks)->blocks[1]->blocks === array('replaced', 'appended'));
+    assert($l->blocks[1]->parseAll()->blocks[1]->blocks === array('replaced', 'appended'));
     $l->alter(array('^page content' => array('prepended')));
-    assert(Layout::make($l->blocks[1]->blocks)->blocks[1]->blocks === array('prepended', 'replaced', 'appended'));
+    assert($l->blocks[1]->parseAll()->blocks[1]->blocks === array('prepended', 'replaced', 'appended'));
 
     assert(!static::$logged);
 
@@ -256,7 +278,7 @@ class Vane_Test_Task extends \Task {
     // Matching by multiple but not all classes - fine.
     $l->alter(array('=top menu.main' => 'replaced'));
     assert(!static::$logged);
-    assert(Layout::make($l->blocks[0]->blocks)->blocks[1]->blocks === array('replaced'));
+    assert($l->blocks[0]->parseAll()->blocks[1]->blocks === array('replaced'));
 
     // alter() should both alter current blocks and append new ones if they're given.
     $l->alter(array('-new.item' => 'my@handler', '=missing' => 'x'));
@@ -264,6 +286,93 @@ class Vane_Test_Task extends \Task {
     assert($l->blocks[2]->row === true);
     assert(trim($l->blocks[2]->openTag()) === '<div class="new-block item">');
     assert($l->blocks[2]->blocks === array('my@handler'));
+    logged('No matching block');
+  }
+
+  function test_layout_view($l = null) {
+    $this->start();
+
+    $l = ($l instanceof Layout) ? $l : Layout::make($this->viewLayout());
+    $l->parseAll();
+
+    assert(count($l->blocks) == 2);
+    assert($l->blocks[0] instanceof Layout);
+    assert($l->blocks[1] instanceof Layout);
+    assert($l->blocks[0]->isView() === true);
+
+    $viewBlock = $l->blocks[0]->parseAll();
+
+      assert(count($viewBlock->blocks) === 3);
+      assert($viewBlock->blocks[0] instanceof Layout);
+      assert($viewBlock->blocks[1] instanceof Layout);
+      assert($viewBlock->blocks[2] instanceof Layout);
+
+      assert($viewBlock->blocks[0]->classes === array());
+      assert($viewBlock->blocks[1]->classes === array('scalar'));
+      assert($viewBlock->blocks[2]->classes === array('nested'));
+
+    assert($viewBlock->emptyView() == null);
+    assert($viewBlock->isView() == true);
+    assert($viewBlock->blocks[0]->emptyView() instanceof Laravel\View);
+    assert($viewBlock->blocks[0]->emptyView()->view === 'vane::block.logo');
+    assert($viewBlock->blocks[1]->isView() == false);
+    assert($viewBlock->blocks[1]->emptyView() == null);
+  }
+
+  function test_layout_alter_view() {
+    $l = Layout::make($this->viewLayout());
+    $l->parseAll();
+
+    $l->alter(array('. .' => 'new.view'));
+    assert($l->blocks[0]->blocks[0]->blocks === array('new.view'));
+
+    $l->alter(array('. scalar' => 'new scalar'));
+    assert($l->blocks[0]->blocks[1]->blocks === array('new scalar'));
+    // Leading '=' is optional.
+    $l->alter(array('=. scalar' => 'replaced'));
+    assert($l->blocks[0]->blocks[1]->blocks === array('replaced'));
+    // Number of dots (that craete 'empty class reference') doesn't matter.
+    $l->alter(array('..... scalar' => 'new-r'));
+    assert($l->blocks[0]->blocks[1]->blocks === array('new-r'));
+    $l->alter(array('+. scalar' => 'appended'));
+    assert($l->blocks[0]->blocks[1]->blocks === array('new-r', 'appended'));
+
+    // Different alter modes.
+    $l->alter(array('. nested cl-1.row' => 'replaced'));
+    assert($l->blocks[0]->blocks[2]->blocks[0]->blocks === array('replaced'));
+    $l->alter(array('+. nested cl-1.row' => 'appended'));
+    assert($l->blocks[0]->blocks[2]->blocks[0]->blocks === array('replaced', 'appended'));
+    $l->alter(array('^. nested cl-1.row' => 'prepended'));
+    assert($l->blocks[0]->blocks[2]->blocks[0]->blocks === array('prepended', 'replaced', 'appended'));
+
+    assert(!static::$logged);
+
+    // Operating on a non-existent view key creates it regardless of match type.
+    $l->alter(array('. replace' => 'replaced'));
+    assert(!static::$logged);
+    assert($l->blocks[0]->blocks[3] instanceof Layout);
+    assert($l->blocks[0]->blocks[3]->classes === array('replace'));
+    assert($l->blocks[0]->blocks[3]->blocks === array('replaced'));
+
+    $l->alter(array('+. app.end' => 'appended'));
+    assert(!static::$logged);
+    assert($l->blocks[0]->blocks[4] instanceof Layout);
+    assert($l->blocks[0]->blocks[4]->classes === array('app', 'end'));
+    assert($l->blocks[0]->blocks[4]->blocks === array('appended'));
+
+    $l->alter(array('^. pre.pe.nd' => 'pre.pen.ded'));
+    assert(!static::$logged);
+    assert($l->blocks[0]->blocks[5] instanceof Layout);
+    assert($l->blocks[0]->blocks[5]->classes === array('pre', 'pe', 'nd'));
+    assert($l->blocks[0]->blocks[5]->blocks === array('pre.pen.ded'));
+
+    assert(count($l->blocks[0]->blocks) === 6);
+
+    $l->alter(array('. no nested' => 'creation'));
+    logged('No matching block');
+
+    // Automatic variable creation should only work for view blocks.
+    $l->alter(array('=none' => 'created'));
     logged('No matching block');
   }
 }

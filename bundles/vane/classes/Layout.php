@@ -1,24 +1,16 @@
 <?php namespace Vane;
 
-// Represents a page layout with means for producing Response objects ready to be sent.
-class Layout implements \IteratorAggregate {
-  static $blockPrefixes = '|-=+^';
+// Represents group of blocks, both as a top-level page layout or nested blocks.
+class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
+  static $blockPrefixes = '.|-=+^';
 
-  public $blocks = array();           //= array of LayoutItem
+  public $tag = 'div';
 
-  protected $served;                  //= null, mixed
+  public $column = false;   //= true for '|block'
+  public $row = false;      //= true for '-block'
+  public $blocks;           //= array of mixed nested blocks
 
-  // Creates layout object from base layout (null) and altered with given named
-  // layout configurations.
-  //= Layout
-  static function fromConfig($layouts) {
-    $layouts = (array) $layouts;
-
-    $obj = static::make( static::config(null) );
-    foreach ($layouts as $layout) { $obj->alter(static::config($layout)); }
-
-    return $obj;
-  }
+  protected $served;        //= null, mixed
 
   // Returns layout configuration, e.g. array('|top' => 'menu', ...).
   //* $name str layout name, null base layout
@@ -27,8 +19,9 @@ class Layout implements \IteratorAggregate {
     return Current::config('layouts.', $name);
   }
 
-  // Returns array with keys 'append' (array of LayoutBlocks (nested blocks)
-  // and LayoutHandler) and 'alter' (array of LayoutAlter).
+  // Returns array with keys 'append' (array of Layout (nested blocks) and
+  // LayoutHandler (block fillers)) and 'alter' (array of LayoutAlter).
+  //
   //* $blocks array of str, array of object preparsed
   //* $get null return all, str key of returned member
   //= array
@@ -36,9 +29,7 @@ class Layout implements \IteratorAggregate {
     $append = $alter = array();
 
     foreach ((array) $blocks as $name => $block) {
-      if ($name === '') {
-        $append[] = LayoutView::from($block);
-      } elseif (is_object($block)) {
+      if (is_object($block)) {
         if ($block instanceof LayoutAlter) {
           $alter[] = $block;
         } elseif (! $block instanceof LayoutItem) {
@@ -50,10 +41,10 @@ class Layout implements \IteratorAggregate {
       } elseif (is_int($name)) {
         // $block can be empty string as a shortcut to 'empty block' (no handlers).
         $block and $append[] = new LayoutHandler($block, array());
-      } elseif (strpbrk($name[0], static::$blockPrefixes) === false) {
+      } elseif ($name and strpbrk($name[0], static::$blockPrefixes) === false) {
         $append[] = new LayoutHandler($name, $block);
-      } elseif ($name[0] === '|' or $name[0] === '-') {
-        $append[] = LayoutBlocks::from($name, $block);
+      } elseif (!$name or $name[0] === '|' or $name[0] === '-') {
+        $append[] = static::from($name, $block);
       } else {
         $alter[] = LayoutAlter::from($name, $block);
       }
@@ -62,15 +53,123 @@ class Layout implements \IteratorAggregate {
     return $get ? $$get : compact('append', 'alter');
   }
 
+  // Creates layout from base layout (null) and altered with given configurations.
+  //* $layouts array, str - list of layout names altering the base layout.
+  //= Layout
+  static function fromConfig($layouts) {
+    $layouts = (array) $layouts;
+
+    $obj = static::make( static::config(null) );
+    foreach ($layouts as $layout) { $obj->alter(static::config($layout)); }
+
+    return $obj;
+  }
+
+  // Creates a nested block object identified by a position.
+  //* $position str - list of classes and other presentation features, see __construct().
+  //  Can contain leading '|' (for column block) or '-' (for row block).
+  //* $blocks str, array - nested blocks, see parse().
+  //= Layout
+  static function from($position, $blocks) {
+    $obj = new static(ltrim($position, '|-'), $blocks);
+
+    if ($position) {
+      $type = $position[0] === '|' ? 'column' : ($position[0] === '-' ? 'row' : null);
+      $type and $obj->$type = true;
+    }
+
+    return $obj;
+  }
+
+  // Creates a top-level layout container - and as such it doesn't have any
+  // classes, size or other presentation options used for nested layouts and blocks.
   static function make($blocks) {
-    return new static($blocks);
+    return new static('', $blocks);
   }
 
-  function __construct($blocks) {
-    $this->add($blocks);
+  //* $position str - 'class[.class[....]][ size]'.
+  //* $blocks str, array - nested blocks, see parse().
+  function __construct($position, $blocks) {
+    $this->extractTagTo($this->tag, $position);
+
+    $this->classes = static::splitClasses( strtok($position, ' ') );
+    $this->size = ''.strtok(null);
+
+    $this->blocks = \Px\arrize($blocks);
   }
 
+  protected function tagClasses(array $classes) {
+    $classes and $classes[0] .= '-block';
+    return $classes;
+  }
+
+  // function (mixed $data)
+  // Sets value for '!' blocks - that is, response specific to some user action.
+  //
+  // function ()
+  // Returns currently set response, if any.
+  //= mixed
+  function served($data = null) {
+    func_num_args() and $this->served = $data;
+    return func_num_args() ? $this : $this->served;
+  }
+
+  //= true if this layout defines base view for its container, false otherwise
+  function isView() {
+    return $this->fullID() === '';
+  }
+
+  // Converts all $this->blocks members into LayoutItem objects.
+  function parseAll() {
+    return $this->setTo($this->blocks);
+  }
+
+  //= array of LayoutItem parsed nested blocks
+  function children() {
+    return $this->parseAll()->blocks;
+  }
+
+  function getIterator() {
+    return new \ArrayIterator($this->children());
+  }
+
+  function count() {
+    return count($this->blocks);
+  }
+
+  // Applies altering blocks to this layout and then add()'s the rest, if present.
+  //* $blocks array, str - list of '-nested' ('|nested'), 'handling' and '=altering'
+  //  ('+altering', '^altering') blocks.
+  function alter($blocks) {
+    $parsed = static::parse($blocks);
+    foreach ($parsed['alter'] as $block) { $block->alter($this); }
+    return $this->add($parsed['append']);
+  }
+
+  // Replaces all nested blocks with given list. See add().
+  function setTo($blocks) {
+    $this->blocks = array();
+    return $this->add($blocks);
+  }
+
+  // Adds list of blocks to this layout. If givne, altering blocks are ignored.
+  //* $blocks str, array - see parse(). If this layout isView() blocks without
+  //  row/column prefixes ('|', '-') in their names become nested Layout's rather
+  //  than LayoutHandlers.
   function add($blocks) {
+    if ($this->isView() and $blocks) {
+      $keys = array_keys($blocks);
+
+      foreach ($keys as &$key) {
+        if (is_string($key) and $key and
+            strpbrk($key[0], static::$blockPrefixes) === false) {
+          $key = "-$key";
+        }
+      }
+
+      $blocks = array_combine($keys, $blocks);
+    }
+
     $parsed = static::parse($blocks);
 
     if ($parsed['alter']) {
@@ -83,20 +182,67 @@ class Layout implements \IteratorAggregate {
     return $this;
   }
 
-  function alter($blocks) {
-    $parsed = static::parse($blocks);
+  // Treats self as a top-level layout. If a view is specified to be used as
+  // wrapper finds it and fills with current data by rendering nested blocks.
+  // Each block's class is treated as 'array.path' ($view->data['array']['path']).
+  //= null no view is assigned, View
+  function view() {
+    if ($block = $this->find('')) {
+      $view = $block->view();
+    } elseif ($view = $this->emptyView()) {
+      foreach ($this as $block) {
+        if ($block instanceof static and ($name = $block->fullID()) !== '') {
+          $data = LayoutRendering::on($block, $this)->join();
+          array_set($view->data, $name, $data);
+        }
+      }
+    }
 
-    foreach ($parsed['alter'] as $block) { $block->alter($this); }
-
-    $this->add($parsed['append']);
-    return $this;
+    return $view;
   }
 
-  function served($data = null) {
-    func_num_args() and $this->served = $data;
-    return func_num_args() ? $this : $this->served;
+  // Low-level function returning a View object if it's specified as one of
+  // this layout's child blocks. Returns null if isView() is false or no view
+  // name or object was found.
+  //= null, View
+  function emptyView() {
+    $view = $this->isView() ? end($this->blocks) : null;
+    while ($view instanceof static) { $view = end($view->blocks); }
+
+    if ($view and is_scalar($view)) {
+      return new \View($view);
+    } elseif ($view instanceof \Laravel\View) {
+      return $view;
+    }
   }
 
+  // Finds nested block.
+  //* $path null, str, array of array - each member is an array of class names to match
+  //  nested blocks against from left-to-right. If $path is empty (meaning end-point)
+  //  $this is returned. If leftmost member is array('*') the first child is matched.
+  //  Otherwise, and if it's empty, classesMatch() is used.
+  //= null if nothing found, Layout
+  function find($path = null) {
+    if (! $path = \Px\arrize($path)) {
+      return $this;
+    }
+
+    $classes = array_shift($path);
+
+    if ($classes === array('*')) {
+      $matched = head($this->children());
+    } else {
+      $self = $this;
+      $matched = array_first($this, function ($i, $block) use ($self, &$classes) {
+        return $block instanceof $self and
+               $self::classesMatch($block->classes, $classes);
+      });
+    }
+
+    return $matched ? $matched->find($path) : null;
+  }
+
+  // Converts produced served() of arbitrary type to a Response object.
   //= Laravel\Response
   function servedResponse($data = null) {
     if (is_object($this->served) and $this->served->server) {
@@ -108,6 +254,7 @@ class Layout implements \IteratorAggregate {
     return $server->toResponse( func_num_args() ? $data : $this->served );
   }
 
+  // Builds a complete response according to layout and client input.
   //= Laravel\Response
   function response() {
     $onlyBlocks = Input::get('_blocks');
@@ -135,39 +282,19 @@ class Layout implements \IteratorAggregate {
     $response = $rendering->served;
     $response->content = $rendering->join($ajax);
 
-    if (is_scalar($response->content) and $full = $this->fullView()) {
-      $response->content = $full->with(array('content' => $response->render()));
+    if (is_scalar($response->content) and $full = $this->view()) {
+      $response->content = $full->with( array('content' => $response->render()) );
     }
 
     return $response;
   }
 
-  //= bool
+  //= true if served() response should not be embedded into this layout, false otherwise
   function breaksout() {
     if (is_object($this->served) and $this->served->breakout !== false) {
       return $this->served->breakout === true or
              (method_exists($this->served, 'status') and
               ($status = $this->served->status() >= 300 or $status < 400));
     }
-  }
-
-  //= null, View
-  function fullView() {
-    if ($block = $this->fullViewBlock()) {
-      return $block->view();
-    }
-  }
-
-  //= null, LayoutView
-  function fullViewBlock() {
-    return LayoutAlter::findBy('', $this);
-  }
-
-  function children() {
-    return $this->blocks;
-  }
-
-  function getIterator() {
-    return new \ArrayIterator($this->children());
   }
 }

@@ -2,17 +2,23 @@
 
 // Intermediate class storing context of current Layout rendering.
 class LayoutRendering {
-  public $main;             //= Layout, LayoutBlocks
-  public $onlyBlocks;       //= null, array
-  public $served;           //= Laravel\Response
-  // array( '<open>', key => Response, k2 => ..., '</close>', '<op>', ... )
+  public $main;             //= Layout top-level
+  public $onlyBlocks;       //= null, array of block classes to include into $result
+  public $served;           //= Laravel\Response see $main->served()
+
+  // Currently rendered blocks and their wrapping tags.
+  //= array '<open>', key => Response, k2 => ..., '</close>', '<op>', ...
   public $result = array();
 
-  static function make($main, $onlyBlocks = null) {
+  static function on(Layout $toRender, Layout $main = null) {
+    return static::make($main ?: $toRender)->render($toRender);
+  }
+
+  static function make(Layout $main, $onlyBlocks = null) {
     return new static($main, $onlyBlocks);
   }
 
-  function __construct($main, $onlyBlocks = null) {
+  function __construct(Layout $main, $onlyBlocks = null) {
     $this->main = $main;
     $this->onlyBlocks = $onlyBlocks;
 
@@ -20,7 +26,9 @@ class LayoutRendering {
     $this->served->isServed = true;
   }
 
-  function render(\Traversable $layout) {
+  // Renders given layout recursively, adding opening/closing tags and matching
+  // blocks against $onlyBlocks.
+  function render(Layout $layout) {
     $onlyBlocks = array_flip((array) $this->onlyBlocks);
 
     foreach ($layout as $block) {
@@ -34,7 +42,7 @@ class LayoutRendering {
       if ($matches !== false) {
         $tag = $block->openTag() and $this->result[] = $tag;
 
-        if ($block instanceof LayoutBlocks) {
+        if ($block instanceof Layout) {
           $this->render($block);
         } else {
           $response = $block->isServed() ? $this->served : $block->response();
@@ -48,12 +56,10 @@ class LayoutRendering {
     return $this;
   }
 
+  // Creates key for given $block that's unique in current result set.
+  //= str
   function keyOf(LayoutItem $block) {
-    if ($block instanceof LayoutHandler) {
-      $key = $block->fullID();
-    } else {
-      $key = join(' ', $block->classes);
-    }
+    $key = $block->fullID();
 
     if (isset($this->result[$key])) {
       $i = 1;
@@ -76,6 +82,7 @@ class LayoutRendering {
     }
   }
 
+  // Converts accumulated results into strings.
   function renderResults() {
     foreach ($this->result as $name => &$response) {
       if (is_object($response)) {
