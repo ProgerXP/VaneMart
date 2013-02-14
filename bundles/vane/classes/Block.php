@@ -92,7 +92,7 @@ class Block extends DoubleEdge {
   //? classOf('myBun::menu.sub')  //=> myBun\Block_MenuSub
   static function classOf($block, $fail = true) {
     $block = strtok($block, '@');
-    list($bundle, $class) = explode('::', $block, 2);
+    @list($bundle, $class) = explode('::', $block, 2);
 
     $class = 'Block_'.ucfirst($class);
     $class = str_replace( ' ', '', ucwords(str_replace('.', ' ', $class)) );

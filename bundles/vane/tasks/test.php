@@ -319,7 +319,29 @@ class Vane_Test_Task extends \Task {
     assert($viewBlock->blocks[1]->emptyView() == null);
   }
 
+  function test_layout_nested_view() {
+    $this->start();
+
+    $l = Layout::make(array(
+      ''                  => array(
+        ''                => array(
+          ''              => 'vane::block.logo',
+          'nested'        => '=value',
+        ),
+        'top'             => '=data',
+      ),
+    ));
+
+    $view = $l->view();
+    assert($view instanceof Laravel\View);
+    assert($view->view === 'vane::block.logo');
+    assert($view->data['nested'] === 'value');
+    assert($view->data['top'] === 'data');
+  }
+
   function test_layout_alter_view() {
+    $this->start();
+
     $l = Layout::make($this->viewLayout());
     $l->parseAll();
 

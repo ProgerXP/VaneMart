@@ -39,8 +39,13 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
           $append[] = $block;
         }
       } elseif (is_int($name)) {
-        // $block can be empty string as a shortcut to 'empty block' (no handlers).
-        $block and $append[] = new LayoutHandler($block, array());
+        if (!$block) {
+          // it can be empty string as a shortcut to 'empty block' (no handlers).
+        } elseif ($block[0] === '=') {
+          $append[] = new LayoutHandler('Vane::raw', trim(substr($block, 1)));
+        } else {
+          $append[] = new LayoutHandler($block, array());
+        }
       } elseif ($name and strpbrk($name[0], static::$blockPrefixes) === false) {
         $append[] = new LayoutHandler($name, $block);
       } elseif (!$name or $name[0] === '|' or $name[0] === '-') {
@@ -157,12 +162,12 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
   //  row/column prefixes ('|', '-') in their names become nested Layout's rather
   //  than LayoutHandlers.
   function add($blocks) {
-    if ($this->isView() and $blocks) {
+    if ($this->isView() and $blocks = \Px\arrize($blocks)) {
       $keys = array_keys($blocks);
 
       foreach ($keys as &$key) {
-        if (is_string($key) and $key and
-            strpbrk($key[0], static::$blockPrefixes) === false) {
+        if (!$key or (is_string($key) and
+            strpbrk($key[0], static::$blockPrefixes) === false)) {
           $key = "-$key";
         }
       }
@@ -187,18 +192,26 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
   // Each block's class is treated as 'array.path' ($view->data['array']['path']).
   //= null no view is assigned, View
   function view() {
-    if ($block = $this->find('')) {
+    if (!$this->isViewEndpoint() and $block = $this->find('')) {
       $view = $block->view();
-    } elseif ($view = $this->emptyView()) {
-      foreach ($this as $block) {
-        if ($block instanceof static and ($name = $block->fullID()) !== '') {
-          $data = LayoutRendering::on($block, $this)->join();
-          array_set($view->data, $name, $data);
-        }
+    } elseif (! $view = $this->emptyView()) {
+      return;
+    }
+
+    foreach ($this as $block) {
+      if ($block instanceof static and ($name = $block->fullID()) !== '') {
+        $data = LayoutRendering::on($block, $this)->join();
+        array_set($view->data, $name, $data);
       }
     }
 
     return $view;
+  }
+
+  // Indicates that this layout can have immediate view's name or object but no
+  // more nested views.
+  function isViewEndpoint() {
+    return count($this->blocks) == 1 and is_scalar(reset($this->blocks));
   }
 
   // Low-level function returning a View object if it's specified as one of
