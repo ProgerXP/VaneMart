@@ -3,13 +3,13 @@ return array(
   null                    => array(
     null                  => array(
       null                => 'vanemart::full',
-      'title'             => 'VaneMart',
+      'title'             => '=VaneMart',
     ),
     '-head'               => array('Vane::menu main', 'Vane::menu user'),
     '|nav goldn'          => array(
       '|menu goldn'       => array('Vane::logo', 'Vane::menu groups'),
       '|items goldw'      => array(
-        '-title?'         => array(),
+        '-title'          => array(),
         '-list'           => array(),
       ),
     ),

@@ -121,7 +121,7 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
 
   //= true if this layout defines base view for its container, false otherwise
   function isView() {
-    return $this->fullID() === '';
+    return !$this->classes;
   }
 
   // Converts all $this->blocks members into LayoutItem objects.
@@ -211,7 +211,8 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
   // Indicates that this layout can have immediate view's name or object but no
   // more nested views.
   function isViewEndpoint() {
-    return count($this->blocks) == 1 and is_scalar(reset($this->blocks));
+    return $this->isView() and count($this->blocks) == 1 and
+           is_scalar(reset($this->blocks));
   }
 
   // Low-level function returning a View object if it's specified as one of

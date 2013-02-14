@@ -20,7 +20,11 @@
     <![endif]-->
   </head>
   <body>
-    @yield('content')
+    @if (isset(Section::$sections['content']))
+      @yield('content')
+    @else
+      {{ $content }}
+    @endif
 
     <script type="text/javascript" src="{{ action('js/env') }}"></script>
     {{ Asset::scripts() }}

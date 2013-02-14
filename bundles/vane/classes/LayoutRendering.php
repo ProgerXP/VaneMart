@@ -39,7 +39,7 @@ class LayoutRendering {
         if ($matches) { break; }
       }
 
-      if ($matches !== false) {
+      if ($matches !== false and (!($block instanceof Layout) or !$block->isView())) {
         $tag = $block->openTag() and $this->result[] = $tag;
 
         if ($block instanceof Layout) {
