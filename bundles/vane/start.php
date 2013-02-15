@@ -12,7 +12,9 @@ if (!\Bundle::exists('plarx')) {
   throw new Error('Vane requires Plarx bundle installed.');
 } else {
   \Bundle::start('plarx');
-  \Px\Plarx::aliasIn(__NAMESPACE__);
+
+  \Px\Plarx::constantsTo(__NAMESPACE__);
+  \Px\Plarx::classesTo(__NAMESPACE__);
 }
 
 \Autoloader::namespaces(array(__NAMESPACE__ => __DIR__.DS.'classes'));

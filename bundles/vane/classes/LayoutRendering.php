@@ -4,7 +4,7 @@
 class LayoutRendering {
   public $main;             //= Layout top-level
   public $onlyBlocks;       //= null, array of block classes to include into $result
-  public $served;           //= Laravel\Response see $main->served()
+  public $served;           //= null, Laravel\Response see $main->served()
 
   // Currently rendered blocks and their wrapping tags.
   //= array '<open>', key => Response, k2 => ..., '</close>', '<op>', ...
@@ -22,8 +22,10 @@ class LayoutRendering {
     $this->main = $main;
     $this->onlyBlocks = $onlyBlocks;
 
-    $this->served = $main->servedResponse();
-    $this->served->isServed = true;
+    if ($main->served() !== null) {
+      $this->served = $main->servedResponse();
+      $this->served->isServed = true;
+    }
   }
 
   // Renders given layout recursively, adding opening/closing tags and matching

@@ -30,14 +30,14 @@ class Router {
   //? $handler = Vane\Router::layouts('help', 'post help@add', array())
   //  Route::any('help/(:any)', $handler)
   static function layouts($layouts, $servers = array(), $layout = null) {
-    if ($layout === null) {
-      $layout = $servers;
-      $servers = array();
-    }
-
     $self = get_called_class();
 
     return function () use ($self, $layouts, $servers, $layout) {
+      if ($layout === null) {
+        $layout = $servers;
+        $servers = array();
+      }
+
       return Layout
         ::fromConfig($layouts)
         ->alter($layout)

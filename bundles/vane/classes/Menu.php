@@ -51,6 +51,7 @@ class Menu {
       } elseif (is_array($value)) {
         $this->addLink($value);
       } elseif ($value instanceof MenuItem) {
+        $value->menu = $this;
         $this->items[] = $value;
       } elseif (is_scalar($value)) {
         @list($custom, $args) = explode(' ', trim($value), 2);
@@ -83,7 +84,7 @@ class Menu {
     return isset($name) ? $this : $this->name;
   }
 
-  function toArray() {
+  function filled() {
     return \Px\func('fill', $this->items);
   }
 }

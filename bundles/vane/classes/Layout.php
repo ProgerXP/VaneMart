@@ -110,6 +110,8 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
 
   // function (mixed $data)
   // Sets value for '!' blocks - that is, response specific to some user action.
+  // Note that if $data is null it doesn't mean 404 Not Found but just unsets
+  // served response indicating this route has no attached server.
   //
   // function ()
   // Returns currently set response, if any.
@@ -259,7 +261,7 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
   // Converts produced served() of arbitrary type to a Response object.
   //= Laravel\Response
   function servedResponse($data = null) {
-    if (is_object($this->served) and $this->served->server) {
+    if (is_object($this->served) and isset($this->served->server)) {
       $server = $this->served->server;
     } else {
       $server = new Block;
@@ -288,12 +290,12 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
       }
     }
 
-    $ajax = \Px\Request::ajax();
+    $ajax = Request::ajax();
     Input::get('_naked', $ajax) and $rendering->unwrap();
 
     $rendering->renderResults();
 
-    $response = $rendering->served;
+    $response = $rendering->served ?: Response::adapt('');
     $response->content = $rendering->join($ajax);
 
     if (is_scalar($response->content) and $full = $this->view()) {

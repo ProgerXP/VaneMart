@@ -142,6 +142,18 @@ class Block extends DoubleEdge {
     return $response;
   }
 
+  protected function errorResponse($code = E_SERVER, $data = array()) {
+    try {
+      return parent::errorResponse($code, $data);
+    } catch (\Exception $e) {
+      if (strpos($e->getMessage(), 'exist')) {
+        return Response::adaptErrorOf('vane::', $code, $this->errorResponseData($data));
+      } else {
+        throw $e;
+      }
+    }
+  }
+
   // Reads input variable. Uses either global request data or this block's assigned
   // input (options), if available (usually in a subcall from layout).
   // If a single argument is given throws exception if the variable wasn't passed.
