@@ -10,23 +10,41 @@ class MenuItem {
   public $args;               //= null, array arguments for custom handler
   public $filled = false;
 
-  // If $custom is set properties below are ignored.
+  //= bool, null autodetect if $html or $caption is set
+  public $visible;
+
+  // If $custom is set properties below are ignored (filled by the handler).
+  // $html is put after the $caption block of properties.
   public $html;               //= null, str
 
-  // If $html is set properties below are ignored.
   public $caption;
+  // If $caption is unset properties below are ignored.
   public $hint;
   public $icon;               //= null, str icon URL
   public $classes = array();  //= array of CSS classes
   public $url;                //= str target URL
-  public $popup = false;      //= bool if it opens in new window
+  //= bool if it opens in new window, null autodetect for external $url
+  public $popup;
 
   function __construct(array $props = array()) {
     foreach ($props as $prop => $value) { $this->$prop = $value; }
   }
 
+  //= str, null if none
+  function classes() {
+    $classes = array_flip((array) $this->classes);
+    $this->current and $classes['current'] = true;
+    return $classes ? join(' ', array_keys($classes)) : null;
+  }
+
   function visible() {
-    return isset($this->html) or isset($this->caption);
+    return isset($this->visible)
+      ? $this->visible
+      : (isset($this->html) or isset($this->caption));
+  }
+
+  function popup() {
+    return isset($this->popup) ? $this->popup : HLEx::isExternal($this->url);
   }
 
   function fill() {
