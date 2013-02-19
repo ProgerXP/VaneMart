@@ -1,7 +1,7 @@
 <?php namespace Vane;
 
 // Represents a menu - a collection of MenuItems.
-class Menu {
+class Menu implements \IteratorAggregate, \Countable {
   //= null unassigned, str like 'main'
   protected $name;
   //= array of MenuItem
@@ -86,5 +86,13 @@ class Menu {
 
   function filled() {
     return \Px\func('fill', $this->items);
+  }
+
+  function getIterator() {
+    return new \ArrayIterator($this->filled());
+  }
+
+  function count() {
+    return count($this->items);
   }
 }

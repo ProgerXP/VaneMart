@@ -1,11 +1,11 @@
-<ul>
-  @foreach ($items as $item)
+<ul class="vane-menu vane-menu-{{ Px\HLEx::q($menu->name()) }}">
+  @foreach ($menu as $item)
     @if ($item->visible())
       {{ Px\HLEx::tag('li', array( 'class' => $item->classes(), 'title' => trim($item->hint) ?: null )) }}
 
       @if (isset($item->caption))
         @if ($item->url)
-          {{ Px\HLEx::tag('a', array( 'href' => $item->url, 'target' => HLEx::target($item->popup()) )) }}
+          {{ Px\HLEx::tag('a', array( 'href' => $item->url, 'target' => Px\HLEx::target($item->popup()) )) }}
         @endif
 
         @if ($item->icon)
@@ -22,6 +22,8 @@
       @if ($item->html)
         {{ $item->html }}
       @endif
+
+      </li>
     @endif
   @endforeach
 </ul>

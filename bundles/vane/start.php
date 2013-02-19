@@ -17,6 +17,13 @@ if (!\Bundle::exists('plarx')) {
   \Px\Plarx::classesTo(__NAMESPACE__);
 }
 
+if (!\Bundle::exists('squall')) {
+  throw new Error('Vane requires Squall bundle installed.');
+} else {
+  \Bundle::start('squall');
+  \Squall\initEx(__NAMESPACE__);
+}
+
 \Autoloader::namespaces(array(__NAMESPACE__ => __DIR__.DS.'classes'));
 
 if (!\Bundle::option('vane', 'autoloads') and is_file($config = __DIR__.DS.'bundle.php')) {

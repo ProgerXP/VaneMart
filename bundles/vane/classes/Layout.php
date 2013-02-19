@@ -276,6 +276,9 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
     $onlyBlocks = Input::get('_blocks');
     $rendering = new LayoutRendering($this, $onlyBlocks);
 
+    $ajax = Request::ajax();
+    $ajax === 'd' and Request::ajax(true);
+
     $singleBlock = (isset($onlyBlocks) and !is_array($onlyBlocks));
     $firstServed = in_array(head((array) $onlyBlocks), array('!', '1', ''));
 
@@ -286,23 +289,25 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
       $rendering->render($this);
 
       if ($singleBlock) {
-        foreach ($rendering->result as &$resp) { $resp->isServed = true; }
+        foreach ($rendering->result as $block) {
+          foreach ($block as $response) {
+            is_object($response) and $response->isServed = true;
+          }
+        }
       }
     }
 
-    $ajax = Request::ajax();
+    Request::ajax(null);
     Input::get('_naked', $ajax) and $rendering->unwrap();
 
-    $rendering->renderResults();
-
     $response = $rendering->served ?: Response::adapt('');
-    $response->content = $rendering->join($ajax);
+    $response->set( $rendering->join($ajax) );
 
-    if (is_scalar($response->content) and $full = $this->view()) {
+    if (!$ajax and is_scalar($response->content) and $full = $this->view()) {
       $response->content = $full->with( array('content' => $response->render()) );
     }
 
-    return $response;
+    return Response::postprocess($response);
   }
 
   //= true if served() response should not be embedded into this layout, false otherwise

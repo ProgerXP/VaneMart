@@ -7,6 +7,7 @@ return array(
     ),
   ),
 
+  'squall',
   'vane',
 
   'vanemart'              => array(

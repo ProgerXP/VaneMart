@@ -2,8 +2,9 @@
 /ignore/
 # Necessary if running locally under Apache/XAMPP
 /.htaccess
-# External dependency
+# External dependencies
 /bundles/plarx
+/bundles/squall
 
 # Numerous always-ignore extensions
 *.diff

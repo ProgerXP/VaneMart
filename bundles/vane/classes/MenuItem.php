@@ -47,6 +47,16 @@ class MenuItem {
     return isset($this->popup) ? $this->popup : HLEx::isExternal($this->url);
   }
 
+  function toArray() {
+    $props = array(
+      'classes'           => $this->classes(),
+      'visible'           => $this->visible(),
+      'popup'             => $this->popup(),
+    );
+
+    return $props + array_except((array) $this, array('menu', 'filled'));
+  }
+
   function fill() {
     if (!$this->filled) {
       $this->filled = true;
@@ -58,7 +68,7 @@ class MenuItem {
         if (method_exists($handler, $func)) {
           $handler->func($this);
         } else {
-          $this->html = $handler->execute($action, explode(' ', $this->args));
+          $this->html = $handler->execute($action, explode(' ', $this->args))->render();
         }
       }
     }

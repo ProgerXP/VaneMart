@@ -7,7 +7,7 @@ class LayoutRendering {
   public $served;           //= null, Laravel\Response see $main->served()
 
   // Currently rendered blocks and their wrapping tags.
-  //= array '<open>', key => Response, k2 => ..., '</close>', '<op>', ...
+  //= array 'blo.ck pa.th' => array('<open>', Response, '</close>'), ...
   public $result = array();
 
   static function on(Layout $toRender, Layout $main = null) {
@@ -30,10 +30,36 @@ class LayoutRendering {
 
   // Renders given layout recursively, adding opening/closing tags and matching
   // blocks against $onlyBlocks.
-  function render(Layout $layout) {
-    $onlyBlocks = array_flip((array) $this->onlyBlocks);
+  function render(LayoutItem $block, $parent = null) {
+    if ($parent === null or $this->includes($block)) {
+      $key = $this->keyOf($block, $parent);
 
-    foreach ($layout as $block) {
+      if (isset($parent)) {
+        $this->put($block, "+$key", $block->openTag());
+      }
+
+      if ($block instanceof Layout) {
+        S($block, array($this, __FUNCTION__, $key));
+      } else {
+        $response = $block->isServed() ? $this->served : $block->response();
+        $this->put($block, $key, $response);
+      }
+
+      if (isset($parent) and $tag = $block->closeTag()) {
+        $this->put($block, "-$key", $tag);
+      }
+    }
+
+    return $this;
+  }
+
+  // Determines if given block should be rendered into the resulting response.
+  //= bool
+  function includes(LayoutItem $block) {
+    if ($block instanceof Layout and $block->isView()) {
+      return false;
+    } else {
+      $onlyBlocks = array_flip((array) $this->onlyBlocks);
       $matches = null;
 
       foreach ($onlyBlocks as $classes) {
@@ -41,58 +67,77 @@ class LayoutRendering {
         if ($matches) { break; }
       }
 
-      if ($matches !== false and (!($block instanceof Layout) or !$block->isView())) {
-        $tag = $block->openTag() and $this->result[] = $tag;
-
-        if ($block instanceof Layout) {
-          $this->render($block);
-        } else {
-          $response = $block->isServed() ? $this->served : $block->response();
-          $this->result[$this->keyOf($block)] = $response;
-        }
-
-        $tag = $block->closeTag() and $this->result[] = $tag;
-      }
+      return $matches !== false;
     }
-
-    return $this;
   }
 
   // Creates key for given $block that's unique in current result set.
   //= str
-  function keyOf(LayoutItem $block) {
-    $key = $block->fullID();
+  function keyOf(LayoutItem $block, $parent = null) {
+    $base = $key = (isset($parent) ? "$parent " : '').$block->fullID();
 
     if (isset($this->result[$key])) {
       $i = 1;
-      while (isset($this->result[$key.' '.++$i]));
+      while (isset($this->result[$key = $base.' '.++$i]));
     }
 
     return $key;
   }
 
+  // Saves block data (opening/closing tags or Response) into accumulated results.
+  //= $data
+  function put(LayoutItem $block, $key, $data) {
+    if ($block instanceof Layout) {
+      return $this->result[$key] = $data;
+    } else {
+      return $this->result[ ltrim($key, '+-') ][] = $data;
+    }
+  }
+
   // Removes block wrapping tags.
   function unwrap() {
-    $this->result = \Px\array_keep($this->result, 'is_object');
+    $this->result = S($this->result)
+      ->keep(function ($block) { return is_array($block) or is_object($block); })
+      ->map(function ($block) {
+        $block = S::keep(\Px\arrize($block), 'is_object');
+        return count($block) > 1 ? $block : $block[0];
+      })
+      ->get();
+
     return $this;
   }
 
   //= null if nothing was produced (aka 404), array if $ajax, str otherwise
   function join($ajax = false) {
-    if ($this->result) {
-      return $ajax ? $this->result : join($this->result);
+    if ($this->renderResults($ajax)->result) {
+      return $ajax ? $this->result : join( S::map($this->result, 'join(Px\\arrize(?))') );
     }
   }
 
   // Converts accumulated results into strings.
-  function renderResults() {
-    foreach ($this->result as $name => &$response) {
+  function renderResults($ajax = false) {
+    $render = function ($response, $name) use ($ajax) {
       if (is_object($response)) {
-        if ($response->headers() and !empty($response->isServed)) {
+        if ($response->headers() and empty($response->isServed)) {
           Log::warn_Layout("Ignoring headers when inserting response of [$name].");
         }
 
-        $response = $response->render();
+        if ($ajax and $type = $response->headers()->get('Content-Type') and
+            ends_with(strtok($type, ';'), 'json')) {
+          return json_decode($response->content, true);
+        } else {
+          return $response->render();
+        }
+      } else {
+        return $response;
+      }
+    };
+
+    foreach ($this->result as $name => &$items) {
+      if (is_array($items)) {
+        foreach ($items as &$response) { $response = $render($response, $name); }
+      } else {
+        $items = $render($items, $name);
       }
     }
 
