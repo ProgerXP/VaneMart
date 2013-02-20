@@ -106,6 +106,8 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
 
   protected function tagClasses(array $classes) {
     $classes and $classes[0] .= '-block';
+    $this->column and array_unshift($classes, 'col');
+    $this->row and array_unshift($classes, 'row');
     return $classes;
   }
 

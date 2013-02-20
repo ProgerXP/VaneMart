@@ -31,12 +31,6 @@
   opacity: @opacity;
 }
 
-.columns (@width) {
-  -moze-columns: @width;
-  -webkit-columns: @width;
-  columns: @width;
-}
-
 .shade-top { box-shadow: 0 2px 2px rgba(206, 206, 206, 0.75) inset; padding-top: 4px; }
 
 .underline ()     { text-decoration: underline; }
@@ -75,3 +69,20 @@ a { .noline; color: blue; }
 /*-----------------------------------------------------------------------
 | GENERAL LAYOUT
 |----------------------------------------------------------------------*/
+
+.row { .row(); }
+.col (@columns) { .column(@columns); min-height: 1px; }
+.span1, [class*=size-gold] { .col(1); }
+.span2 { .col(2); }
+.span3 { .col(3); }
+.span4 { .col(4); }
+.span5 { .col(5); }
+.span6 { .col(6); }
+.span7 { .col(7); }
+.span8 { .col(8); }
+.span9 { .col(9); }
+.span10 { .col(10); }
+.span11 { .col(11); }
+.span12 { .col(12); }
+.size-goldn { width: 38.2%; }
+.size-goldw { width: 61.8%; }
