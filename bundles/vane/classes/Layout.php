@@ -97,8 +97,9 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
   function __construct($position, $blocks) {
     $this->extractTagTo($this->tag, $position);
 
-    $this->classes = static::splitClasses( strtok($position, ' ') );
-    $this->size = ''.strtok(null);
+    list($classes, $size) = explode(' ', "$position ", 2);
+    $this->classes = static::splitClasses($classes);
+    $this->size = trim($size);
 
     $this->blocks = \Px\arrize($blocks);
   }

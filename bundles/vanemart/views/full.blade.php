@@ -9,14 +9,22 @@
 
     <meta name="description" content="VaneMart - the flowing e-commerce software.">
     <meta name="robots" content="index,follow">
-    <meta name="generator" content="Vane engine">
+    <meta name="generator" content="VaneMart">
 
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 
     {{ Asset::styles() }}
 
+    @if (Request::is_env('local'))
+      <link href="{{ VaneMart\asset('styles.less') }}" rel="stylesheet/less">
+      <script>var less = {env: 'development'};</script>
+      <script type="text/javascript" src="{{ VaneMart\asset('less.js') }}"></script>
+    @else
+      <link href="{{ VaneMart\asset('styles.css') }}" media="all" type="text/css" rel="stylesheet">
+    @endif
+
     <!--[if lt IE 9]>
-      <script src="{{ asset('js/ie9.js') }}"></script>
+      <script src="{{ VaneMart\asset('ie9.js') }}"></script>
     <![endif]-->
   </head>
   <body>
@@ -26,7 +34,7 @@
       {{ $content }}
     @endif
 
-    <script type="text/javascript" src="{{ action('js/env') }}"></script>
+    <script type="text/javascript" src="{{ action('vanemart::js@env') }}"></script>
     {{ Asset::scripts() }}
   </body>
 </html>

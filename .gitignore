@@ -2,6 +2,8 @@
 /ignore/
 # Necessary if running locally under Apache/XAMPP
 /.htaccess
+# symlinked to bundles/X/public
+/public/bundles
 # External dependencies
 /bundles/plarx
 /bundles/squall

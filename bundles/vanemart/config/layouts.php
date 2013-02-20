@@ -5,15 +5,21 @@ return array(
       null                => 'vanemart::full',
       'title'             => '=VaneMart',
     ),
-    '-head'               => array('Vane::menu main', 'Vane::menu user'),
+    '-header/head'        => array(
+      '|left goldn'       => array(
+        '|spacer goldn'   => null,
+        '|cart goldw'     => '',//'VaneMart::cart',
+      ),
+      '|right goldw'      => array('Vane::menu main', 'Vane::menu user'),
+    ),
     '|nav goldn'          => array(
-      '|menu goldn'       => array('Vane::logo', 'Vane::menu groups'),
+      '|nav/menu goldn'   => array('Vane::logo', 'Vane::menu groups'),
       '|items goldw'      => array(
         '-title'          => array(),
         '-list'           => array(),
       ),
     ),
-    '|content goldw'      => array(),
+    '|article/content goldw'  => array(),
   ),
 
   'goods'                 => array(
