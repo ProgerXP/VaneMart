@@ -66,7 +66,7 @@ class MenuItem {
         $func = 'menu_'.strtolower($action = Block::actionFrom($custom));
 
         if (method_exists($handler, $func)) {
-          $handler->func($this);
+          $handler->$func($this);
         } else {
           $this->html = $handler->execute($action, explode(' ', $this->args))->render();
         }

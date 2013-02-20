@@ -8,7 +8,7 @@ return array(
     '-header/head'        => array(
       '|left goldn'       => array(
         '|spacer goldn'   => null,
-        '|cart goldw'     => '',//'VaneMart::cart',
+        '|cart goldw'     => 'Vane::menu cart',
       ),
       '|right goldw'      => array('Vane::menu main', 'Vane::menu user'),
     ),

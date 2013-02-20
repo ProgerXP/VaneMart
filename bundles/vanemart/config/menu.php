@@ -3,7 +3,7 @@
 if (Auth::guest()) {
   $user = array('login' => 'users/login', 'register' => 'users/reg');
 } else {
-  $user = array('VaneMart:user', 'orders' => 'orders');
+  $user = array('VaneMart::user', 'orders' => 'orders');
 }
 
 return $user + array(
