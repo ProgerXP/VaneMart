@@ -10,7 +10,7 @@ function logged($msg) {
   assert(stripos($logged, $msg) !== false);
 }
 
-class Vane_Test_Task extends \Task {
+class Vane_Test_Task extends Task {
   static $attached = false;
   static $logged = array();
 

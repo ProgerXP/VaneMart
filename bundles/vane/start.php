@@ -12,9 +12,7 @@ if (!\Bundle::exists('plarx')) {
   throw new Error('Vane requires Plarx bundle installed.');
 } else {
   \Bundle::start('plarx');
-
-  \Px\Plarx::constantsTo(__NAMESPACE__);
-  \Px\Plarx::classesTo(__NAMESPACE__);
+  \Px\Plarx::supersede(__NAMESPACE__);
 }
 
 if (!\Bundle::exists('squall')) {

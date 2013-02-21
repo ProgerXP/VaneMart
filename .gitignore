@@ -2,11 +2,12 @@
 /ignore/
 # Necessary if running locally under Apache/XAMPP
 /.htaccess
-# symlinked to bundles/X/public
+# Symlinked to bundles/X/public
 /public/bundles
-# External dependencies
-/bundles/plarx
-/bundles/squall
+# Only including core bundles
+/bundles/*/
+!/bundles/vane
+!/bundles/vanemart
 
 # Numerous always-ignore extensions
 *.diff
