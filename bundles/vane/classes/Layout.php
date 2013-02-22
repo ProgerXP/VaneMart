@@ -11,6 +11,7 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
   public $blocks;           //= array of mixed nested blocks
 
   protected $served;        //= null, mixed
+  protected $slugs = array();   //= array of str URL slugs
 
   // Returns layout configuration, e.g. array('|top' => 'menu', ...).
   //* $name str layout name, null base layout
@@ -111,6 +112,18 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
     return $classes;
   }
 
+  // function ($slugs)
+  // Assigns URL captures - parts in brackets in currently served route URL.
+  //* $slugs array, mixed becomes array
+  //
+  // function ()
+  // Returns currently set URL slugs.
+  //= array
+  function slugs($slugs = null) {
+    func_num_args() and $this->slugs = (array) $slugs;
+    return func_num_args() ? $this : $this->slugs;
+  }
+
   // function (mixed $data)
   // Sets value for '!' blocks - that is, response specific to some user action.
   // Note that if $data is null it doesn't mean 404 Not Found but just unsets
@@ -205,7 +218,8 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
 
     foreach ($this as $block) {
       if ($block instanceof static and ($name = $block->fullID()) !== '') {
-        $data = LayoutRendering::on($block, $this)->join();
+        $data = LayoutRendering::make($this)->slugs($this->slugs)
+                  ->render($block)->join();
         array_set($view->data, $name, $data);
       }
     }
@@ -278,6 +292,7 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
   function response() {
     $onlyBlocks = Input::get('_blocks');
     $rendering = new LayoutRendering($this, $onlyBlocks);
+    $rendering->slugs = $this->slugs;
 
     $ajax = Request::ajax();
     $ajax === 'd' and Request::ajax(true);

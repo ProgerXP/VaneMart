@@ -5,6 +5,7 @@ class LayoutRendering {
   public $main;             //= Layout top-level
   public $onlyBlocks;       //= null, array of block classes to include into $result
   public $served;           //= null, Laravel\Response see $main->served()
+  public $slugs;            //= null, array of str captured URL parts
 
   // Currently rendered blocks and their wrapping tags.
   //= array 'blo.ck pa.th' => array('<open>', Response, '</close>'), ...
@@ -28,6 +29,11 @@ class LayoutRendering {
     }
   }
 
+  function slugs($slugs = null) {
+    func_num_args() and $this->slugs = (array) $slugs;
+    return func_num_args() ? $this : $this->slugs;
+  }
+
   // Renders given layout recursively, adding opening/closing tags and matching
   // blocks against $onlyBlocks.
   function render(LayoutItem $block, $parent = null) {
@@ -41,7 +47,7 @@ class LayoutRendering {
       if ($block instanceof Layout) {
         S($block, array($this, __FUNCTION__, $key));
       } else {
-        $response = $block->isServed() ? $this->served : $block->response();
+        $response = $block->isServed() ? $this->served : $block->response($this->slugs);
         $this->put($block, $key, $response);
       }
 

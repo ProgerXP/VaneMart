@@ -55,7 +55,8 @@ class Route {
   static function references(&$url, &$params) {
     // 1st param is often used to refer to controller's method like 'ctl@(:1)'.
     $params = ((array) $params) + array('');
-    return OpenController::references($url, $params);
+    OpenController::references($url, $params);
+    return $url;
   }
 
   //? Route::on('help/(:any)')->as('routeName')
@@ -127,14 +128,14 @@ class Route {
 
   // Calls this route
   function call() {
-    $url = \URI::current();
     $slugs = func_get_args();
 
     return Layout
       ::fromConfig($this->baseLayouts)
       ->alter($this->layout)
+      ->slugs($slugs)
       ->served($this->serve($slugs))
-      ->response(compact('url', 'slugs'));
+      ->response();
   }
 
   //* $args mixed - to pass to the server (if matched) when executing its method.

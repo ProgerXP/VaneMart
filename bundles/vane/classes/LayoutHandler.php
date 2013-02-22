@@ -27,8 +27,10 @@ class LayoutHandler extends LayoutItem {
   }
 
   //= Laravel\Response
-  function response(array $input = null) {
-    return Block::execResponse($this->fullID(), $this->argArray(), $this->options);
+  function response($slugs = null) {
+    $controller = $this->fullID();
+    Route::references($controller, $slugs);
+    return Block::execResponse($controller, $this->argArray(), $this->options);
   }
 
   function fullID() {
@@ -37,7 +39,7 @@ class LayoutHandler extends LayoutItem {
 
   function argArray() {
     if (!is_array($this->args)) {
-      $this->args = $this->args === '' ? array() : explode(' ', $this->args);
+      $this->args = "{$this->args}" === '' ? array() : explode(' ', $this->args);
     }
 
     return $this->args;
