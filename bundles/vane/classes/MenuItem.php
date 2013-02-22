@@ -3,7 +3,6 @@
 // Represents a Menu item with its attributes - icon, caption, custom handler name, etc.
 class MenuItem {
   public $menu;               //= null, Menu set by Menu
-  public $index;              //= null, int set by Menu
   public $current = false;
 
   public $custom;             //= null standard item, str handler name
@@ -68,12 +67,16 @@ class MenuItem {
         if (method_exists($handler, $func)) {
           $handler->$func($this);
         } else {
-          $this->html = $handler->execute($action, explode(' ', $this->args))->render();
+          $this->html = $handler->execute($action, $this->argArray())->render();
         }
       }
     }
 
     return $this;
+  }
+
+  function argArray() {
+    return  "{$this->args}" === '' ? array() : explode(' ', $this->args);
   }
 
   // Expands controller-less notations like vane::user into vane::menuHandlers@user.

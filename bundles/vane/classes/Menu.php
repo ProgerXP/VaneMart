@@ -85,7 +85,12 @@ class Menu implements \IteratorAggregate, \Countable {
   }
 
   function filled() {
-    return \Px\func('fill', $this->items);
+    do {
+      $count = count($this->items);
+      \Px\func('fill', $this->items);
+    } while ($count !== count($this->items));
+
+    return $this->items;
   }
 
   function getIterator() {
