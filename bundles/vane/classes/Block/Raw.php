@@ -5,6 +5,14 @@ class Block_Raw extends Block {
   public $bundle = 'vane';
 
   function get_index() {
-    return join( \Px\arrize($this->input) );
+    $join = function ($value) use (&$join) {
+      if (is_array($value)) {
+        return join(array_map($join, $value));
+      } else {
+        return (string) $value;
+      }
+    };
+
+    return $join($this->input);
   }
 }

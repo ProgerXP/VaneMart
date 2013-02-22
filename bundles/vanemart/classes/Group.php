@@ -16,5 +16,10 @@ class Group extends Eloquent {
   function pretty() {
     return $this->fill_raw( static::prettyOther($this->to_array()) );
   }
+
+  function url() {
+    "{$this->slug}" === '' or $slug = '-'.$this->slug;
+    return route('vanemart::group', $this->id.$slug);
+  }
 }
 Group::$table = \Bundle::option('vanemart', 'table_prefix', 'vm_').Group::$table;
