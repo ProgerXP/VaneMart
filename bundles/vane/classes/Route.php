@@ -15,6 +15,18 @@ class Route {
   // Global method(s) that this route will be registered for; servers won't response
   // to those not listed here.
   //= str 'get[, post[, ...]]' or '*'
+  public $methods = '*';
+
+  // Common parameters are 'as' (route name), 'https' (true/false), 'before' and
+  // 'after' (filters).
+  //= hash route parameters like 'as' or 'https'
+  public $parameters = array();
+
+  // Members with string keys are 'space-separated method list' => 'ctl@actn ...',
+  // with integer keys - single-method 'post ctl@actn ...'. A method can be '*' to
+  // create a catch-all server matching if no more specific method has matched.
+  //
+  //= array of str like 'post help@add'
   //
   //? 'post help@add'             // one server for POST -> help's add() method
   //? '* help@show'               // catch-all -> help's show()
@@ -29,18 +41,6 @@ class Route {
   //      // help's add() handling POST and edit() handling PUT
   //? array('help@show', 'post help@add', 'put help@edit')
   //      // like the above with show() handling all but POST and PUT requests
-  public $method = '*';
-
-  // Common parameters are 'as' (route name), 'https' (true/false), 'before' and
-  // 'after' (filters).
-  //= hash route parameters like 'as' or 'https'
-  public $parameters = array();
-
-  // Members with string keys are 'space-separated method list' => 'ctl@actn ...',
-  // with integer keys - single-method 'post ctl@actn ...'. A method can be '*' to
-  // create a catch-all server matching if no more specific method has matched.
-  //
-  //= array of str like 'post help@add'
   public $servers = array();
 
   //= array of str layout names
@@ -48,6 +48,10 @@ class Route {
 
   //= hash layout alterations
   public $layout = array();
+
+  // If set this route is similar to normal Laravel route - a controller is called
+  // and its response is returned without using Vane Layout mechanism.
+  public $naked = false;
 
   //= Closure to be given to Laravel's Router (it can't handle array callables)
   protected $closure;
@@ -59,7 +63,11 @@ class Route {
     return $url;
   }
 
+  //* $url str - of form '[METHOD ]url/...' - see __construct().
+  //
   //? Route::on('help/(:any)')->as('routeName')
+  //? Route::on('GET help/(:any)')        // only registers the GET route
+  //? Route::on('help/(:any)')->methods('get, post')
   static function on($url) {
     $route = new static($url);
 
@@ -75,7 +83,14 @@ class Route {
     return array_get(\Router::find($name), 'vaneRoute');
   }
 
+  //* $url str - of form '[METHOD ]url/...' - METHOD can be lower case. If omitted
+  //  defaults to '*' (all). Set multiple methods by calling methods('get, post').
   function __construct($url) {
+    @list($method, $rest) = explode(' ', $url, 2);
+    if (isset($rest) and in_array(strtoupper($method), \Router::$methods)) {
+      $url = $rest;
+    }
+
     $this->url($url);
 
     $self = $this;
@@ -84,9 +99,9 @@ class Route {
     };
   }
 
-  function register($method = null) {
-    $method === null and $method = $this->method;
-    \Router::register($method, $this->url, $this->toArray());
+  //* $methods null get $this->methods, array of str, str like 'get[, post[, ...]]'
+  function register($methods = null) {
+    \Router::register($methods ?: $this->methods, $this->url, $this->toArray());
     return $this;
   }
 
@@ -130,12 +145,16 @@ class Route {
   function call() {
     $slugs = func_get_args();
 
-    return Layout
-      ::fromConfig($this->baseLayouts)
-      ->alter($this->layout)
-      ->slugs($slugs)
-      ->served($this->serve($slugs))
-      ->response();
+    if ($this->naked) {
+      return Block::execResponse($this->serve($slugs));
+    } else {
+      return Layout
+        ::fromConfig($this->baseLayouts)
+        ->alter($this->layout)
+        ->slugs($slugs)
+        ->served($this->serve($slugs))
+        ->response();
+    }
   }
 
   //* $args mixed - to pass to the server (if matched) when executing its method.

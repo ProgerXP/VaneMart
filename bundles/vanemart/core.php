@@ -2,6 +2,8 @@
 
 define(__NAMESPACE__.'\\NS', __NAMESPACE__.'\\');
 
+class Error extends \Vane\Error { }
+
 //= str URL
 function asset($url) {
   strpos($url, '::') or $url = "vanemart::$url";
