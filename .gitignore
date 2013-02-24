@@ -8,6 +8,8 @@
 /bundles/*/
 !/bundles/vane
 !/bundles/vanemart
+# Ignoring bundles' per-environment settings
+/bundles/*/config/*/
 
 # Numerous always-ignore extensions
 *.diff

@@ -218,8 +218,14 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
 
     foreach ($this as $block) {
       if ($block instanceof static and ($name = $block->fullID()) !== '') {
-        $data = LayoutRendering::make($this)->slugs($this->slugs)
-                  ->render($block)->join();
+        $rendering = LayoutRendering::make($this)->slugs($this->slugs)->render($block);
+
+        if (count($rendering->result) > 1) {
+          $data = array_values($rendering->joinContents());
+        } else {
+          $data = $rendering->join();
+        }
+
         array_set($view->data, $name, $data);
       }
     }

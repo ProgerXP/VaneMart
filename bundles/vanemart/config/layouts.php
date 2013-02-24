@@ -4,6 +4,7 @@ return array(
     null                  => array(
       null                => 'vanemart::full',
       'title'             => '=VaneMart',
+      'styles'            => '=styles.less',
     ),
     '-header/head'        => array(
       '|left goldn'       => array(

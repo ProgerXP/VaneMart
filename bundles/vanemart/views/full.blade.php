@@ -13,15 +13,19 @@
 
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 
-    {{ Asset::styles() }}
+    @foreach ($styles as $style => $attributes)
+      @if (Request::is_env('local') and substr($style, -5) === '.less')
+        <?php $hasLESS = true?>
+        <link href="{{ e($style) }}" rel="stylesheet/less">
+      @else
+        {{ HTML::style($style, $attributes) }}
+      @endif
+    @endforeach
 
-    @if (Request::is_env('local'))
-      <link href="{{ VaneMart\asset('styles.less') }}" rel="stylesheet/less">
+    <?php if (isset($hasLESS) and Request::is_env('local')) {?>
       <script>var less = {env: 'development'};</script>
       <script type="text/javascript" src="{{ VaneMart\asset('less.js') }}"></script>
-    @else
-      <link href="{{ VaneMart\asset('styles.css') }}" media="all" type="text/css" rel="stylesheet">
-    @endif
+    <?php }?>
 
     <!--[if lt IE 9]>
       <script src="{{ VaneMart\asset('ie9.js') }}"></script>
@@ -34,7 +38,6 @@
       {{ $content }}
     @endif
 
-    <script type="text/javascript" src="{{ action('vanemart::js@env') }}"></script>
     {{ Asset::scripts() }}
   </body>
 </html>

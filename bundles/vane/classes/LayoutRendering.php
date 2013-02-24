@@ -116,7 +116,16 @@ class LayoutRendering {
   //= null if nothing was produced (aka 404), array if $ajax, str otherwise
   function join($ajax = false) {
     if ($this->renderResults($ajax)->result) {
-      return $ajax ? $this->result : join( S::map($this->result, 'join(Px\\arrize(?))') );
+      return $ajax ? $this->result : join($this->joinContents());
+    }
+  }
+
+  // Joins all blocks' contents inside them but not blocks between each other.
+  // Returns an array of blocks - their contents joined together.
+  //= null if nothing was produced (aka 404), array of str
+  function joinContents() {
+    if ($this->renderResults()->result) {
+      return S::map($this->result, 'join(Px\\arrize(?))');
     }
   }
 
