@@ -29,7 +29,7 @@ class Product extends Eloquent {
     if (!func_num_args()) {
       return $this->image ? File::find($this->image) : null;
     } elseif ($image = $this->image()) {
-      $source = $image->path();
+      $source = $image->file();
       return Block_Thumb::url(compact('width', 'source'));
     }
   }

@@ -3,36 +3,79 @@
 class File extends Eloquent {
   static $table = 'files';
 
-  static function storage($name = null) {
-    return \Bundle::path('vanemart').'storage/files/'.static::safeName($name);
+  static function storage($path = null) {
+    $path and $path = static::safeName($path);
+
+    if ("$path" === '' or strpbrk($path[0], '\\/') === false) {
+      return \Bundle::path('vanemart').'storage/files/'.$path;
+    } else {
+      return $path;
+    }
   }
 
   static function safeName($name) {
     if (strpos($name, '..') !== false) {
       throw new Error("Unsafe File name [$name].");
+    }
+
+    return $name;
+  }
+
+  static function generatePath($name) {
+    list($name, $ext) = S::chopTo('.', static::safeName($name));
+    "$ext" === '' or $ext = ".$ext";
+
+    $base = static::storage();
+    $result = "$base$name[0]/$name$ext";
+
+    if (is_file($result)) {
+      $i = 1;
+      do {
+        $result = "$base$name[0]/$name-".++$i.$ext;
+      } while (is_file($result));
+    }
+
+    return $result;
+  }
+
+  //= File new saved model
+  static function reuseOrPlace($file, array $attributes = array()) {
+    if ($model = static::where('md5', '=', md5($file))->first()) {
+      return $model;
     } else {
-      return ltrim($name, '\\/');
+      return static::place($file, $attributes);
     }
   }
 
   //= File new saved model
   static function place($file, array $attributes = array()) {
-    $attributes += array('uploader' => null, 'desc' => '', 'ext' => 'dat');
-    $attributes['ext'] = ltrim($attributes['ext'], '.');
+    $attributes += array('uploader' => null, 'desc' => '');
+    isset($attributes['ext']) and $attributes['ext'] = ltrim($attributes['ext'], '.');
 
-    if (is_resource($file)) and !$attributes['name']) {
-      $attributes['name'] = substr(uniqid(), 0, 8).'.'.$attributes['ext']);
-      Log::info_File('Placing a file from stream with randomly generated name.');
+    if (empty($attributes['name'])) {
+      if (is_resource($file)) {
+        $ext = ltrim(array_get($attributes, 'ext', 'dat'), '.');
+        $attributes['name'] = substr(uniqid(), 0, 8).".$ext";
+        Log::info_File("Placing a file from stream with randomly generated name".
+                       " $attributes[name].");
+      } else {
+        $attributes['name'] = basename($file);
+      }
+    } else {
+      $attributes['name'] = basename($attributes['name']);
     }
 
-    $dest = static::storage($attributes['name']);
+    $ext = $attributes['ext'] = ltrim(S::ext($attributes['name']), '.');
+    $ext === '' and $attributes['ext'] = 'dat';
+
+    $dest = static::generatePath($attributes['name']);
     S::mkdirOf($dest);
+
+    $attributes['path'] = S::tryUnprefix($dest, static::storage());
 
     if (is_resource($file)) {
       $attributes['size'] = static::streamCopyTo($dest, $file);
     } else {
-      $attributes['name'] = basename($file);
-      $attributes['ext'] = ltrim(S::ext($file), '.');
       $attributes['size'] = filesize($file);
 
       if (!copy($file, $dest)) {
@@ -41,10 +84,11 @@ class File extends Eloquent {
     }
 
     try {
-      $attributes['mime'] = \File::mime($attributes['ext'], '');
-      $model = with(new static)::fill_raw($attributes);
+      $model = with(new static)->fill_raw($attributes);
+      $model->md5 = md5_file($dest);
+      $model->mime = \File::mime($model->ext, '');
 
-      if (!$model->save()) {
+      if ($model->save()) {
         return $model;
       } else {
         throw new Error("place() cannot insert new File row for [$attributes[name]].");
@@ -72,8 +116,23 @@ class File extends Eloquent {
     return $bytes;
   }
 
-  function path() {
-    return static::storage($this->name);
+  function file() {
+    return static::storage($this->path);
+  }
+
+  function unused() {
+    if ($this->count > 1) {
+      $this->count -= 1;
+
+      if ($this->exists and !$this->save()) {
+        throw new Error("Cannot save File model of ID [{$this->id}].");
+      }
+    } else {
+      is_file($file = $this->file()) and unlink($file);
+      $this->delete();
+    }
+
+    return $this;
   }
 }
 File::$table = \Config::get('vanemart::general.table_prefix').File::$table;
