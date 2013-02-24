@@ -6,7 +6,7 @@ if (Auth::guest()) {
   $user = array('VaneMart::user', 'orders' => 'orders');
 }
 
-return $user + array(
+return compact('user') + array(
   'cart'                  => array('VaneMart::cart', 'checkout' => 'cart/checkout'),
 
   'main'                  => array(

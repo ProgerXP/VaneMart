@@ -2,7 +2,7 @@
 return array(
   // jpg/jpeg, png, gif. JPEG typically offers the best size/quality ratio for thumbs.
   'type'                  => 'jpeg',
-  // quality is an integer in range 0-100 (inclusive).
+  // 0-100 (inclusive). For JPEG this is lossy factor, for PNG - compression strength.
   'quality'               => 75,
 
   'watermark'             => array(

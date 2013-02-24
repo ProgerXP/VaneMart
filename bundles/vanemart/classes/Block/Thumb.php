@@ -6,7 +6,8 @@ class Block_Thumb extends BaseBlock {
   static function url($input) {
     $input = S::arrize($input, 'source');
 
-    if (!empty($input['source'])) {
+    if ($source = &$input['source']) {
+      S::unprefix($source, File::storage());
       $input['hash'] = static::hash($input);
       return \route('vanemart::thumb').S::queryStr($input);
     }
@@ -19,28 +20,29 @@ class Block_Thumb extends BaseBlock {
       $str .= "\5".array_get($input, $var);
     }
 
-    return base64_encode(md5($str, true));
+    return rtrim(base64_encode(md5($str, true)), '=');
   }
 
   //= ThumbGen
-  static function configure(\ThumbGen $thumb, array $options) {
+  static function configure(\ThumbGen $thumb, array $input, array $options = null) {
+    $options === null and $options = \Config::get('vanemart::thumb');
     extract($options, EXTR_SKIP);
 
     $thumb
-      ->temp(Bundle::path('vanemart').'public/thumbs')
+      ->temp(\Bundle::path('vanemart').'public/thumbs')
       ->type($type, $quality)
       ->remoteCacheTTL($remoteCacheTTL)
-      ->size($this->in('width', 0), $this->in('height', 0))
+      ->size(array_get($input, 'width', 0), array_get($input, 'height', 0))
       ->restrict('width', $widthMin, $widthMax)
       ->restrict('height', $heightMin, $heightMax)
-      ->step($step, $this->in('up'))
-      ->fill($this->in('fill'));
+      ->step($step, array_get($input, 'up'))
+      ->fill(array_get($input, 'fill'));
 
     if ($watermark) {
-      if ($count == 1) {
+      if ($watermark['count'] == 1) {
         $thumb->watermark($watermark['file'], $watermark['y'], $watermark['x']);
       } else {
-        $thumb->watermarks($count, $watermark['file'], $watermark['x']);
+        $thumb->watermarks($watermark['count'], $watermark['file'], $watermark['x']);
       }
     }
 
@@ -50,16 +52,17 @@ class Block_Thumb extends BaseBlock {
   function get_index() {
     $source = $this->in('source');
     if ($this->in('hash') !== static::hash($this->in())) {
-      return E_DENY;
+      return E_DENIED;
     }
 
-    $thumb = static::configure(ThumbGen::make($source), \Config::get('vanemart::thumb'));
+    $source = File::storage($source);
+    $thumb = static::configure(\ThumbGen::make($source), $this->in());
 
     $url = $thumb->scaled();
     if (!S::unprefix($url, $thumb->temp())) {
       throw new Exception("Cannot determine thumbnail URL from [$url].");
     }
-dd(asset("thumbs/$url"));
+
     return Redirect::to(asset("thumbs/$url"));
   }
 }
