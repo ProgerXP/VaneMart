@@ -145,11 +145,11 @@ class Route {
     $key = strtolower(\Request::method());
 
     foreach ((array) $this->servers as $method => $handler) {
-      if (is_int($meyhod) and strrchr($handler, ' ') !== false) {
+      if (is_int($method) and strrchr($handler, ' ') !== false) {
         list($method, $handler) = explode(' ', $handler, 2);
       }
 
-      if (is_int($meyhod) or $method === '*') {
+      if (is_int($method) or $method === '*') {
         $method = null;
       }
 

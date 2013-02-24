@@ -1,5 +1,7 @@
 <?php namespace VaneMart;
 
+define(__NAMESPACE__.'\\NS', __NAMESPACE__.'\\');
+
 //= str URL
 function asset($url) {
   strpos($url, '::') or $url = "vanemart::$url";
