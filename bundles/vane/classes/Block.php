@@ -163,10 +163,10 @@ class Block extends DoubleEdge {
   //* $default mixed - default value to return if the input doesn't contain $var.
   //= mixed
   //
-  //? $this('must-present')     // errors if ?must-present variable is not given
-  //? $this('some-var', 123)    // returns ?some-var's value or 123 if it's not given
-  //? $this('info.phone', '')   // returns ?info[phone] value or empty string
-  function __invoke($var, $default = null) {
+  //? in('must-present')      // errors if ?must-present variable is not given
+  //? in('some-var', 123)     // returns ?some-var's value or 123 if it's not given
+  //? in('info.phone', '')    // returns ?info[phone] value or empty string
+  function in($var, $default = null) {
     $value = isset($this->input) ? array_get($this->input, $var) : Input::get($var);
 
     if (isset($value)) {
