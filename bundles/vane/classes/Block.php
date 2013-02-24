@@ -154,6 +154,11 @@ class Block extends DoubleEdge {
     }
   }
 
+  // function ()
+  // Returns all input variables except for files.
+  //= hash
+  //
+  // function ( $var[, $default] )
   // Reads input variable. Uses either global request data or this block's assigned
   // input (options), if available (usually in a subcall from layout).
   // If a single argument is given throws exception if the variable wasn't passed.
@@ -166,10 +171,10 @@ class Block extends DoubleEdge {
   //? in('must-present')      // errors if ?must-present variable is not given
   //? in('some-var', 123)     // returns ?some-var's value or 123 if it's not given
   //? in('info.phone', '')    // returns ?info[phone] value or empty string
-  function in($var, $default = null) {
+  function in($var = null, $default = null) {
     $value = isset($this->input) ? array_get($this->input, $var) : Input::get($var);
 
-    if (isset($value)) {
+    if (!func_num_args() and isset($value)) {
       return $value;
     } elseif (func_num_args() > 1) {
       return $default;
