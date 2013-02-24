@@ -322,7 +322,7 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
     $response->set( $rendering->join($ajax) );
 
     if (!$ajax and is_scalar($response->content) and $full = $this->view()) {
-      $response->content = $full->with( array('content' => $response->render()) );
+      $response->set($full->with( array('content' => $response->render()) ));
     }
 
     return Response::postprocess($response);
@@ -333,7 +333,7 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
     if (is_object($this->served) and $this->served->breakout !== false) {
       return $this->served->breakout === true or
              (method_exists($this->served, 'status') and
-              $status = $this->served->status() >= 300 and $status < 400);
+              ($status = $this->served->status()) >= 300 and $status < 400);
     }
   }
 }

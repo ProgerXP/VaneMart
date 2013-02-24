@@ -2,7 +2,7 @@
   <a href="{{ e($product->url()) }}">
 
     @if ($product->image)
-      {{ HTML::image($product->image(300), $product->title) }}
+      {{ Px\HLEx::tag('img', array('src' => $product->image(300), 'alt' => $product->title)) }}
     @endif
 
     <b>{{ e($product->title) }}</b>

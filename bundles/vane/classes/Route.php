@@ -124,6 +124,15 @@ class Route {
     }
   }
 
+  function naked($servers = null) {
+    if (func_num_args()) {
+      $this->named = isset($servers);
+      return $this->servers($servers);
+    } else {
+      return $this->named;
+    }
+  }
+
   function __call($method, $params) {
     $params or $params = array(true);
 

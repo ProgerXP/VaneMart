@@ -174,7 +174,7 @@ class Block extends DoubleEdge {
   function in($var = null, $default = null) {
     $value = isset($this->input) ? array_get($this->input, $var) : Input::get($var);
 
-    if (!func_num_args() and isset($value)) {
+    if (!func_num_args() or isset($value)) {
       return $value;
     } elseif (func_num_args() > 1) {
       return $default;
