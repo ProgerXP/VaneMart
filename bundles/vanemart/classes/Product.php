@@ -3,28 +3,6 @@
 class Product extends Eloquent {
   static $table = 'goods';
 
-  //= str absolute path, null if located outside of local file system
-  static function pathOfImage($str) {
-    if (strrchr($str, ':') !== false) {
-      return;
-    } elseif ($str[0] === '/') {
-      return path('public').ltrim($str, '\\/');
-    } else {
-      return \Bundle::path('vanemart').'public/'.$str;
-    }
-  }
-
-  //= str absolute URL
-  static function urlOfImage($str) {
-    if (strrchr($str, ':') !== false) {
-      return $str;
-    } elseif ($str[0] === '/') {
-      return url($str);
-    } else {
-      return asset($str);
-    }
-  }
-
   static function prettyOther(array $attrs) {
     foreach ($attrs as $name => &$value) {
       switch ($name) {
@@ -46,5 +24,18 @@ class Product extends Eloquent {
     "{$this->slug}" === '' or $slug = '-'.$this->slug;
     return route('vanemart::product', $this->id.$slug);
   }
+
+  function image($width = null) {
+    if (!func_num_args()) {
+      return $this->image ? File::find($this->image) : null;
+    } elseif ($image = $this->image()) {
+      $source = $image->path();
+      return Block_Thumb::url(compact('width', 'source'));
+    }
+  }
+
+  function group() {
+    return $this->belongs_to(NS.'Group');
+  }
 }
-Product::$table = \Bundle::option('vanemart', 'table_prefix', 'vm_').Product::$table;
+Product::$table = \Config::get('vanemart::general.table_prefix').Product::$table;

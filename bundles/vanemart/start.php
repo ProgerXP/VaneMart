@@ -11,4 +11,6 @@ Px\Plarx::supersede('VaneMart');
 Squall\initEx('VaneMart');
 
 require_once __DIR__.DS.'core.php';
+
+\Autoloader::directories(array(__DIR__.DS.'libraries'));
 \Autoloader::namespaces(array('VaneMart' => __DIR__.DS.'classes'));
