@@ -63,6 +63,16 @@ class Route {
     return $url;
   }
 
+  static function assign($name, $url, $https = null) {
+    \Router::find('');    // initialize $names by routing other bundles.
+
+    if (isset( \Router::$names[$name] )) {
+      Log::warn_Route("Reassigning existing named route [$name] to [$url].");
+    }
+
+    \Router::$names[$name] = array($url => compact('https'));
+  }
+
   //* $url str - of form '[METHOD ]url/...' - see __construct().
   //
   //? Route::on('help/(:any)')->as('routeName')
@@ -97,6 +107,19 @@ class Route {
     $this->closure = function () use ($self) {
       return call_user_func_array(array($self, 'call'), func_get_args());
     };
+  }
+
+  //= bool indicating if a route with given method and URL is registered in Laravel
+  function registered($methods = null) {
+    $methods or $methods = $this->methods;
+    is_array($methods) or $methods = explode(',', $methods);
+    $prop = ($this->url and $this->url[0] === '(') ? 'fallback' : 'routes';
+
+    foreach ($methods as $method) {
+      if (isset( \Router::${$prop}[$method][$this->url] )) {
+        return true;
+      }
+    }
   }
 
   //* $methods null get $this->methods, array of str, str like 'get[, post[, ...]]'

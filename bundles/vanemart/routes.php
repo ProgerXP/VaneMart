@@ -20,3 +20,5 @@ VRoute::on('(:bundle)/goods/(\d+-?[^/]*)')
 VRoute::on('GET (:bundle)/thumb')
   ->as('vanemart::thumb')
   ->naked('VaneMart::thumb');
+
+VRoute::assign('vanemart::contacts', '(:bundle)/help/contacts');

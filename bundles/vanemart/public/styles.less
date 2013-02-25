@@ -1,5 +1,4 @@
 @import 'normalize.css';
-@import url(http://fonts.googleapis.com/css?family=Ubuntu:400,700,400italic,700italic&subset=latin,cyrillic-ext,cyrillic);
 
 @import 'grid';
 @gutter-width: 0;
@@ -10,7 +9,6 @@
 |----------------------------------------------------------------------*/
 
 @Arial: Arial, Helvetica, sans-serif;
-@Ubuntu: Ubuntu, @Arial;
 @Century: Century, "Times New Roman", Times, serif;
 @Courier: Monaco, "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Lucida Console", "Courier New",  monospace;
 @Georgia: Georgia, "Palatino Linotype", "Book Antiqua3", Palatino, "Garamond Premr Pro", Garamond, Baskerville, "Hoefler Text", "Times New Roman", serif;
@@ -48,6 +46,7 @@
 .upper ()         { text-transform: uppercase; }
 .show (@style: block) { display: @style; }
 .inline ()        { display: inline; }
+.inline-block ()   { display: inline-block; }
 .conceal ()       { visibility: hidden; }
 .reveal ()        { visibility: visible; }
 .hover ()         { &:hover { color: @hover; .hand; } }
@@ -60,7 +59,7 @@
 .hide ()          { display: none; }
 
 html { height: 100%; }
-body { .relative; font-size: 14px; font-family: @Ubuntu; min-height: 100%; }
+body { .relative; font-size: 14px; min-height: 100%; }
 textarea { font-family: @Courier; font-size: 95%; }
 h1, h2, h3, h4, h5, h6 { .regular; margin: 0; }
 p, ul { margin: 0; padding: 0; }

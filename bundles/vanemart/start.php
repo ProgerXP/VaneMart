@@ -30,4 +30,10 @@ View::composer('vanemart::full', function ($view) {
   }
 
   $view->styles = $styles;
+
+  $view->data += array('bodyClasses' => array());
+
+  if (Request::$route and $name = array_get(Request::$route->action, 'as')) {
+    $view->data['bodyClasses'][] = preg_replace('/[^\w\-]+/', '-', $name);
+  }
 });

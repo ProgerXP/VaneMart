@@ -31,7 +31,7 @@
       <script src="{{ VaneMart\asset('ie9.js') }}"></script>
     <![endif]-->
   </head>
-  <body>
+  <body class="{{ e(join(' ', $bodyClasses)) }}">
     @if (isset(Section::$sections['content']))
       @yield('content')
     @else

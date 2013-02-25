@@ -3,6 +3,7 @@
 // Represents a Menu item with its attributes - icon, caption, custom handler name, etc.
 class MenuItem {
   public $menu;               //= null, Menu set by Menu
+  public $name;               //= str item name like 'contacts'
   public $current = false;
 
   public $custom;             //= null standard item, str handler name
@@ -31,9 +32,10 @@ class MenuItem {
 
   //= str, null if none
   function classes() {
-    $classes = array_flip((array) $this->classes);
-    $this->current and $classes['current'] = true;
-    return $classes ? join(' ', array_keys($classes)) : null;
+    $classes = array_unique((array) $this->classes);
+    $this->name and $classes[] = $this->name;
+    $this->current and $classes[] = 'current';
+    return $classes ? join(' ', $classes) : null;
   }
 
   function visible() {
