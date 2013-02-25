@@ -26,7 +26,7 @@
 .opacity (@alpha: 0) {
   @percents: percentage(@alpha);
   filter: ~"alpha(opacity = (@{percents}))";
-  opacity: @opacity;
+  opacity: @alpha;
 }
 
 .shade-top { box-shadow: 0 2px 2px rgba(206, 206, 206, 0.75) inset; padding-top: 4px; }
@@ -42,6 +42,7 @@
 .bottom ()        { vertical-align: bottom; }
 .relative ()      { position: relative; }
 .absolute ()      { position: absolute; }
+.fixed ()         { position: fixed; }
 .nowrap ()        { white-space: nowrap; }
 .upper ()         { text-transform: uppercase; }
 .show (@style: block) { display: @style; }
@@ -53,6 +54,7 @@
 .size (@size)     { .size(@size, @size); }
 .size (@w, @h)    { width: @w; height: @h; }
 .pos (@x: 0, @y: 0) { left: @x; top: @y; }
+.left ()          { text-align: left; }
 .right ()         { text-align: right; }
 .center ()        { text-align: center; }
 .hand ()          { cursor: pointer; }

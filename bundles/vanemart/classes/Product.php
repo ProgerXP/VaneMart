@@ -37,5 +37,14 @@ class Product extends Eloquent {
   function group() {
     return $this->belongs_to(NS.'Group');
   }
+
+  function withHTML() {
+    if (!$this->desc_html) {
+      $this->desc_html = nl2br(HLEx::q($this->desc));
+      $this->save();
+    }
+
+    return $this;
+  }
 }
 Product::$table = \Config::get('vanemart::general.table_prefix').Product::$table;
