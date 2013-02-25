@@ -1,32 +1,11 @@
 <?php namespace VaneMart;
 
-class Block_Group extends BaseBlock {
-  static function idFrom($id) {
-    return (int) ($id ?: reset(\Request::$route->parameters));
-  }
-
-  //= null, Group
-  static function find($id = null) {
-    if ($id instanceof Group) {
-      return $id;
-    } else {
-      return ($id = static::idFrom($id)) ? Group::find($id) : null;
-    }
-  }
+class Block_Group extends ModelBlock {
+  static $model = 'VaneMart\\Group';
 
   function get_title($id = null) {
     if ($group = static::find($id)) {
       return $group->title;
-    }
-  }
-
-  function get_index($id = null) {
-    if ($group = static::find($id)) {
-      if (\URI::full() !== $group->url()) {
-        return Redirect::to($group->url(), 301);
-      } else {
-        return $this->ajax($group);
-      }
     }
   }
 
@@ -38,6 +17,22 @@ class Block_Group extends BaseBlock {
         ->order_by('sort');
 
       return array('rows' => $query->get());
+    }
+  }
+
+  function get_titleByProduct($id = null) {
+    return $this->actByProduct('get_title', $id);
+  }
+
+  function get_listByProduct($id = null) {
+    return $this->actByProduct('ajax_get_index', $id);
+  }
+
+  protected function actByProduct($method, $id) {
+    if ($id = static::idFrom($id) and $model = Product::find($id) and $model->group) {
+      $view = $this->name.'.'.substr(strrchr($method, '_'), 1);
+      View::exists($view) and $this->layout = View::make($view);
+      return $this->$method($model->group);
     }
   }
 }
