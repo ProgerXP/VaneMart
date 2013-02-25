@@ -223,7 +223,7 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
 
     foreach ($this as $block) {
       if ($block instanceof self and ($name = $block->fullID()) !== '') {
-        $rendering = LayoutRendering::make($this)->slugs($this->slugs)->render($block);
+        $rendering = Rendering::make($this)->slugs($this->slugs)->render($block);
 
         if (count($rendering->result) > 1) {
           $data = array_values($rendering->joinContents());
@@ -302,7 +302,7 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
   //= Laravel\Response
   function response() {
     $onlyBlocks = Input::get('_blocks');
-    $rendering = new LayoutRendering($this, $onlyBlocks);
+    $rendering = new Rendering($this, $onlyBlocks);
     $rendering->slugs = $this->slugs;
 
     $ajax = Request::ajax();

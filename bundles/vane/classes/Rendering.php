@@ -1,7 +1,7 @@
 <?php namespace Vane;
 
 // Intermediate class storing context of current Layout rendering.
-class LayoutRendering {
+class Rendering {
   public $main;             //= Layout top-level
   public $onlyBlocks;       //= null, array of block classes to include into $result
   public $served;           //= null, Laravel\Response see $main->served()
