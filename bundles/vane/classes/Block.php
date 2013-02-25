@@ -33,7 +33,7 @@ class Block extends DoubleEdge {
   //      // rough equivalent of doing cart/add/33/2.5?clear=1
   static function exec($block, $args = array(), array $input = null) {
     $obj = static::factory($block);
-    ($obj instanceof static) and $obj->input = $input;
+    ($obj instanceof self) and $obj->input = $input;
     return $obj->execute(static::actionFrom($block), \Px\arrizeAny($args));
   }
 

@@ -77,6 +77,7 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
   //* $blocks str, array - nested blocks, see parse().
   //= Layout
   static function from($position, $blocks) {
+    ($blocks instanceof self) and $blocks = $blocks->blocks;
     $obj = new static(ltrim($position, '|-'), $blocks);
 
     if ($position) {
@@ -90,7 +91,11 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
   // Creates a top-level layout container - and as such it doesn't have any
   // classes, size or other presentation options used for nested layouts and blocks.
   static function make($blocks) {
-    return new static('', $blocks);
+    if ($blocks instanceof self) {
+      return clone $blocks;
+    } else {
+      return new static('', $blocks);
+    }
   }
 
   //* $position str - 'class[.class[....]][ size]'.
@@ -217,7 +222,7 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
     }
 
     foreach ($this as $block) {
-      if ($block instanceof static and ($name = $block->fullID()) !== '') {
+      if ($block instanceof self and ($name = $block->fullID()) !== '') {
         $rendering = LayoutRendering::make($this)->slugs($this->slugs)->render($block);
 
         if (count($rendering->result) > 1) {
@@ -246,7 +251,7 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
   //= null, View
   function emptyView() {
     $view = $this->isView() ? end($this->blocks) : null;
-    while ($view instanceof static) { $view = end($view->blocks); }
+    while ($view instanceof self) { $view = end($view->blocks); }
 
     if ($view and is_scalar($view)) {
       return new \View($view);
@@ -273,7 +278,7 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
     } else {
       $self = $this;
       $matched = array_first($this, function ($i, $block) use ($self, &$classes) {
-        return $block instanceof $self and
+        return $block instanceof Layout and
                $self::classesMatch($block->classes, $classes);
       });
     }

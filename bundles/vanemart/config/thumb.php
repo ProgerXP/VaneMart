@@ -9,7 +9,7 @@ return array(
     'count'               => 2,
     'file'                =>
       head(glob( Bundle::path('vanemart').'config/watermark.{png,jpg,jpeg,gif}', GLOB_BRACE )),
-    // for count > 1 watermarks are distributed evenly across Y axis and this has no effect.
+    // this has no effect for count > 1 as watermarks are distributed evenly across Y axis.
     'y'                   => 0.5,
     'x'                   => 0.5,
   ),

@@ -7,9 +7,9 @@ class Block_Logo extends Block {
   function get_index() {
     $info = Current::config('company');
 
-    if (isset($this->input)) {
+    if ($this->input) {
       // set null in place of missing values to avoid "Undefined variable" in view.
-      $info = $this->input + S::combine($info, null);
+      $info = $this->input + S::combine(array_keys($info), null);
     }
 
     $phone = head((array) $info['landline']) ?: head((array) $info['cellular']);

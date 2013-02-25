@@ -13,7 +13,11 @@
 
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 
-    @foreach ($styles as $style => $attributes)
+    @foreach ((array) $styles as $style => $attributes)
+      @if (is_int($style))
+        <?php list($style, $attributes) = array($attributes, array())?>
+      @endif
+
       @if (Request::is_env('local') and substr($style, -5) === '.less')
         <?php $hasLESS = true?>
         <link href="{{ e($style) }}" rel="stylesheet/less">
@@ -31,7 +35,7 @@
       <script src="{{ VaneMart\asset('ie9.js') }}"></script>
     <![endif]-->
   </head>
-  <body class="{{ e(join(' ', $bodyClasses)) }}">
+  <body class="{{ e(join(' ', (array) $classes)) }}">
     @if (isset(Section::$sections['content']))
       @yield('content')
     @else

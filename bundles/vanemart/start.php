@@ -16,24 +16,10 @@ require_once __DIR__.DS.'core.php';
 \Autoloader::namespaces(array('VaneMart' => __DIR__.DS.'classes'));
 
 View::composer('vanemart::full', function ($view) {
-  $styles = array();
-
-  foreach ((array) $view->styles as $style => $attributes) {
-    if (is_int($style)) {
-      $style = VaneMart\asset($attributes);
-      $attributes = array();
-    } elseif (!is_array($attributes)) {
-      $attributes = array('media' => $attributes);
-    }
-
-    $styles[$style] = $attributes;
-  }
-
-  $view->styles = $styles;
-
-  $view->data += array('bodyClasses' => array());
+  $view->styles = (array) $view['styles'];
+  $view->classes = (array) $view['classes'];
 
   if (Request::$route and $name = array_get(Request::$route->action, 'as')) {
-    $view->data['bodyClasses'][] = preg_replace('/[^\w\-]+/', '-', $name);
+    $view->data['classes'][] = preg_replace('/[^\w\-]+/', '-', $name);
   }
 });

@@ -4,7 +4,7 @@ return array(
     null                  => array(
       null                => 'vanemart::full',
       'title'             => '=VaneMart',
-      'styles'            => '=styles.less',
+      'styles'            => '='.VaneMart\asset('styles.less'),
     ),
     '-header/head'        => array(
       '|left goldn'       => array(
@@ -20,7 +20,7 @@ return array(
         '-list'           => array(),
       ),
     ),
-    '|article/content goldw'  => array(),
+    '|content goldw'      => array(),
   ),
 
   'goods'                 => array(
