@@ -48,8 +48,18 @@ abstract class LayoutItem {
     }
   }
 
+  function tagID() {
+    if ($this->classes and $this->classes[0][0] === '#') {
+      return substr($this->classes[0], 1);
+    }
+  }
+
   function tagAttributes() {
-    $classes = array_except(array_flip($this->classes), '');
+    $id = $this->tagID();
+    $classes = array_diff($this->classes, array(''));
+    $id and array_shift($classes);
+    $classes = $this->tagClasses($classes);
+
     $size = $this->size;
     $width = '';
 
@@ -60,11 +70,12 @@ abstract class LayoutItem {
     } elseif (ltrim($size[0], '0..9') === '') {
       $width = "width: $size";
     } else {
-      $classes["size-$size"] = true;
+      $classes[] = "size-$size";
     }
 
     return $this->attributes + array(
-      'class'           => join(' ', $this->tagClasses( array_keys($classes) )),
+      'id'              => $id,
+      'class'           => join(' ', array_unique($classes)),
       'style'           => trim("$width; ".$this->style, ' ;'),
     );
   }
