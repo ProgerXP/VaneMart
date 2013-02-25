@@ -30,19 +30,25 @@ class LayoutHandler extends LayoutItem {
   function response($slugs = null) {
     $controller = $this->fullID();
     Route::references($controller, $slugs);
-    return Block::execResponse($controller, $this->argArray(), $this->options);
+    return Block::execResponse($controller, $this->argArray($slugs), $this->options);
   }
 
   function fullID() {
     return $this->controller.'@'.$this->action;
   }
 
-  function argArray() {
-    if (!is_array($this->args)) {
-      $this->args = "{$this->args}" === '' ? array() : explode(' ', $this->args);
+  function argArray($slugs = null) {
+    $args = $this->args;
+
+    if (!is_array($args)) {
+      $args = $this->args = "$args" === '' ? array() : explode(' ', $args);
     }
 
-    return $this->args;
+    if ($slugs) {
+      foreach ($args as &$arg) { Route::references($arg, $slugs); }
+    }
+
+    return $args;
   }
 
   function isServed() {
