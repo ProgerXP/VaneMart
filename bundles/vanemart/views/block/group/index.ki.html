@@ -1,0 +1,21 @@
+<div "vmart-groups">
+  <each $rows>
+    <div "product id-{ $item->id }">
+      <a "{ $item->url() }">
+        <img $item->image "{ $item->image(300) }" "thumb" alt=$item->title>
+        <b "title">{ $item->title }</b>
+      </a>
+
+      <p "info">
+        <span $n{ $item->country } "country">$item_n</endspan>
+        <span $n{ $item->maker } "maker">$item_n</endspan>
+      </p>
+
+      <p "price">
+        $=price $item->retail ?: $item->wholesale
+        <span $n{ $price } "price">$item_n</endspan>
+        <span $n{ $item->volume } "volume">$item_n</endspan>
+      </p>
+    </div>
+  </each>
+</div>

@@ -1,0 +1,34 @@
+<div "vmart-product">
+  <h1>$title</h1>
+
+  <img $image "$image" "image" alt=$title>
+
+  <table "col-2 flat">
+    <tr>
+      <th>"vanemart::product.price"</th>
+      <td>
+        $=prices compact('retail', 'wholesale')
+        <each $prices>
+          <if $item>
+            <if isset($_hadPrice)>,</if>
+            $=_hadPrice true
+
+            {= Px\HLEx::langNum(__('vanemart::general.price'), $item) }
+          </if>
+        </each>
+      </td>
+    </tr>
+
+    $=fields compact('sku', 'country', 'maker', 'volume')
+    <each $fields>
+      <if $item>
+        <tr>
+          <th>{ __('vanemart::product.'.$key) }</th>
+          <td>$item</td>
+        </tr>
+      </if>
+    </each>
+  </table>
+
+  <div "textual">{= $desc_html }</div>
+</div>

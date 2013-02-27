@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang={ Config::get('application.language') }>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta "viewport" "width=device-width, initial-scale=1.0">
+
+    <title>$title</title>
+
+    <meta "description" "{ Vane\Current::config('company.long') }">
+    <meta "robots" "index,follow">
+    <meta "generator" "VaneMart">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <each $styles>
+      <?
+        if (is_int($key)) { list($key, $item) = array($item, array()); }
+      ?>
+
+      <if Request::is_env('local') and substr($key, -5) === '.less'>
+        $=hasLESS true
+        <link "$key" rel="stylesheet/less">
+      <else>
+        {= HTML::style($key, $item) }
+      </if>
+    </each>
+
+    <if isset($hasLESS) and Request::is_env('local')>
+      <script>var less = {{env: 'development'};</script>
+      <script "{ VaneMart\asset('less.js') }"></script>
+    </if>
+
+    <!--[if lt IE 9]>
+      <script "{ VaneMart\asset('ie9.js') }"></script>
+    <![endif]-->
+  </head>
+  <body "{ join(' ', (array) $classes) }">
+    {= $content }
+    {= Asset::scripts() }
+  </body>
+</html>

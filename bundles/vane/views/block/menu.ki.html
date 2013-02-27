@@ -1,0 +1,22 @@
+<if Vane\S::keep($menu, '?.visible')>
+  <ul "vane-menu vane-menu-{ $menu->name() }">
+    <each $menu>
+      <li $_{ $item->visible() } "{ $item->classes() }" title={ $item->hint }>
+
+        <if isset($item->caption)>
+          <if $item->url>
+            <a "{ $item->url }" new={ $item->popup() }>
+          </if>
+
+            <img $item->icon "{ $item->icon }" alt={ $item->caption }>
+            <span>{ $item->caption }</span>
+
+          <if $item->url> </a> </if>
+        </if>
+
+        {= $item->html }
+
+      </endli>
+    </each>
+  </ul>
+</if>

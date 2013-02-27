@@ -1,0 +1,17 @@
+<div "vane-logo">
+  <a $logo "{ URL::home() }">
+    <img "$logo" alt=$short title=$long>
+  </enda>
+
+  <p "short">
+    <a "{ Vane\Current::bundleURL() }">$short</a>
+  </p>
+
+  <p "motto">$motto</p>
+
+  <p $phone "phone">
+    <if $contactsURL> <a "$contactsURL"> </if>
+    $phone
+    <if $contactsURL> </a> </if>
+  </endp>
+</div>
