@@ -28,11 +28,11 @@
 
     <if isset($hasLESS) and Request::is_env('local')>
       <script>var less = {{env: 'development'};</script>
-      <script "{ VaneMart\asset('less.js') }"></script>
+      <script "vanemart::less.js"></script>
     </if>
 
     <!--[if lt IE 9]>
-      <script "{ VaneMart\asset('ie9.js') }"></script>
+      <script "vanemart::ie9.js"></script>
     <![endif]-->
   </head>
   <body "{ join(' ', (array) $classes) }">

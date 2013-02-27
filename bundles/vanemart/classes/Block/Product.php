@@ -5,8 +5,8 @@ class Block_Product extends ModelBlock {
 
   function ajax_get_index($id = null) {
     if ($model = static::find($id)) {
-      $model->image = $model->image(1000);
-      return $model->withHTML();
+      $image = $model->image(1000);
+      return compact('image') + $model->withHTML()->to_array();
     }
   }
 }

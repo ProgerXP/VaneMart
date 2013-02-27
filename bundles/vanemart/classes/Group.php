@@ -23,7 +23,7 @@ class Group extends Eloquent {
   }
 
   function goods($deep = false) {
-    return Product::where_in('id', prop('id', $this->subgroups()));
+    return Product::where_in('group', prop('id', $this->subgroups()));
   }
 
   //= array of Group

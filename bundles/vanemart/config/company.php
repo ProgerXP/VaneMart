@@ -1,6 +1,6 @@
 <?php
 return array(
-  'logo'                  => head(glob(VaneMart\asset('logo.{png,jpg,jpeg,gif}'), GLOB_BRACE)),
+  'logo'                  => VaneMart\asset('vanemart::logo.png'),
   'short'                 => 'VaneMart',
   'long'                  => 'VaneMart - flowing e-commerce software',
   'motto'                 => 'where the trend goes',
