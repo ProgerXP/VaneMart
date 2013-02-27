@@ -3,32 +3,59 @@
 
   <img $image "$image" "image" alt=$title>
 
-  <table "col-2 flat">
-    <tr>
-      <th>"vanemart::product.price"</th>
-      <td>
-        $=prices compact('retail', 'wholesale')
-        <each $prices>
-          <if $item>
-            <if isset($_hadPrice)>,</if>
-            $=_hadPrice true
+  <form "vanemart::cart">
+    <csrf>
 
-            {= Px\HLEx::langNum(__('vanemart::general.price'), $item) }
-          </if>
-        </each>
-      </td>
-    </tr>
+    <table "col-2 flat">
+      <tr>
+        <th>"vanemart::product.price"</th>
+        <td>
+          $=prices compact('retail', 'wholesale')
+          <each $prices>
+            <if $item>
+              <if isset($_hadPrice)>,</if>
+              $=_hadPrice true
 
-    $=fields compact('sku', 'country', 'maker', 'volume')
-    <each $fields>
-      <if $item>
-        <tr>
-          <th>{ __('vanemart::product.'.$key) }</th>
-          <td>$item</td>
-        </tr>
-      </if>
-    </each>
-  </table>
+              {= Px\HLEx::langNum(__('vanemart::general.price'), $item) }
+            </if>
+          </each>
+        </td>
+      </tr>
+
+      $=fields compact('sku', 'country', 'maker', 'volume')
+      <each $fields>
+        <if $item>
+          <tr>
+            <th>{ __('vanemart::product.'.$key) }</th>
+            <td>$item</td>
+          </tr>
+        </if>
+      </each>
+
+      <tr "cart">
+        <th />
+        <td>
+          <select ${ range(1, 5) } "qty[$id]" "flat">
+            <option "$item">{= Px\HLEx::langNum(__('vanemart::general.qty'), $item) }</option>
+          </endselect>
+        </td>
+      </tr>
+
+      <tr "btn">
+        <th />
+        <td>
+          <submit class=default>
+            <i "b-basket" />
+            "vanemart::product.to_cart"
+          </submit>
+          <submit "checkout">
+            <i "b-car" />
+            "vanemart::product.to_checkout"
+          </submit>
+        </td>
+      </tr>
+    </table>
+  </form>
 
   <div "textual">{= $desc_html }</div>
 </div>

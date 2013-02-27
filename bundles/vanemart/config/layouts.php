@@ -20,16 +20,16 @@ return array(
         '-list'           => array(),
       ),
     ),
-    '|#content goldw'     => array(),
+    '|#content goldw'     => array('Vane::status'),
   ),
 
   'goods'                 => array(
-    '=nav #group title'   => array('VaneMart::goods current'),
-    '=nav #group list'    => array('VaneMart::goods'),
+    '+nav #group title'   => array('VaneMart::goods current'),
+    '+nav #group list'    => array('VaneMart::goods'),
   ),
 
   'orders'                => array(
-    '=nav #group title'   => array('Vane::text orders'),
-    '=nav #group list'    => array('VaneMart::orders'),
+    '+nav #group title'   => array('Vane::text orders'),
+    '+nav #group list'    => array('VaneMart::orders'),
   ),
 );
