@@ -1,0 +1,30 @@
+<form "vanemart::checkout@" "col-2">
+  <table "col-2 flat">
+    <each ${ array('name', 'surname', 'phone', 'email') }>
+      <tr>
+        <th>{ __("vanemart::checkout.$item") }</th>
+        <td>
+          <input "$item">
+          <errors>
+        </td>
+      </tr>
+    </each>
+    <tr>
+      <th>"vanemart::checkout.address"</th>
+      <td>
+        <textarea "address" />
+        <p "pick">"vanemart::checkout.pick"</p>
+        <errors>
+      </td>
+    </tr>
+    <tr>
+      <th>"vanemart::checkout.notes"</th>
+      <td>
+        <textarea "notes" />
+        <errors>
+      </td>
+    </tr>
+  </table>
+
+  <p "btn"> <submit>"vanemart::checkout.submit"</submit> </p>
+</form>
