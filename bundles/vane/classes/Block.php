@@ -34,7 +34,7 @@ class Block extends DoubleEdge {
   static function exec($block, $args = array(), array $input = null) {
     $obj = static::factory($block);
     ($obj instanceof self) and $obj->input = $input;
-    return $obj->execute(static::actionFrom($block), \Px\arrizeAny($args));
+    return $obj->execute(static::actionFrom($block), arrizeAny($args));
   }
 
   // Extracts '@action' part from given controller reference.

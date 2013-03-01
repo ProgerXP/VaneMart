@@ -23,7 +23,7 @@ class LayoutHandler extends LayoutItem {
       $this->classes = static::splitClasses(strtok(null));
     }
 
-    $this->options = \Px\arrize($options);
+    $this->options = arrize($options);
   }
 
   //= Laravel\Response

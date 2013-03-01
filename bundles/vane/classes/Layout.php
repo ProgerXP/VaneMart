@@ -107,7 +107,7 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
     $this->classes = static::splitClasses($classes);
     $this->size = trim($size);
 
-    $this->blocks = \Px\arrize($blocks);
+    $this->blocks = arrize($blocks);
   }
 
   protected function tagClasses(array $classes) {
@@ -185,7 +185,7 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
   //  row/column prefixes ('|', '-') in their names become nested Layout's rather
   //  than LayoutHandlers.
   function add($blocks) {
-    if ($this->isView() and $blocks = \Px\arrize($blocks)) {
+    if ($this->isView() and $blocks = arrize($blocks)) {
       $keys = array_keys($blocks);
 
       foreach ($keys as &$key) {
@@ -267,7 +267,7 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
   //  Otherwise, and if it's empty, classesMatch() is used.
   //= null if nothing found, Layout
   function find($path = null) {
-    if (! $path = \Px\arrize($path)) {
+    if (! $path = arrize($path)) {
       return $this;
     }
 

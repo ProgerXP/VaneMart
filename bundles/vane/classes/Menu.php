@@ -45,7 +45,7 @@ class Menu implements \IteratorAggregate, \Countable {
   }
 
   function add($items) {
-    foreach (\Px\arrize($items) as $key => $value) {
+    foreach (arrize($items) as $key => $value) {
       if (!is_int($key)) {
         $this->addLink(trim($value), trim($key));
       } elseif (is_array($value)) {
@@ -69,7 +69,7 @@ class Menu implements \IteratorAggregate, \Countable {
   }
 
   function addLink($item, $name = null) {
-    $item = \Px\arrize($item, 'url') + compact('name');
+    $item = arrize($item, 'url') + compact('name');
     $item['url'] = static::expand($item['url']);
 
     if (!isset($item['caption'])) {
@@ -87,7 +87,7 @@ class Menu implements \IteratorAggregate, \Countable {
   function filled() {
     do {
       $count = count($this->items);
-      \Px\func('fill', $this->items);
+      func('fill', $this->items);
     } while ($count !== count($this->items));
 
     return $this->items;
