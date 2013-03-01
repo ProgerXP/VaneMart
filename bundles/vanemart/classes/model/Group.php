@@ -27,12 +27,11 @@ class Group extends BaseModel {
   }
 
   function goods($deep = false) {
-    $query = $this->has_many(NS.'Product', 'group');
-
-    $ids = $this->subgroups(-1, false);
-    $ids and $query->where_in('group', prop('id', $ids));
-
-    return $query;
+    if ($deep) {
+      return Product::where_in('group', prop('id', $this->subgroups()));
+    } else {
+      return $this->has_many(NS.'Product', 'group');
+    }
   }
 
   //* $depth int - if < 0 runs recursively, if 0 returns $this, if 1 - this'

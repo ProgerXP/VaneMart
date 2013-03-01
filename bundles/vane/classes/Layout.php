@@ -213,25 +213,29 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
   // Treats self as a top-level layout. If a view is specified to be used as
   // wrapper finds it and fills with current data by rendering nested blocks.
   // Each block's class is treated as 'array.path' ($view->data['array']['path']).
+  //* $outmost - if set this block is assumed not to contain variables fot the
+  //  view but regular blocks processed separately (see render()).
   //= null no view is assigned, View
-  function view() {
+  function view($outmost = true) {
     if (!$this->isViewEndpoint() and $block = $this->find('')) {
-      $view = $block->view();
-    } elseif (! $view = $this->emptyView()) {
-      return;
+      $view = $block->view(false);
+    } else {
+      $view = $this->emptyView();
     }
 
-    foreach ($this as $block) {
-      if ($block instanceof self and ($name = $block->fullID()) !== '') {
-        $rendering = Rendering::make($this)->slugs($this->slugs)->render($block);
+    if ($view and !$outmost) {
+      foreach ($this as $block) {
+        if ($block instanceof self and ($name = $block->fullID()) !== '') {
+          $rendering = Rendering::make($this)->slugs($this->slugs)->render($block);
 
-        if (count($rendering->result) > 1) {
-          $data = array_values($rendering->joinContents());
-        } else {
-          $data = $rendering->join();
+          if (count($rendering->result) > 1) {
+            $data = array_values($rendering->joinContents());
+          } else {
+            $data = $rendering->join();
+          }
+
+          array_set($view->data, $name, $data);
         }
-
-        array_set($view->data, $name, $data);
       }
     }
 
@@ -267,23 +271,25 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
   //  Otherwise, and if it's empty, classesMatch() is used.
   //= null if nothing found, Layout
   function find($path = null) {
-    if (! $path = arrize($path)) {
+    $path = arrize($path);
+
+    if (!$path) {
       return $this;
-    }
-
-    $classes = array_shift($path);
-
-    if ($classes === array('*')) {
-      $matched = head($this->children());
     } else {
-      $self = $this;
-      $matched = array_first($this, function ($i, $block) use ($self, &$classes) {
-        return $block instanceof Layout and
-               $self::classesMatch($block->classes, $classes);
-      });
-    }
+      $classes = array_shift($path);
 
-    return $matched ? $matched->find($path) : null;
+      if ($classes === array('*')) {
+        $matched = head($this->children());
+      } else {
+        $self = $this;
+        $matched = array_first($this, function ($i, $block) use ($self, &$classes) {
+          return $block instanceof Layout and
+                 $self::classesMatch($block->classes, $classes);
+        });
+      }
+
+      return $matched ? $matched->find($path) : null;
+    }
   }
 
   // Converts produced served() of arbitrary type to a Response object.

@@ -45,7 +45,7 @@ class Rendering {
       }
 
       if ($block instanceof Layout) {
-        S($block, array($this, __FUNCTION__, $key));
+        foreach ($block as $child) { $this->render($child, $key); }
       } else {
         $response = $block->isServed() ? $this->served : $block->response($this->slugs);
         $this->put($block, $key, $response);
@@ -125,7 +125,7 @@ class Rendering {
   //= null if nothing was produced (aka 404), array of str
   function joinContents() {
     if ($this->renderResults()->result) {
-      return S::map($this->result, 'join(Px\\arrize(?))');
+      return S($this->result, 'join(Px\\arrize(?))');
     }
   }
 

@@ -96,7 +96,7 @@ class Block_Checkout extends BaseBlock {
       \DB::transaction(function () use ($self, $user, &$order) {
         $order = $self::addOrder($user, Input::get());
 
-        $goods = S::map(Cart::all(), function ($qty, $product) use ($order) {
+        $goods = S(Cart::all(), function ($qty, $product) use ($order) {
           return compact('qty', 'product') + array('order' => $order->id);
         });
 

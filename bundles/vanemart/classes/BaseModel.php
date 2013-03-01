@@ -28,7 +28,13 @@ class BaseModel extends Eloquent {
       static::$cachedModels[get_called_class()][$id] = $model ? clone $model : false;
       return $model;
     } else {
-      return S(static::all(func_get_args()), array(get_called_class(), __FUNCTION__));
+      $result = array();
+
+      foreach (static::all(func_get_args()) as $model) {
+        $result[] = static::cache($model);
+      }
+
+      return $result;
     }
   }
 
@@ -73,7 +79,7 @@ class BaseModel extends Eloquent {
   }
 
   function save() {
-    $result = $this->save();
+    $result = parent::save();
     $result and static::cache($this);
     return $result;
   }
