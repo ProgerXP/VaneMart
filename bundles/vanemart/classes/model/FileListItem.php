@@ -1,6 +1,6 @@
 <?php namespace VaneMart;
 
-class FileListItem extends Eloquent {
+class FileListItem extends BaseModel {
   static $table = 'file_lists';
   static $typeModels = array('goods' => 'Product', 'posts' => 'Post');
 

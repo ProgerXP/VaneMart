@@ -1,6 +1,6 @@
 <?php namespace VaneMart;
 
-class User extends Eloquent {
+class User extends BaseModel {
   static $table = 'users';
 
   function addresses() {

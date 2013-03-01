@@ -1,6 +1,6 @@
 <?php namespace VaneMart;
 
-class Product extends Eloquent {
+class Product extends BaseModel {
   static $table = 'goods';
 
   static function prettyOther(array $attrs) {
@@ -35,7 +35,7 @@ class Product extends Eloquent {
   }
 
   function variation() {
-    return $this->has_one(NS.'Variation', 'variation');
+    return $this->has_one(__CLASS__, 'variation');
   }
 
   function group() {

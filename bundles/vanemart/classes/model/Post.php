@@ -1,6 +1,6 @@
 <?php namespace VaneMart;
 
-class Post extends Eloquent {
+class Post extends BaseModel {
   static $table = 'posts';
   static $typeModels = array('goods' => 'Product', 'orders' => 'Order');
 
@@ -37,4 +37,4 @@ class Post extends Eloquent {
     return $this;
   }
 }
-User::$table = \Config::get('vanemart::general.table_prefix').User::$table;
+Post::$table = \Config::get('vanemart::general.table_prefix').Post::$table;

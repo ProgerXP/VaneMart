@@ -1,6 +1,6 @@
 <?php namespace VaneMart;
 
-class File extends Eloquent {
+class File extends BaseModel {
   static $table = 'files';
 
   //* $path null, str - if given returns path to file with that name; can only
@@ -138,6 +138,10 @@ class File extends Eloquent {
 
     fclose($fdest);
     return $bytes;
+  }
+
+  function uploader() {
+    return $this->has_many(NS.'User', 'uploader');
   }
 
   //= str absolute local path to this file

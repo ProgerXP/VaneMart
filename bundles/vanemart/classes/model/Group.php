@@ -1,6 +1,6 @@
 <?php namespace VaneMart;
 
-class Group extends Eloquent {
+class Group extends BaseModel {
   static $table = 'groups';
 
   static function prettyOther(array $attrs) {

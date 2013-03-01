@@ -1,6 +1,6 @@
 <?php namespace VaneMart;
 
-class Order extends Eloquent {
+class Order extends BaseModel {
   static $table = 'orders';
 
   function goods() {
