@@ -1,6 +1,7 @@
 <?php
 return array(
-  'cart'                  => 'Корзина (:count, :sum руб.)',
+  'cart'                  => 'Корзина',
+  'cart_filled'           => 'Корзина (:count, :sum руб.)',
   'checkout'              => 'Оформить',
 
   'help'                  => 'Помощь',

@@ -4,6 +4,18 @@ use Vane\MenuItem;
 
 class Block_MenuHandlers extends BaseBlock {
   static function menu_cart(MenuItem $item) {
+    $item->url = action('vanemart::cart');
+    $item->classes[] = 'cart';
+
+    $key = Cart::has() ? 'cart_filled' : 'cart';
+    $item->caption = \Vane\Menu::caption($key);
+
+    if (Cart::has()) {
+      $item->caption = Str::format($item->caption, array(
+        'count'             => Str::langNum(__('vanemart::general.price'), Cart::count()),
+        'sum'               => Str::langNum(__('vanemart::general.qty'), Cart::subtotal()),
+      ));
+    }
   }
 
   static function menu_categories(MenuItem $item) {
