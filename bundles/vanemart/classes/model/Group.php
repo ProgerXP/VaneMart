@@ -22,12 +22,24 @@ class Group extends Eloquent {
     return route('vanemart::group', $this->id.$slug);
   }
 
-  function goods($deep = false) {
-    return Product::where_in('group', prop('id', $this->subgroups()));
+  function parent() {
+    return $this->belongs_to(__CLASS__, 'parent');
   }
 
+  function goods($deep = false) {
+    $query = $this->has_many(NS.'Product', 'group');
+
+    $ids = $this->subgroups(-1, false);
+    $ids and $query->where_in('group', prop('id', $ids));
+
+    return $query;
+  }
+
+  //* $depth int - if < 0 runs recursively, if 0 returns $this, if 1 - this'
+  //  children, if 2 - them and their children, etc.
+  //* $withSelf bool - if false omits $this from result.
   //= array of Group
-  function subgroups($depth = -1) {
+  function subgroups($depth = -1, $withSelf = true) {
     $all = $next = array($this);
 
     while ($next and --$depth != 0) {
@@ -35,7 +47,7 @@ class Group extends Eloquent {
       $all = array_merge($all, $next);
     }
 
-    return $all;
+    return $withSelf ? $all : S::slice($all);
   }
 }
 Group::$table = \Config::get('vanemart::general.table_prefix').Group::$table;

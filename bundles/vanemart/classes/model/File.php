@@ -3,6 +3,9 @@
 class File extends Eloquent {
   static $table = 'files';
 
+  //* $path null, str - if given returns path to file with that name; can only
+  //  contain a limited number of symbols including '/' - see safeName().
+  //= str local path to directory where files are stored
   static function storage($path = null) {
     $path and $path = static::safeName($path);
 
@@ -16,11 +19,13 @@ class File extends Eloquent {
   static function safeName($name) {
     if (strpos($name, '..') !== false) {
       throw new Error("Unsafe File name [$name].");
+    } else {
+      return $name;
     }
-
-    return $name;
   }
 
+  // Generates unique base name and returns path to that non-existing file.
+  //= str absolute local path
   static function generatePath($name) {
     list($name, $ext) = S::chopTo('.', static::safeName($name));
     "$ext" === '' or $ext = ".$ext";
@@ -38,6 +43,12 @@ class File extends Eloquent {
     return $result;
   }
 
+  // Checks if a file with that exact data is already registered in the database.
+  // If so, returns its model (doesn't change its attributes like uploader, name
+  // or description). If not calls place() to create a new file.
+  //
+  //* $file str - file data; cannot be a stream.
+  //* $attributes hash - description, etc. used for new files, see place().
   //= File new saved model
   static function reuseOrPlace($file, array $attributes = array()) {
     if ($model = static::where('md5', '=', md5($file))->first()) {
@@ -47,22 +58,32 @@ class File extends Eloquent {
     }
   }
 
+  // Registers new file in the database and saves it locally. Throws exceptions
+  // if any error occurs.
+  //* $file str file data, stream
+  //* $attributes hash - file info, see the first line for the list of fields.
   //= File new saved model
   static function place($file, array $attributes = array()) {
-    $attributes += array('uploader' => null, 'desc' => '');
-    isset($attributes['ext']) and $attributes['ext'] = ltrim($attributes['ext'], '.');
+    $attributes += array(
+      'uploader'          => null,
+      'desc'              => '',
+      // if null is autodetected based on the extension of 'name'.
+      'mime'              => null,
+      'name'              => null,
+      // only used to generate 'name' if 'name' is null and $file isn't a stream.
+      'ext'               => null,
+    );
 
-    if (empty($attributes['name'])) {
-      if (is_resource($file)) {
-        $ext = ltrim(array_get($attributes, 'ext', 'dat'), '.');
-        $attributes['name'] = substr(uniqid(), 0, 8).".$ext";
-        Log::info_File("Placing a file from stream with randomly generated name".
-                       " $attributes[name].");
-      } else {
-        $attributes['name'] = basename($file);
-      }
-    } else {
+    if (!empty($attributes['name'])) {
       $attributes['name'] = basename($attributes['name']);
+    } elseif (is_resource($file)) {
+      $ext = ltrim($attributes['ext'], '.');
+      $attributes['name'] = substr(uniqid(), 0, 8).".$ext";
+
+      $msg = "Placing a file from stream with random name: $attributes[name].";
+      Log::info_File($msg);
+    } else {
+      $attributes['name'] = basename($file);
     }
 
     $ext = $attributes['ext'] = ltrim(S::ext($attributes['name']), '.');
@@ -86,7 +107,7 @@ class File extends Eloquent {
     try {
       $model = with(new static)->fill_raw($attributes);
       $model->md5 = md5_file($dest);
-      $model->mime = \File::mime($model->ext, '');
+      $model->mime = $attributes['mime'] ?: \File::mime($model->ext, '');
 
       if ($model->save()) {
         return $model;
@@ -99,6 +120,10 @@ class File extends Eloquent {
     }
   }
 
+  // Copies source stream from its current position to a local file. According to
+  // comments stream_copy_to_stream() is slower than copying manually using a buffer.
+  //* $path str - local path.
+  //* $fsource stream - stream to save.
   //= int number of bytes written
   static function streamCopyTo($path, $fsource) {
     $fdest = fopen($path, 'wb');
@@ -107,7 +132,6 @@ class File extends Eloquent {
     }
 
     $written = 0;
-
     while (!feof($fsource)) {
       $written += fwrite($fdest, fread($fsource, 65536));
     }
@@ -116,10 +140,12 @@ class File extends Eloquent {
     return $bytes;
   }
 
+  //= str absolute local path to this file
   function file() {
     return static::storage($this->path);
   }
 
+  // Decrements reference counter for this file and removes it if it becomes empty.
   function unused() {
     if ($this->count > 1) {
       $this->count -= 1;
@@ -128,11 +154,17 @@ class File extends Eloquent {
         throw new Error("Cannot save File model of ID [{$this->id}].");
       }
     } else {
-      is_file($file = $this->file()) and unlink($file);
       $this->delete();
+      is_file($file = $this->file()) and unlink($file);
     }
 
     return $this;
+  }
+
+  // Finds other files which MD5 hash is identical to this one.
+  //= Query
+  function same() {
+    return static::where('md5', '=', $this->md5);
   }
 }
 File::$table = \Config::get('vanemart::general.table_prefix').File::$table;

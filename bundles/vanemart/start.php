@@ -12,8 +12,25 @@ Squall\initEx('VaneMart');
 
 require_once __DIR__.DS.'core.php';
 
-\Autoloader::directories(array(__DIR__.DS.'libraries'));
-\Autoloader::namespaces(array('VaneMart' => __DIR__.DS.'classes'));
+// More flexible autoloader for VaneMart flat class structure.
+spl_autoload_register(function ($class) {
+  $base = $file = __DIR__.DS.'classes'.DS;
+
+  if (substr($class, 0, 9) === 'VaneMart\\') {
+    @list($group, $rest) = explode('_', substr($class, 9), 2);
+
+    if (isset($rest)) {
+      $file .= strtolower($group).DS.$rest;
+    } else {
+      $file .= is_file("$file$group.php") ? $group : 'model'.DS.substr($class, 9);
+    }
+  } else {
+    $file .= 'vendor'.DS.$class;
+  }
+
+  $file .= '.php';
+  is_file($file) and (include $file);
+});
 
 View::composer('vanemart::full', function ($view) {
   $view->styles = (array) $view['styles'];

@@ -34,10 +34,20 @@ class Product extends Eloquent {
     }
   }
 
-  function group() {
-    return $this->belongs_to(NS.'Group');
+  function variation() {
+    return $this->has_one(NS.'Variation', 'variation');
   }
 
+  function group() {
+    return $this->belongs_to(NS.'Group', 'group');
+  }
+
+  function files() {
+    return FileListItem::relationTo($this);
+  }
+
+  // Ensures 'desc_html' field is filled with formatted 'desc' (product description).
+  // If it isn't formats it and saves.
   function withHTML() {
     if (!$this->desc_html) {
       $this->desc_html = nl2br(HLEx::q($this->desc));

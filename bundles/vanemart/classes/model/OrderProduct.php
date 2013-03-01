@@ -6,5 +6,9 @@ class OrderProduct extends Eloquent {
   function order() {
     return $this->belongs_to(NS.'Order', 'order');
   }
+
+  function product() {
+    return $this->belongs_to(NS.'Product', 'product');
+  }
 }
 OrderProduct::$table = \Config::get('vanemart::general.table_prefix').OrderProduct::$table;

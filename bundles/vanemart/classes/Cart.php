@@ -3,6 +3,8 @@
 use Session;
 
 class Cart {
+  //* $id str, int, Eloquent model like Product
+  //= int, null
   static function idFrom($id) {
     if (is_numeric($id) and $id > 0) {
       return (int) $id;
@@ -35,9 +37,16 @@ class Cart {
     return (float) Session::get('cart_goods.'.static::idFrom($product));
   }
 
+  // Places new product or removes it from the cart. Normalizes $qty and does other
+  // checks (for product availability, fractability and minimum quantity).
+  //
   //* $product Product, mixed see idFrom()
   //* $qty mixed - string allows both ',' and '.' separators for decimal part.
   //= null error, array (Product $product, float $qty)
+  //
+  //? put(5, 11.2);       // places 11.2 portions of product with ID 5
+  //? put($model, 0);     // removes $model->id from cart
+  //? put($model, -2);    // the same
   static function put($product, $qty = 1) {
     $product instanceof Product or $product = Product::find(static::idFrom($product));
 
@@ -62,17 +71,19 @@ class Cart {
     }
   }
 
+  // If $product is not falsy removes it from cart (if it exists), if it's == false
+  // (null, 0, '', etc.) clears cart of all goods.
   static function clear($product = null) {
     $product and $product = '.'.static::idFrom($product);
     Session::forget('cart_goods'.$product);
   }
 
-  //= int
+  //= int number of goods in cart (not their quantities)
   static function count() {
     return count(static::all());
   }
 
-  //= float
+  //= float sum of all cart goods multiplied by their quantities
   static function subtotal() {
     $sum = 0;
     $qty = static::all();
@@ -85,7 +96,8 @@ class Cart {
     return $sum;
   }
 
-  //= null if subtotal is large enough, float minimum required sum
+  //= null if subtotal is large enough
+  //= float no - minimum required sum according to site config
   static function isTooSmall($subtotal = null) {
     isset($subtotal) or $subtotal = static::subtotal();
     $min = \Config::get('vanemart::general.min_subtotal');
