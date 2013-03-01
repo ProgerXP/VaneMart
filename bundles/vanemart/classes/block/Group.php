@@ -11,12 +11,18 @@ class Block_Group extends ModelBlock {
 
   function ajax_get_index($id = null) {
     if ($group = static::find($id)) {
-      $query = $group->goods(true)
+      $rows = $group->goods(true)
         ->where_null('variation')
         ->where('available', '=', 1)
-        ->order_by('sort');
+        ->order_by('sort')
+        ->get();
 
-      return array('rows' => $query->get());
+      if (!Request::ajax() and $rows) {
+        // precache all connected images as they're used in the view.
+        File::all(prop('image', $rows));
+      }
+
+      return compact('rows');
     }
   }
 
