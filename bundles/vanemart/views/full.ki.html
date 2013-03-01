@@ -13,20 +13,20 @@
 
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 
-    <each $styles>
-      <?
-        if (is_int($key)) { list($key, $item) = array($item, array()); }
-      ?>
+    {= $htmlStyles }
 
-      <if Request::is_env('local') and substr($key, -5) === '.less'>
+    <each $styles>
+      <if substr($key, -5) !== '.less'>
+        {= HTML::style($key, $item) }
+      <elseif Request::is_env('local')>
         $=hasLESS true
         <link "$key" rel="stylesheet/less">
       <else>
-        {= HTML::style($key, $item) }
+        {= HTML::style(VaneMart\S::newExt($key, '.css'), $item) }
       </if>
     </each>
 
-    <if isset($hasLESS) and Request::is_env('local')>
+    <if isset($hasLESS)>
       <script>var less = {{env: 'development'};</script>
       <script "vanemart::less.js"></script>
     </if>
@@ -37,6 +37,11 @@
   </head>
   <body "{ join(' ', (array) $classes) }">
     {= $content }
-    {= Asset::scripts() }
+
+    <each $scripts>
+      {= HTML::script($key, $item) }
+    </each>
+
+    {= $htmlScripts }
   </body>
 </html>

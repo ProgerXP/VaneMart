@@ -33,7 +33,23 @@ spl_autoload_register(function ($class) {
 });
 
 View::composer('vanemart::full', function ($view) {
-  $view->styles = (array) $view['styles'];
+  $normAssets = function ($type) use ($view) {
+    $items = (array) $view[$type];
+    $normal = array();
+
+    foreach ($items as $key => $attributes) {
+      is_int($key) ? $normal[$attributes] = array() : $normal[$key] = $attributes;
+    }
+
+    $view[$type] = $normal;
+
+    $html = &$view->data[ 'html'.ucfirst($type) ];
+    $html .= Asset::$type();
+  };
+
+  $normAssets('styles');
+  $normAssets('scripts');
+
   $view->classes = (array) $view['classes'];
 
   if (Request::$route and $name = array_get(Request::$route->action, 'as')) {

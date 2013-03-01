@@ -5,6 +5,7 @@ return array(
       null                => 'vanemart::full',
       'title'             => '=VaneMart',
       'styles'            => '='.VaneMart\asset('styles.less'),
+      'scrpits'           => array(),
     ),
     '-header/#top'        => array(
       '|left goldn'       => array(
