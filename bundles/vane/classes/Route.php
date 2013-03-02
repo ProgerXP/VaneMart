@@ -22,18 +22,25 @@ class Route {
   //= hash route parameters like 'as' or 'https'
   public $parameters = array();
 
-  // Members with string keys are 'space-separated method list' => 'ctl@actn ...',
-  // with integer keys - single-method 'post ctl@actn ...'. A method can be '*' to
-  // create a catch-all server matching if no more specific method has matched.
+  // Members with string keys are 'space-separated method list' => 'ctl@actn[ args]',
+  // with integer keys - single-method 'post ...'. A method can be '*' to create a
+  // catch-all server matching if no more specific method has matched. 'args' is
+  // optional space-separated list of arguments to prepend before URL slugs when
+  // passing them to the controller's method.
   //
   //= array of str like 'post help@add'
   //
   //? 'post help@add'             // one server for POST -> help's add() method
+  //? 'post help@add group'
+  //      // the same but passes 'group' as add()'s first argument passing URL
+  //      // slugs (if any) after it
   //? '* help@show'               // catch-all -> help's show()
   //? 'help@show'                 // the same
   //? array('*' => 'help@show')   // the same
   //? array('post put' => 'help@add')
   //      // help's add() handling POST and PUT
+  //? array('post put' => 'help@add group')
+  //      // the same but 'group' is passed before URL slugs to add()
   //? 'post put help@add'
   //      // wrong - 'put' is controller name and 'help@add' - its argument
   //      // similarly to this request URL: /put/index/help@add
@@ -173,7 +180,10 @@ class Route {
     return $this;
   }
 
-  // Calls this route
+  // Calls this route returning producted response. Handles attached layout unless
+  // this route is naked() - in this case it's very similar to registering handler
+  // with the regular Laravel Router.
+  //= Laravel\Response
   function call() {
     $slugs = func_get_args();
 
@@ -198,6 +208,12 @@ class Route {
     foreach ((array) $this->servers as $method => $handler) {
       if (is_int($method) and strrchr($handler, ' ') !== false) {
         list($method, $handler) = explode(' ', $handler, 2);
+
+        if (ltrim($method, 'a..zA..Z') !== '') {
+          // this isn't a HTTP method name, e.g.: 'my@ctl arg a-2'.
+          $handler = "$method $handler";
+          $method = '*';
+        }
       }
 
       if (is_int($method) or $method === '*') {
@@ -214,6 +230,11 @@ class Route {
 
     if ($server) {
       static::references($server, $args);
+
+      $server = strtok($server, ' ');
+      $prepend = ''.strtok(null);
+      $prepend === '' or $args = array_merge(explode(' ', $prepend), $args);
+
       return Block::execResponse($server, $args);
     }
   }
