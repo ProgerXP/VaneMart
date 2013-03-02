@@ -3,6 +3,28 @@
 class User extends BaseModel {
   static $table = 'users';
 
+  static function findOrCreate(array $info) {
+    static $fields = array('name', 'surname', 'phone', 'notes', 'email');
+
+    $model = User::where('email', '=', $info['email'])->first();
+    if (!$model) {
+      $password = Str::password(\Config::get('vanemart::password'));
+
+      $model = with(new User)
+        ->fill_raw(array_intersect_key($info, array_flip($fields)))
+        ->fill_raw(array(
+          'password'      => $password,
+          'reg_ip'        => Request::ip(),
+        ));
+
+      if (!$model->save()) {
+        throw new Error('Cannot register new user on checkout.');
+      }
+    }
+
+    return $model;
+  }
+
   function addresses() {
     return $this->has_many(NS.'Addresses', 'user');
   }

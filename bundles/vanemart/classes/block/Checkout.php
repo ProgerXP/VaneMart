@@ -1,59 +1,17 @@
 <?php namespace VaneMart;
 
 class Block_Checkout extends BaseBlock {
-  static function register(array $info) {
-    static $fields = array('name', 'surname', 'phone', 'notes', 'email');
-
-    $model = User::where('email', '=', $info['email'])->first();
-
-    if (!$model) {
-      $password = Str::password(\Config::get('vanemart::password'));
-
-      $model = with(new User)
-        ->fill_raw(array_intersect_key($info, array_flip($fields)))
-        ->fill_raw(array(
-          'password'      => $password,
-          'reg_ip'        => Request::ip(),
-        ));
-
-      if (!$model->save()) {
-        throw new Error('Cannot register new user on checkout.');
-      }
-    }
-
-    return $model;
+  protected function init() {
+    $this->filter('before', 'csrf')->only(array('add', 'set'));
   }
 
-  static function addOrder(User $user, array $info) {
-    $password = Str::password(array(
-      'length'            => 10,
-      'symbols'           => 0,
-      'capitals'          => 3,
-      'digits'            => 3,
-    ));
-
-    $fields = array('name', 'surname', 'address', 'phone', 'notes');
-
-    $order = with(new Order)
-      ->fill_raw(array_intersect_key($info, array_flip($fields)))
-      ->fill_raw(array(
-        'user'            => $user->id,
-        'password'        => $password,
-        'sum'             => Cart::subtotal(),
-        'ip'              => Request::ip(),
-      ));
-
-    if (!$order->save()) {
-      throw new Error('Cannot insert new order record.');
-    }
-
-    return $order;
-  }
-
+  // GET checkout/index       - outputs forms for checking out
   function get_index() {
     return true;
   }
 
+  // POST checkout/index      - completes the order
+  //   ?csrf=CSRF             - REQUIRED
   function post_index() {
     if (!Cart::has()) {
       return static::back();
@@ -90,11 +48,11 @@ class Block_Checkout extends BaseBlock {
     } elseif ($valid->fails()) {
       return $valid;
     } else {
-      $user = static::register(Input::get());
-      $self = $this;
+      $user = User::findOrCreate(Input::get());
+      $order = null;
 
-      \DB::transaction(function () use ($self, $user, &$order) {
-        $order = $self::addOrder($user, Input::get());
+      \DB::transaction(function () use ($user, &$order) {
+        $order = Order::createBy($user, Input::get());
 
         $goods = S(Cart::all(), function ($qty, $product) use ($order) {
           return compact('qty', 'product') + array('order' => $order->id);

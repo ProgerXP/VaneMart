@@ -2,8 +2,9 @@
   <h1>$title</h1>
 
   <img $image "$image" "image" alt=$title>
+  <div "bottom-folder" />
 
-  <form "vanemart::cart">
+  <form "vanemart::cart@add">
     <csrf>
 
     <table "col-2 flat">
@@ -35,7 +36,7 @@
       <tr "cart">
         <th />
         <td>
-          <select ${ range(1, 5) } "qty[$id]" "flat">
+          <select ${ range(1, 5) } "id[$id]" "flat">
             <option "$item">{= Px\HLEx::langNum(__('vanemart::general.qty'), $item) }</option>
           </endselect>
         </td>

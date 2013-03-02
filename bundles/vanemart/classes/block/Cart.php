@@ -1,19 +1,51 @@
 <?php namespace VaneMart;
 
 class Block_Cart extends BaseBlock {
+  //* $skus hash 'sku' => qty, str list of SKUs to add as 1 qty
+  //= hash id => Product with 'qty' attribute set
+  static function fromSKU($skus) {
+    $result = array();
+
+    is_array($skus) or $skus = S::combine(explode(' ', $skus), 1);
+    $skus = S::keys($skus, '#trim#');
+    $goods = Product::where_in('sku', array_keys($skus))->get();
+
+    foreach ($goods as $model) {
+      $result[$model->id] = $model->fill_raw(array('qty' => $skus[$model->sku]));
+    }
+
+    return $result;
+  }
+
   protected function init() {
-    $this->filter('before', 'csrf')->on(array('post', 'put'));
+    $this->filter('before', 'csrf')->only(array('add', 'set'));
   }
 
+  // GET cart/index           - lists cart contents
   function get_index() {
-    return array('rows' => Cart::all());
+    return array('rows' => $this->ajax());
   }
 
-  function post_index() {
+  function ajax_get_index() {
+    return S(Cart::models(), function ($product) {
+      return array('image' => $product->image(200)) + $product->to_array();
+    });
+  }
+
+  // GET cart/add             - adds or removes (qty <= 0) items to/from cart
+  //   [/ID]                  - optional; if given and not present in ?id and
+  //                            ?sku adds ID product with a qty of 1
+  //   ?csrf=CSRF             - REQUIRED
+  //   ?id[ID]=QTY            - optional; adds items by their ID
+  //   ?sku[SKU]=QTY          - optional; adds items by SKU ignoring unknown codes
+  //   ?checkout=1            - optional; redirects to checkout@index instead of back
+  function get_add($id = null) {
+    $goods = static::fromSKU(Input::get('sku')) + arrize(Input::get('id'));
+    $id and $goods += array($id => 1);
     $single = null;
 
-    foreach ((array) Input::must('qty') as $id => $qty) {
-      $result = Cart::put($id, $qty);
+    foreach ($goods as $id => $item) {
+      $result = Cart::put($id, is_object($item) ? $item->qty : $item);
       $result and $single = $single ? null : $result;
     }
 
@@ -29,14 +61,31 @@ class Block_Cart extends BaseBlock {
     }
   }
 
-  function put_index() {
+  // GET cart/set[/ID]
+  // Parameters are identical to GET cart/add.
+  function get_set() {
     Cart::clear();
-    return $this->makeResponse($this->post_index());
+    return $this->makeResponse($this->get_add());
   }
 
-  function delete_index($id = null) {
-    Cart::clear($id);
-    $status = __('vanemart::cart.'.($id ? 'remove' : 'clear'), array('title' => ''));
-    return static::back()->with('status', $status->get());
+  // GET cart/clear           - removes one or all items from cart
+  //   [/ID]                  - optional; alias to ?id[]=ID
+  //   ?id[]=ID&...           - optional; items to remove from cart
+  //
+  // If no IDs are given removes all items.
+  function get_clear($id = null) {
+    $ids = (array) Input::get('id');
+    $id and $ids[] = $id;
+
+    if ($ids) {
+      foreach ($ids as $id) { Cart::clear($id); }
+      $status = 'vanemart::cart.remove';
+    } else {
+      Cart::clear();
+      $status = 'vanemart::cart.clear';
+    }
+
+    return static::back( Cart::has() ? action('vanemart::cart@') : '/' )
+      ->with('status', __($status, array('title' => ''))->get());
   }
 }
