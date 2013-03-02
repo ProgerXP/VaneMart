@@ -57,4 +57,11 @@ VRoute::on('GET (:bundle)/thumb')
   ->as('vanemart::thumb')
   ->naked('VaneMart::thumb');
 
+VRoute::on('(:bundle)/help/(:all?)')
+  ->as('vanemart::help')
+  ->servers('Vane::textpub help')
+  ->layout(array(
+    '+#content'           => array('!'),
+  ));
+
 VRoute::assign('vanemart::contacts', '(:bundle)/help/contacts');
