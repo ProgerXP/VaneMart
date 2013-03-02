@@ -333,12 +333,12 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
     }
 
     Request::ajax(null);
-    Input::get('_naked', $ajax) and $rendering->unwrap();
+    $naked = Input::get(Block::$nakedVar, $ajax) and $rendering->unwrap();
 
     $response = $rendering->served ?: Response::adapt('');
     $content = $rendering->join($ajax);
 
-    if (!$ajax and is_scalar($content) and $full = $this->view()) {
+    if (!$naked and is_scalar($content) and $full = $this->view()) {
       $content = $full->with(compact('content'));
     }
 

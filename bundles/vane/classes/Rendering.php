@@ -106,7 +106,7 @@ class Rendering {
       ->keep(function ($block) { return is_array($block) or is_object($block); })
       ->map(function ($block) {
         $block = S::keep(arrize($block), 'is_object');
-        return count($block) > 1 ? $block : $block[0];
+        return count($block) > 1 ? $block : reset($block);
       })
       ->get();
 
