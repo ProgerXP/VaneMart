@@ -8,7 +8,7 @@
       <table $rows "cart-goods">
         <tr>
           <th>
-            №{= VaneMart\HLEx::number($i + 1) }
+            №{= HLEx::number($i + 1) }
           </th>
           <td>
             <a "$url">
@@ -23,10 +23,10 @@
             $volume
           </td>
           <td "sum">
-            {= VaneMart\HLEx::langNum(__('vanemart::general.price'), $sum) }
+            {= HLEx::langNum(__('vanemart::general.price'), $sum) }
           </td>
           <td "btn">
-            <a "vanemart::cart/clear/$id">"vanemart::cart.delete"</a>
+            <a "vanemart::cart@clear/$id">"vanemart::cart.delete"</a>
           </td>
         </tr>
       </endtable>

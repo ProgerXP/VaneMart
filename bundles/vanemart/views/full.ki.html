@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang={ Config::get('application.language') }>
+<html lang={ \Config::get('application.language') }>
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -7,7 +7,7 @@
 
     <title>$title</title>
 
-    <meta "description" "{ Vane\Current::config('company.long') }">
+    <meta "description" "{ \Vane\Current::config('company.long') }">
     <meta "robots" "index,follow">
     <meta "generator" "VaneMart">
 
@@ -17,12 +17,12 @@
 
     <each $styles>
       <if substr($key, -5) !== '.less'>
-        {= HTML::style($key, $item) }
+        {= \HTML::style($key, $item) }
       <elseif Request::is_env('local')>
         $=hasLESS true
         <link "$key" rel="stylesheet/less">
       <else>
-        {= HTML::style(VaneMart\S::newExt($key, '.css'), $item) }
+        {= \HTML::style(S::newExt($key, '.css'), $item) }
       </if>
     </each>
 
@@ -39,7 +39,7 @@
     {= $content }
 
     <each $scripts>
-      {= HTML::script($key, $item) }
+      {= \HTML::script($key, $item) }
     </each>
 
     {= $htmlScripts }

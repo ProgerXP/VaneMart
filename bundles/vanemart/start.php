@@ -9,6 +9,7 @@ if (!Bundle::exists('vane')) {
 
 Px\Plarx::supersede('VaneMart');
 Squall\initEx('VaneMart');
+Vane\overrideHTMLki('vanemart::', 'VaneMart');
 
 require_once __DIR__.DS.'core.php';
 
