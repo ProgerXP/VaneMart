@@ -1,7 +1,10 @@
 <?php
 use Vane\Route as VRoute;
 
-VRoute::on('(:bundle)');
+VRoute::on('(:bundle)')
+  ->layout(array(
+    '+nav #group list'    => array('VaneMart::group@byList'),
+  ));
 
 VRoute::on('(:bundle)/groups/(\d+-?[^/]*)')
   ->as('vanemart::group')
@@ -24,6 +27,7 @@ VRoute::on('(:bundle)/cart/(:any?)/(:num?)')
   ->as('vanemart::cart')
   ->servers('VaneMart::cart@(:1)')
   ->layout(array(
+    '+nav #group list'    => array('VaneMart::group@byList cart'),
     '+#content'           => array('!'),
   ));
 
@@ -31,6 +35,7 @@ VRoute::on('(:bundle)/checkout')
   ->as('vanemart::checkout')
   ->servers('VaneMart::checkout')
   ->layout(array(
+    '+nav #group list'    => array('VaneMart::group@byList checkout'),
     '+#content'           => array('!'),
   ));
 

@@ -3,6 +3,15 @@
 class Block_Group extends ModelBlock {
   static $model = 'VaneMart\\Group';
 
+  static function listResponse(array $rows) {
+    // precache all connected images as they're used in the view.
+    File::all(prop('image', $rows));
+
+    return array('rows' => S($rows, function ($product) {
+      return array('image' => $product->image(300)) + $product->to_array();
+    }));
+  }
+
   function get_title($id = null) {
     if ($group = static::find($id)) {
       return $group->title;
@@ -20,12 +29,7 @@ class Block_Group extends ModelBlock {
       if (Request::ajax()) {
         return $rows;
       } elseif ($rows) {
-        // precache all connected images as they're used in the view.
-        File::all(prop('image', $rows));
-
-        return array('rows' => S($rows, function ($product) {
-          return array('image' => $product->image(300)) + $product->to_array();
-        }));
+        return static::listResponse($rows);
       }
     }
   }
@@ -44,5 +48,35 @@ class Block_Group extends ModelBlock {
       View::exists($view) and $this->layout = View::make($view);
       return $this->$method($model->group);
     }
+  }
+
+  function get_byList($name = 'main') {
+    $query = ProductListItem
+      ::order_by('sort')
+      ->where('type', '=', $name);
+
+    if ($default = $this->in('default', 'main')) {
+      $query->or_where('type', '=', $default);
+    }
+
+    $list = $query->get();
+
+    if ($default and !S::first($list, array('?->type === ?', $name))) {
+      $type = $default;
+    } else {
+      $type = $name;
+    }
+
+    $list = S::keep($list, array('?->type === ?', $type));
+    $goods = S::keys(Product::all(prop('product', $list)), '?->id');
+    $ordered = array();
+
+    foreach ($list as $item) {
+      $product = &$goods[$item->product];
+      $product and $ordered[] = $product;
+    }
+
+    $this->layout = '.index';
+    return static::listResponse($ordered);
   }
 }
