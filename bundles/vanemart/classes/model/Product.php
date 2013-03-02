@@ -56,5 +56,11 @@ class Product extends BaseModel {
 
     return $this;
   }
+
+  function to_array() {
+    return parent::to_array() + array(
+      'url'     => $this->url(),
+    );
+  }
 }
 Product::$table = \Config::get('vanemart::general.table_prefix').Product::$table;

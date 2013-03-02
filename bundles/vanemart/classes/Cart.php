@@ -23,6 +23,17 @@ class Cart {
     return array_keys(statoc::all());
   }
 
+  //= array of Product with set 'qty' and 'price' attributes
+  static function models() {
+    $all = static::all();
+    return S(Product::all(array_keys($all)), function ($product) use (&$all) {
+      return $product->fill_raw(array(
+        'qty'             => $all[$product->id],
+        'sum'             => $all[$product->id] * $product->retail,
+      ));
+    });
+  }
+
   //= bool
   static function has($product = null) {
     if ($product) {

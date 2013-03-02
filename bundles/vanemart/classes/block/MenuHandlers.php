@@ -11,10 +11,18 @@ class Block_MenuHandlers extends BaseBlock {
     $item->caption = \Vane\Menu::caption($key);
 
     if (Cart::has()) {
-      $item->caption = Str::format($item->caption, array(
-        'count'             => Str::langNum(__('vanemart::general.price'), Cart::count()),
-        'sum'               => Str::langNum(__('vanemart::general.qty'), Cart::subtotal()),
-      ));
+      $sum = Cart::subtotal();
+
+      $replaces = array(
+        'sumn'              => Str::number($sum),
+        'summ'              => Str::langNum(__('vanemart::general.price'), $sum),
+        'sumf'              => Str::langNum(__('vanemart::general.currency_full'), $sum),
+        'sums'              => Str::langNum(__('vanemart::general.currency_short'), $sum),
+        'count'             => Str::langNum(__('vanemart::general.goods'), Cart::count()),
+      );
+
+      $item->caption = Str::format($item->caption, $replaces);
+      $item->hint = Str::format(\Vane\Menu::caption('cart_hint'), $replaces);
     }
   }
 

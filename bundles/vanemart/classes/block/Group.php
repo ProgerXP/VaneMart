@@ -17,12 +17,16 @@ class Block_Group extends ModelBlock {
         ->order_by('sort')
         ->get();
 
-      if (!Request::ajax() and $rows) {
+      if (Request::ajax()) {
+        return $rows;
+      } elseif ($rows) {
         // precache all connected images as they're used in the view.
         File::all(prop('image', $rows));
-      }
 
-      return compact('rows');
+        return array('rows' => S($rows, function ($product) {
+          return array('image' => $product->image(300)) + $product->to_array();
+        }));
+      }
     }
   }
 
