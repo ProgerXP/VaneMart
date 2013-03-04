@@ -48,5 +48,14 @@ class Group extends BaseModel {
 
     return $withSelf ? $all : S::slice($all);
   }
+
+  //= Group with null parent
+  function root() {
+    if (!$this->parent) {
+      return $this;
+    } elseif ($parent = static::find($this->parent)) {
+      return $parent->root();
+    }
+  }
 }
 Group::$table = \Config::get('vanemart::general.table_prefix').Group::$table;

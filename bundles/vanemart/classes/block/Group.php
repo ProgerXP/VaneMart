@@ -7,9 +7,24 @@ class Block_Group extends ModelBlock {
     // precache all connected images as they're used in the view.
     File::all(prop('image', $rows));
 
-    return array('rows' => S($rows, function ($product) {
-      return array('image' => $product->image(300)) + $product->to_array();
+    $current = static::detectCurrentProduct();
+
+    return array('rows' => S($rows, function ($product) use ($current) {
+      return array(
+        'image'           => $product->image(320),
+        'current'         => $current and $current->id === $product->id,
+      ) + $product->to_array();
     }));
+  }
+
+  //= Product
+  static function detectCurrentProduct() {
+    $route = \Vane\Route::current();
+
+    if ($route and $route->lastServer instanceof Block_Product and
+        $route->lastServer->product) {
+      return $route->lastServer->product;
+    }
   }
 
   function get_title($id = null) {
@@ -44,9 +59,13 @@ class Block_Group extends ModelBlock {
 
   protected function actByProduct($method, $id) {
     if ($id = static::idFrom($id) and $model = Product::find($id) and $model->group) {
-      $view = $this->name.'.'.substr(strrchr($method, '_'), 1);
-      View::exists($view) and $this->layout = View::make($view);
-      return $this->$method($model->group);
+      $group = Group::find($model->group);
+
+      if ($group and $group = $group->root()) {
+        $view = $this->name.'.'.substr(strrchr($method, '_'), 1);
+        View::exists($view) and $this->layout = View::make($view);
+        return $this->$method($group);
+      }
     }
   }
 

@@ -35,12 +35,35 @@ class Block_MenuHandlers extends BaseBlock {
       ->order_by('sort')
       ->get();
 
+    $current = static::detectCurrentGroup($groups);
+
     foreach ($groups as $group) {
       $item->menu->add(new $item(array(
         'caption'         => $group->title,
         'classes'         => array('id-'.$group->id),
         'url'             => $group->url(),
+        'current'         => ($current and $current->id === $group->id) ? true : null,
       )));
+    }
+  }
+
+  static function detectCurrentGroup(array $topLevel) {
+    $route = \Vane\Route::current();
+
+    if ($route and $route->lastServer instanceof Block_Product and
+        $route->lastServer->product) {
+      $id = $route->lastServer->product->group;
+
+      $finder = function ($key, $group) use ($id) { return $group->id == $id; };
+      $current = array_first($topLevel, $finder);
+
+      if (!$current) {
+        // current group is not top-level (parent IS NULL) so we need to trace
+        // it up to the root group.
+        $current = Group::find($id)->root();
+      }
+
+      return $current;
     }
   }
 }
