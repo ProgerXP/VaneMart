@@ -47,7 +47,7 @@ class Menu implements \IteratorAggregate, \Countable {
   function add($items) {
     foreach (arrize($items) as $key => $value) {
       if (!is_int($key)) {
-        $this->addLink(trim($value), trim($key));
+        $this->addLink(is_scalar($value) ? trim($value) : $value, trim($key));
       } elseif (is_array($value)) {
         $this->addLink($value);
       } elseif ($value instanceof MenuItem) {

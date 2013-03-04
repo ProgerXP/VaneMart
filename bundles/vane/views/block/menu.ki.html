@@ -5,7 +5,7 @@
 
         <if isset($item->caption)>
           <if $item->url>
-            <a "{ $item->url }" new={ $item->popup() }>
+            <a "{ $item->url }" { $item->popup() ? 'new' : '' }>
           </if>
 
             <img $item->icon "{ $item->icon }" alt={ $item->caption }>

@@ -29,6 +29,18 @@
   opacity: @alpha;
 }
 
+.transition (@str) {
+  transition: @str;
+  -moz-transition: @str;
+  -webkit-transition: @str;
+  -o-transition: @str;
+}
+
+.unmargin () {
+  > :first-child { margin-top: 0; }
+  > :last-child { margin-bottom: 0; }
+}
+
 .shade-top { box-shadow: 0 2px 2px rgba(206, 206, 206, 0.75) inset; padding-top: 4px; }
 
 .underline ()     { text-decoration: underline; }

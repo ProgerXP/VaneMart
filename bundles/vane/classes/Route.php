@@ -9,6 +9,10 @@ class OpenController extends \Controller {
 
 // Bootstrapping class providing routines for routing requests into the Vane subsystem.
 class Route {
+  // Name of the key used to store this instance in the registered route (along
+  // with 'as', 'https' and other parameters).
+  const OPTION = 'vaneRoute';
+
   //= str URL pattern
   public $url;
 
@@ -60,6 +64,12 @@ class Route {
   // and its response is returned without using Vane Layout mechanism.
   public $naked = false;
 
+  //= null, Block
+  public $lastServer;
+
+  //= null, array URL slugs with possible prefixed args from the server string
+  public $lastArgs;
+
   //= Closure to be given to Laravel's Router (it can't handle array callables)
   protected $closure;
 
@@ -95,9 +105,17 @@ class Route {
     return $route->register();
   }
 
-  //= Route
+  //= null, Route
+  static function current() {
+    $route = \Request::$route;
+    if ($route and $route = array_get($route->action, static::OPTION)) {
+      return $route;
+    }
+  }
+
+  //= null, Route
   static function find($name) {
-    return array_get(\Router::find($name), 'vaneRoute');
+    return array_get(\Router::find($name), static::OPTION);
   }
 
   //* $url str - of form '[METHOD ]url/...' - METHOD can be lower case. If omitted
@@ -136,7 +154,7 @@ class Route {
   }
 
   function toArray() {
-    return array_merge(array($this->closure, 'vaneRoute' => $this), $this->parameters);
+    return array_merge(array($this->closure, static::OPTION => $this), $this->parameters);
   }
 
   function url($url = null) {
@@ -156,10 +174,10 @@ class Route {
 
   function naked($servers = null) {
     if (func_num_args()) {
-      $this->named = isset($servers);
+      $this->naked = isset($servers);
       return $this->servers($servers);
     } else {
-      return $this->named;
+      return $this->naked;
     }
   }
 
@@ -180,6 +198,10 @@ class Route {
     return $this;
   }
 
+  function __get($parameter) {
+    return array_get($this->parameters[$parameter]);
+  }
+
   // Calls this route returning producted response. Handles attached layout unless
   // this route is naked() - in this case it's very similar to registering handler
   // with the regular Laravel Router.
@@ -188,7 +210,7 @@ class Route {
     $slugs = func_get_args();
 
     if ($this->naked) {
-      return Block::execResponse($this->serve($slugs));
+      return $this->serve($slugs);
     } else {
       return Layout
         ::fromConfig($this->baseLayouts)
@@ -235,7 +257,10 @@ class Route {
       $prepend = ''.strtok(null);
       $prepend === '' or $args = array_merge(explode(' ', $prepend), $args);
 
-      return Block::execResponse($server, $args);
+      $exec = Block::execCustom($server, compact('args') + array('response' => true));
+      $this->lastServer = $exec['obj'];
+      $this->lastArgs = $args;
+      return $exec['response'];
     }
   }
 }

@@ -19,7 +19,7 @@ class ModelBlock extends BaseBlock {
 
   function get_index($id = null) {
     if ($model = static::find($id)) {
-      if (\URI::full() !== $model->url()) {
+      if (strtok(\URI::full(), '?') !== $model->url() and strtok(null) == '') {
         return Redirect::to($model->url(), 301);
       } else {
         return $this->ajax($model);

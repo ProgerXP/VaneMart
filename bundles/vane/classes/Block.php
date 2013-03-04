@@ -15,8 +15,10 @@ class Block extends DoubleEdge {
   // for the description of arguments.
   //= Laravel\Response
   static function execResponse($block, $args = array(), array $input = null) {
-    $response = static::exec($block, $args, $input);
-    return with(new static)->toResponse($response);
+    return static::execCustom($block, compact('args', 'input') + array(
+      'response'          => true,
+      'return'            => 'response',
+    ));
   }
 
   // Executes block controller returning whatever value it has produced.
@@ -32,9 +34,30 @@ class Block extends DoubleEdge {
   //? exec('vanemart::cart@add', array(33, 2.5), array('clear' => 1))
   //      // rough equivalent of doing cart/add/33/2.5?clear=1
   static function exec($block, $args = array(), array $input = null) {
+    return static::execCustom($block, compact('args', 'input') + array(
+      'return'            => 'exec',
+    ));
+  }
+
+  // Flexible block execution returning detailed info about the block and response.
+  static function execCustom($block, array $options = array()) {
+    $options += array(
+      'args'              => array(),
+      'input'             => null,
+      'response'          => false,
+      'return'            => null,
+    );
+    $input = isset($options['input']) ? arrize($options['input']) : null;
+
     $obj = static::factory($block);
     ($obj instanceof self) and $obj->input = $input;
-    return $obj->execute(static::actionFrom($block), arrizeAny($args));
+    $exec = $obj->execute(static::actionFrom($block), arrizeAny($options['args']));
+
+    if ($options['response']) {
+      $response = with(new static)->toResponse($exec);
+    }
+
+    return array_get(compact('obj', 'exec', 'response'), $options['return']);
   }
 
   // Extracts '@action' part from given controller reference.

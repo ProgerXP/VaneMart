@@ -1,6 +1,6 @@
 <div "vmart-groups">
   <each $rows>
-    <div "product id-{ $id }">
+    <div "product id-{ $id } { $current ? 'current' : '' }">
       <a "{ $url }">
         <img $image "{ $image }" "thumb" alt=$title>
         <b "title">{ $title }</b>

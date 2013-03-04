@@ -4,7 +4,7 @@
 class MenuItem {
   public $menu;               //= null, Menu set by Menu
   public $name;               //= str item name like 'contacts'
-  public $current = false;
+  public $current;            //= null autodetect from current URL, bool
 
   public $custom;             //= null standard item, str handler name
   public $args;               //= null, array arguments for custom handler
@@ -30,11 +30,21 @@ class MenuItem {
     foreach ($props as $prop => $value) { $this->$prop = $value; }
   }
 
+  //= bool
+  function current() {
+    if (isset($this->current)) {
+      return $this->current;
+    } else {
+      $url = Menu::expand($this->url);
+      return \URL::current() === $url;
+    }
+  }
+
   //= str, null if none
   function classes() {
     $classes = array_unique((array) $this->classes);
     $this->name and $classes[] = $this->name;
-    $this->current and $classes[] = 'current';
+    $this->current() and $classes[] = 'current';
     return $classes ? join(' ', $classes) : null;
   }
 
@@ -50,6 +60,7 @@ class MenuItem {
 
   function toArray() {
     $props = array(
+      'current'           => $this->current(),
       'classes'           => $this->classes(),
       'visible'           => $this->visible(),
       'popup'             => $this->popup(),
