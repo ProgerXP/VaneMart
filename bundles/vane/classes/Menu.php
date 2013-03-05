@@ -17,8 +17,13 @@ class Menu implements \IteratorAggregate, \Countable {
       // absolute URL.
       return \url($url);
     } elseif (strrchr($url, '@') === false) {
-      // relative to current bundle's 'handles' or site root if none.
-      return \url( Current::bundleURL().$url );
+      if (strpos($url, '::') === false) {
+        // relative to current bundle's 'handles' or site root if none.
+        return \url( Current::bundleURL().$url );
+      } else {
+        // named route.
+        return \route(ltrim($url, ':'));
+      }
     } elseif (strrchr(strrchr($url, '@'), '.') === false) {
       // controller[.sub]@[action]
       return \action($url);

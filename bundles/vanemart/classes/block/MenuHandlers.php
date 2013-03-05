@@ -4,7 +4,7 @@ use Vane\MenuItem;
 
 class Block_MenuHandlers extends BaseBlock {
   static function menu_cart(MenuItem $item) {
-    $item->url = action('vanemart::cart');
+    $item->url = route('vanemart::cart');
     $item->classes[] = 'cart';
 
     $key = Cart::has() ? 'cart_filled' : 'cart';

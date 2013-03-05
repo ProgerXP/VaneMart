@@ -138,6 +138,16 @@ class Route {
     return $route->register();
   }
 
+  static function map($url, $servers, $name = null) {
+    $name === true and $name = strtolower(strtok(head((array) $servers), '@'));
+
+    return static
+      ::on($url)
+      ->as($name)
+      ->servers($servers)
+      ->layout(array('+#content' => '!'));
+  }
+
   //= null, Route
   static function current() {
     $route = \Request::$route;

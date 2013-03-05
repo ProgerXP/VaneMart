@@ -15,9 +15,9 @@ class Block_User extends BaseBlock {
 
   function post_login() {
     if (Input::get('to_reg')) {
-      return Redirect::to_action('vanemart::user@reg')->with_input();
+      return Redirect::to_route('vanemart::register')->with_input();
     } elseif ($this->ajax()) {
-      return static::back(action('vanemart::orders'));
+      return static::back(route('vanemart::orders'));
     } else {
       return $this->layout->with('ok', false);
     }
@@ -42,13 +42,13 @@ class Block_User extends BaseBlock {
 
   function post_reg() {
     if (Input::get('to_login')) {
-      return Redirect::to_action('vanemart::user@login')->with_input();
+      return Redirect::to_route('vanemart::login')->with_input();
     } else {
       $result = Auth::guest() ? $this->ajax() : Auth::user();
 
       if ($result instanceof Eloquent) {
         Auth::login($result->id);
-        return static::back(action('vanemart::orders'));
+        return static::back(route('vanemart::orders'));
       } else {
         return $result;
       }

@@ -55,7 +55,7 @@ class BaseModel extends Eloquent {
     if (head((array) $columns) !== '*') {
       return parent::all($ids, $columns);
     } elseif (!$ids) {
-      return static::cacheAll(parent::all());
+      return static::cacheAll(parent::all($ids));
     } else {
       $cached = $new = array();
 

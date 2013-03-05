@@ -1,17 +1,17 @@
 <?php
 
 if (Auth::guest()) {
-  $user = array('login' => 'user/login', 'register' => 'user/reg');
+  $user = array('login' => 'vanemart::login', 'register' => 'vanemart::register');
 } else {
-  $user = array('Vane::user', 'orders' => 'orders', 'logout' => 'user/logout');
+  $user = array('Vane::user', 'orders' => 'vanemart::orders', 'logout' => 'vanemart::logout');
 }
 
 return compact('user') + array(
-  'cart'                  => array('VaneMart::cart', 'checkout' => 'checkout'),
+  'cart'                  => array('VaneMart::cart', 'checkout' => 'vanemart::checkout'),
 
   'main'                  => array(
-    'help' => 'help', 'delivery' => 'help/delivery', 'wholesale' => 'help/opt',
-    'contacts' => 'help/contacts',
+    'help' => 'vanemart::help', 'delivery' => 'help/delivery', 'wholesale' => 'help/opt',
+    'contacts' => 'vanemart::contacts',
   ),
 
   'groups'                => 'VaneMart::categories',

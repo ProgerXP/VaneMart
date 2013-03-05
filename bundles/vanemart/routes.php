@@ -16,25 +16,12 @@ VRoute::on('(:bundle)/goods/(\d+-?[^/]*)')
   ->servers('VaneMart::product')
   ->layout(array(
     '=nav #group title'   => array('VaneMart::group@titleByProduct (:1)'),
-    '=nav #group list'    => array('VaneMart::group@listByProduct (:1)'),
+    '=nav #group list'    => array('VaneMart::group@byProduct (:1)'),
     '+#content'           => array('!'),
   ));
 
-VRoute::on('(:bundle)/cart/(:any?)/(:num?)')
-  ->as('vanemart::cart')
-  ->servers('VaneMart::cart@(:1)')
-  ->layout(array(
-    '=nav #group list'    => array('VaneMart::group@byList cart'),
-    '+#content'           => array('!'),
-  ));
-
-VRoute::on('(:bundle)/checkout')
-  ->as('vanemart::checkout')
-  ->servers('VaneMart::checkout')
-  ->layout(array(
-    '=nav #group list'    => array('VaneMart::group@byList checkout'),
-    '+#content'           => array('!'),
-  ));
+VRoute::map('(:bundle)/cart/(:any?)', 'VaneMart::cart@(:1)', true);
+VRoute::map('(:bundle)/checkout', 'VaneMart::checkout', true);
 
 VRoute::on('(:bundle)/orders')
   ->as('vanemart::orders')
@@ -53,12 +40,10 @@ VRoute::on('(:bundle)/orders/(:num)')
     '+#content'           => array('!'),
   ));
 
-VRoute::on('(:bundle)/user/(:any?)/(:num?)')
-  ->as('vanemart::user')
-  ->servers('VaneMart::user@(:1)')
-  ->layout(array(
-    '+#content'           => array('!'),
-  ));
+VRoute::map('(:bundle)/user/(:num)', 'VaneMart::user@show', true);
+VRoute::map('(:bundle)/user/reg', 'VaneMart::user@reg', 'vanemart::register');
+VRoute::map('(:bundle)/user/login', 'VaneMart::user@login', 'vanemart::login');
+VRoute::map('(:bundle)/user/logout', 'VaneMart::user@logout', 'vanemart::logout');
 
 VRoute::on('GET (:bundle)/thumb')
   ->as('vanemart::thumb')

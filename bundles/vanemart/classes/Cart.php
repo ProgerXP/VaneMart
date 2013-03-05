@@ -26,6 +26,7 @@ class Cart {
   //= array of Product with set 'qty' and 'price' attributes
   static function models() {
     $all = static::all();
+
     return S(Product::all(array_keys($all)), function ($product) use (&$all) {
       return $product->fill_raw(array(
         'qty'             => $all[$product->id],
