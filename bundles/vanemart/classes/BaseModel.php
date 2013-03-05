@@ -3,6 +3,8 @@
 class BaseModel extends Eloquent {
   //= hash of class => hash of id => Model
   static $cachedModels = array();
+  //= bool enables automatic url() generation
+  static $hasURL = false;
 
   static function cached($id, $clone = true) {
     $class = get_called_class();
@@ -53,7 +55,7 @@ class BaseModel extends Eloquent {
     if (head((array) $columns) !== '*') {
       return parent::all($ids, $columns);
     } elseif (!$ids) {
-      return static::cache(parent::all());
+      return static::cacheAll(parent::all());
     } else {
       $cached = $new = array();
 
@@ -82,5 +84,31 @@ class BaseModel extends Eloquent {
     $result = parent::save();
     $result and static::cache($this);
     return $result;
+  }
+
+  function to_array() {
+    return parent::to_array() + array(
+      'url'     => $this->url(),
+    );
+  }
+
+  function url() {
+    if (static::$hasURL) {
+      $url = $this->id;
+
+      if (isset($this->slug) and "{$this->slug}" !== '') {
+        $url .= '-'.$this->slug;
+      }
+
+      return route('vanemart::'.strtolower(class_basename($this)), $url);
+    }
+  }
+
+  function get_created_at() {
+    return strtotime($this->get_attribute('created_at'));
+  }
+
+  function get_updated_at() {
+    return strtotime($this->get_attribute('updated_at'));
   }
 }

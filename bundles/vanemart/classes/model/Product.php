@@ -2,6 +2,7 @@
 
 class Product extends BaseModel {
   static $table = 'goods';
+  static $hasURL = true;
 
   static function prettyOther(array $attrs) {
     foreach ($attrs as $name => &$value) {
@@ -18,11 +19,6 @@ class Product extends BaseModel {
 
   function pretty() {
     return $this->fill_raw( static::prettyOther($this->to_array()) );
-  }
-
-  function url() {
-    "{$this->slug}" === '' or $slug = '-'.$this->slug;
-    return route('vanemart::product', $this->id.$slug);
   }
 
   function image($width = null) {
@@ -55,12 +51,6 @@ class Product extends BaseModel {
     }
 
     return $this;
-  }
-
-  function to_array() {
-    return parent::to_array() + array(
-      'url'     => $this->url(),
-    );
   }
 }
 Product::$table = \Config::get('vanemart::general.table_prefix').Product::$table;

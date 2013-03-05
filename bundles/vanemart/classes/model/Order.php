@@ -2,6 +2,7 @@
 
 class Order extends BaseModel {
   static $table = 'orders';
+  static $hasURL = true;
 
   static function createBy(User $user, array $info) {
     static $fields = array('name', 'surname', 'address', 'phone', 'notes');
@@ -13,11 +14,10 @@ class Order extends BaseModel {
       'digits'            => 3,
     ));
 
-    $order = with(new static)
+    $order = with(new static(compact('password')))
       ->fill_raw(array_intersect_key($info, array_flip($fields)))
       ->fill_raw(array(
         'user'            => $user->id,
-        'password'        => $password,
         'sum'             => Cart::subtotal(),
         'ip'              => Request::ip(),
       ));
@@ -27,6 +27,10 @@ class Order extends BaseModel {
     }
 
     return $order;
+  }
+
+  function url() {
+    return route('vanemart::order', $this->id).'?code='.$this->password;
   }
 
   function goods() {

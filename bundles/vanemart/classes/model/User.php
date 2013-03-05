@@ -2,9 +2,10 @@
 
 class User extends BaseModel {
   static $table = 'users';
+  static $hasURL = true;
 
   static function findOrCreate(array $info) {
-    static $fields = array('name', 'surname', 'phone', 'notes', 'email');
+    static $fields = array('name', 'surname', 'phone', 'email');
 
     $model = User::where('email', '=', $info['email'])->first();
     if (!$model) {

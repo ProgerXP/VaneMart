@@ -2,6 +2,7 @@
 
 class Group extends BaseModel {
   static $table = 'groups';
+  static $hasURL = true;
 
   static function prettyOther(array $attrs) {
     foreach ($attrs as $name => &$value) {
@@ -15,11 +16,6 @@ class Group extends BaseModel {
 
   function pretty() {
     return $this->fill_raw( static::prettyOther($this->to_array()) );
-  }
-
-  function url() {
-    "{$this->slug}" === '' or $slug = '-'.$this->slug;
-    return route('vanemart::group', $this->id.$slug);
   }
 
   function parent() {

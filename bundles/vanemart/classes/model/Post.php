@@ -2,6 +2,7 @@
 
 class Post extends BaseModel {
   static $table = 'posts';
+  static $hasURL = true;
   static $typeModels = array('goods' => 'Product', 'orders' => 'Order');
 
   function object() {
