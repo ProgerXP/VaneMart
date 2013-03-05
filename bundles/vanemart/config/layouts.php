@@ -8,7 +8,7 @@ return array(
       null                => 'vanemart::full',
       // Variables to pass to it. Values are regular block(s). Leading '=' is
       // a shortcut to Vane::raw block that simply returns its input.
-      'title'             => '=VaneMart',
+      'title'             => '='.Vane\Current::config('company.long'),
       'styles'            => '='.VaneMart\asset('styles.less'),
       'scrpits'           => array(),
     ),

@@ -15,6 +15,15 @@ class Block extends DoubleEdge {
   //= null, Layout
   public $top;
 
+  // Short way of setting 'title' variable in the $top-view.
+  //= null don't do anything
+  //= str set to this string
+  //= Lang instance - same as string
+  //= array set to language variable $this->name + '.' + action + '.title' passing
+  //  it replacements in this array; if it's array() the language string is used as is
+  //= true act as array() if this block is a server, otherwise do nothing
+  public $title = true;
+
   // Executes block controller and converts its result to Response. See exec()
   // for the description of arguments.
   //= Laravel\Response
@@ -184,6 +193,29 @@ class Block extends DoubleEdge {
       } else {
         throw $e;
       }
+    }
+  }
+
+  protected function afterAction($action, array $params, &$response) {
+    $title = $this->title;
+    is_array($title) and $title = $this->formatTitle($this->title, $action);
+
+    if (isset($title) and !is_bool($title)) {
+      $this->viewData('title', (string) $title);
+    }
+
+    return parent::afterAction($action, $params, $response);
+  }
+
+  //= null, str
+  function formatTitle(array $vars, $action) {
+    $name = str_replace('::block.', '::', $this->name).".$action.title";
+
+    if (\Lang::has($name)) {
+      $page = \Lang::line($name, $this->title)->get();
+      $vars = compact('page') + \Vane\Current::config('company');
+      $vars = S::keep($vars, 'is_scalar');
+      return \Lang::line('vanemart::general.title', $vars)->get();
     }
   }
 

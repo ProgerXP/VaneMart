@@ -22,6 +22,7 @@ class ModelBlock extends BaseBlock {
       if (strtok(\URI::full(), '?') !== $model->url() and strtok(null) == '') {
         return Redirect::to($model->url(), 301);
       } else {
+        $this->title = $model->to_array();
         return $this->ajax($model);
       }
     }

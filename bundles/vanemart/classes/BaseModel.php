@@ -104,11 +104,19 @@ class BaseModel extends Eloquent {
     }
   }
 
-  function get_created_at() {
-    return strtotime($this->get_attribute('created_at'));
+  function get_created_at($attr = 'created_at') {
+    $value = $this->get_attribute($attr);
+
+    if (is_string($value)) {
+      return strtotime($value);
+    } elseif (is_object($value)) {
+      return $value->getTimestamp();
+    } else {
+      return $value;
+    }
   }
 
   function get_updated_at() {
-    return strtotime($this->get_attribute('updated_at'));
+    return $this->get_created_at('updated_at');
   }
 }

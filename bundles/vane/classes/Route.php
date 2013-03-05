@@ -83,6 +83,36 @@ class Route {
     return $url;
   }
 
+  //= null, str
+  static function findServerIn($servers, $method) {
+    $catchAll = null;
+    $key = strtolower($method);
+
+    foreach ((array) $servers as $method => $handler) {
+      if (is_int($method) and strrchr($handler, ' ') !== false) {
+        list($method, $handler) = explode(' ', $handler, 2);
+
+        if (ltrim($method, 'a..zA..Z') !== '') {
+          // this isn't a HTTP method name, e.g.: 'my@ctl arg a-2'.
+          $handler = "$method $handler";
+          $method = '*';
+        }
+      }
+
+      if (is_int($method) or $method === '*') {
+        $method = null;
+      }
+
+      if (in_array($key, explode(' ', $method))) {
+        return $handler;
+      } elseif (!$method and !$catchAll) {
+        $catchAll = $handler;
+      }
+    }
+
+    return $catchAll;
+  }
+
   static function assign($name, $url, $https = null) {
     \Router::find('');    // initialize $names by routing other bundles.
 
@@ -227,47 +257,35 @@ class Route {
   //* $args mixed - to pass to the server (if matched) when executing its method.
   //= null if nothing appropriate, Laravel\Response
   function serve($args = array()) {
-    $server = null;
-    $key = strtolower(\Request::method());
-
-    foreach ((array) $this->servers as $method => $handler) {
-      if (is_int($method) and strrchr($handler, ' ') !== false) {
-        list($method, $handler) = explode(' ', $handler, 2);
-
-        if (ltrim($method, 'a..zA..Z') !== '') {
-          // this isn't a HTTP method name, e.g.: 'my@ctl arg a-2'.
-          $handler = "$method $handler";
-          $method = '*';
-        }
-      }
-
-      if (is_int($method) or $method === '*') {
-        $method = null;
-      }
-
-      if (in_array($key, explode(' ', $method))) {
-        $server = $handler;
-        break;
-      } elseif (!$method and !$server) {
-        $server = $handler;
-      }
-    }
-
-    if ($server) {
+    if ($server = $this->findServer()) {
+      // replace (:N) patterns inside controller string, e.g.: 'user@(;1)'.
       static::references($server, $args);
 
+      // prepend arguments that can be defined in the server string after
+      // a space: 'help@show contacts'.
       $server = strtok($server, ' ');
       $prepend = ''.strtok(null);
       $prepend === '' or $args = array_merge(explode(' ', $prepend), $args);
 
-      $exec = Block::execCustom($server, compact('args') + array(
-        'layout'          => $this->lastLayout,
-        'response'        => true,
-      ));
-
-      $this->lastServer = $exec['obj'];
+      // construct server instance (either a Block or a regular Controller).
       $this->lastArgs = $args;
-      return $exec['response'];
+      $block = $this->lastServer = Block::factory($server);
+
+      if ($block instanceof Block) {
+        $block->top = $this->lastLayout;
+        $block->title === true and $block->title = array();
+      }
+
+      // produce response (can be of arbitrary type).
+      $this->lastArgs = $args;
+      $response = $block->execute(Block::actionFrom($server), $args);
+
+      // convert response to a Laravel\Response descendant.
+      return with(new Block)->toResponse($response);
     }
+  }
+
+  function findServer($method = null) {
+    return static::findServerIn($this->servers, $method ?: \Request::method());
   }
 }

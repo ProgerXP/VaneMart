@@ -27,7 +27,7 @@ class Block_Order extends BaseBlock {
 
   function get_show($id) {
     $order = Order::find($id);
-    $this->viewData('title', __('vanemart::order.show.title', $id)->get());
+    $this->title = array($id);
 
     if ($order->password === Input::get('code')) {
       $goods = $order->goods()->get();
