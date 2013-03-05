@@ -11,6 +11,10 @@ class Block extends DoubleEdge {
   //= null, hash
   public $input;
 
+  // Layout being rendered. Can be used to set view variables like 'title' or assets.
+  //= null, Layout
+  public $top;
+
   // Executes block controller and converts its result to Response. See exec()
   // for the description of arguments.
   //= Laravel\Response
@@ -44,13 +48,19 @@ class Block extends DoubleEdge {
     $options += array(
       'args'              => array(),
       'input'             => null,
+      'layout'            => null,
       'response'          => false,
       'return'            => null,
     );
     $input = isset($options['input']) ? arrize($options['input']) : null;
 
     $obj = static::factory($block);
-    ($obj instanceof self) and $obj->input = $input;
+
+    if ($obj instanceof self) {
+      $obj->input = $input;
+      $obj->top = $options['layout'];
+    }
+
     $exec = $obj->execute(static::actionFrom($block), arrizeAny($options['args']));
 
     if ($options['response']) {
@@ -203,6 +213,15 @@ class Block extends DoubleEdge {
       return $default;
     } else {
       throw new \Px\ENoInput($var);
+    }
+  }
+
+  function viewData($name, $value = null) {
+    if ($view = $this->top) {
+      return call_user_func_array(array($view, 'viewData'), func_get_args());
+    } else {
+      Log::warn_Block("Cannot do viewData() - block [{$this->name}] has no".
+                      " top-Layout assigned.");
     }
   }
 }

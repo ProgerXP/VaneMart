@@ -6,6 +6,7 @@ class LayoutHandler extends LayoutItem {
   public $action;           //= str can be empty
   public $args;             //= array, str to pass to the controller
   public $options;          //= hash
+  public $layout;           //= null, Layout main layout that's being rendered
 
   function __construct($handler, $options = array()) {
     $this->extractTagTo($this->tag, $handler);
@@ -30,7 +31,14 @@ class LayoutHandler extends LayoutItem {
   function response($slugs = null) {
     $controller = $this->fullID();
     Route::references($controller, $slugs);
-    return Block::execResponse($controller, $this->argArray($slugs), $this->options);
+
+    return Block::execCustom($controller, array(
+      'args'              => $this->argArray($slugs),
+      'input'             => $this->options,
+      'layout'            => $this->layout,
+      'response'          => true,
+      'return'            => 'response',
+    ));
   }
 
   function fullID() {

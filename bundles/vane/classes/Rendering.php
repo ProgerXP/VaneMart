@@ -15,6 +15,16 @@ class Rendering {
     return static::make($main ?: $toRender)->render($toRender);
   }
 
+  static function likeViewVar(Layout $toRender, Layout $main = null, $slugs = null) {
+    $rendering = static::make($main)->slugs($slugs)->render($toRender);
+
+    if (count($rendering->result) > 1) {
+      return array_values($rendering->joinContents());
+    } else {
+      return $rendering->join();
+    }
+  }
+
   static function make(Layout $main, $onlyBlocks = null) {
     return new static($main, $onlyBlocks);
   }
@@ -46,8 +56,11 @@ class Rendering {
 
       if ($block instanceof Layout) {
         foreach ($block as $child) { $this->render($child, $key); }
+      } elseif ($block->isServed()) {
+        $this->put($block, $key, $this->served);
       } else {
-        $response = $block->isServed() ? $this->served : $block->response($this->slugs);
+        $block->layout = $this->main;
+        $response = $block->response($this->slugs);
         $this->put($block, $key, $response);
       }
 

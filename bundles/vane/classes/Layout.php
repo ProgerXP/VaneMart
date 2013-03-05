@@ -226,14 +226,7 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
     if ($view and !$outmost) {
       foreach ($this as $block) {
         if ($block instanceof self and ($name = $block->fullID()) !== '') {
-          $rendering = Rendering::make($this)->slugs($this->slugs)->render($block);
-
-          if (count($rendering->result) > 1) {
-            $data = array_values($rendering->joinContents());
-          } else {
-            $data = $rendering->join();
-          }
-
+          $data = Rendering::likeViewVar($block, $this, $this->slugs);
           array_set($view->data, $name, $data);
         }
       }
@@ -261,6 +254,35 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
       return new \View($view);
     } elseif ($view instanceof \Laravel\View) {
       return $view;
+    }
+  }
+
+  // function ($name)
+  // Read view variable.
+  //= null if this layout has no emptyView(), mixed
+  //
+  // function (array $variables)
+  // Assign view variables. See single variable version for details.
+  //
+  // function ($name, $value)
+  // Assign single view variable. Does nothing if this layout has no emptyView().
+  // Each variable can be prefixed with regular alteration symbol ('+', '^', '=')
+  // - if not '=' is assumed. $value is treated as raw data (Block_Raw).
+  function viewData($name, $value = null) {
+    if (func_num_args() > 1 or is_array($name)) {
+      is_array($name) or $name = array($name => $value);
+
+      $alter = S::keys($name, function ($value, $name) {
+        if (!isset(LayoutAlter::$typeChars[ $name[0] ])) {
+          $name = "=$name";
+        }
+
+        return array($name[0].'. '.substr($name, 1), "=$value");
+      });
+
+      return $this->alter($alter);
+    } elseif ($block = $this->find($name)) {
+      return Rendering::likeViewVar($block, $this, $this->slugs);
     }
   }
 

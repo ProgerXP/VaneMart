@@ -64,6 +64,9 @@ class Route {
   // and its response is returned without using Vane Layout mechanism.
   public $naked = false;
 
+  //= null, Layout last used to generate route response
+  public $lastLayout;
+
   //= null, Block
   public $lastServer;
 
@@ -212,12 +215,12 @@ class Route {
     if ($this->naked) {
       return $this->serve($slugs);
     } else {
-      return Layout
+      $this->lastLayout = Layout
         ::fromConfig($this->baseLayouts)
         ->alter($this->layout)
-        ->slugs($slugs)
-        ->served($this->serve($slugs))
-        ->response();
+        ->slugs($slugs);
+
+      return $this->lastLayout->served($this->serve($slugs))->response();
     }
   }
 
@@ -257,7 +260,11 @@ class Route {
       $prepend = ''.strtok(null);
       $prepend === '' or $args = array_merge(explode(' ', $prepend), $args);
 
-      $exec = Block::execCustom($server, compact('args') + array('response' => true));
+      $exec = Block::execCustom($server, compact('args') + array(
+        'layout'          => $this->lastLayout,
+        'response'        => true,
+      ));
+
       $this->lastServer = $exec['obj'];
       $this->lastArgs = $args;
       return $exec['response'];
