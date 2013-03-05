@@ -1,9 +1,9 @@
 <?php
 
 if (Auth::guest()) {
-  $user = array('login' => 'users/login', 'register' => 'users/reg');
+  $user = array('login' => 'user/login', 'register' => 'user/reg');
 } else {
-  $user = array('VaneMart::user', 'orders' => 'orders');
+  $user = array('Vane::user', 'orders' => 'orders', 'logout' => 'user/logout');
 }
 
 return compact('user') + array(

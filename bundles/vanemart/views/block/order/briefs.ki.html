@@ -1,0 +1,30 @@
+<ol $rows "vmart-order-briefs">
+  <li "status-$status { $updated_at + 3*24*3600 >= time() ? 'recent' : '' }">
+    <a "$url">
+      {= HLEx::time(date('d.m.Y', $created_at), $created_at, true) }
+      —
+      { __('vanemart::order.briefs.from', compact('name', 'surname')) }
+    </a>
+
+    $=counts
+      <span "count">{= HLEx::langNum(__('vanemart::general.goods'), $count) }</span>
+    $^counts
+
+    $=sums
+      <span "sum">{= HLEx::langNum(__('vanemart::general.price'), $sum) }</span>
+    $^sums
+
+    <span "inside">
+      {= __('vanemart::order.briefs.count_sum', compact('counts', 'sums')) }
+    </span>
+
+    <span "info">
+      <span "status">
+        { __("vanemart::order.status.$status") }</span
+      >"vanemart::order.briefs.separator"
+      <span "updated">
+        {= __('vanemart::order.updated', HLEx::time(date('d.m', $updated_at), $updated_at)) }
+      </span>
+    </span>
+  </li>
+</endol>

@@ -38,14 +38,24 @@ VRoute::on('(:bundle)/checkout')
 
 VRoute::on('(:bundle)/orders')
   ->as('vanemart::orders')
-  ->servers('VaneMart::order')
+  ->servers('VaneMart::order@briefs')
   ->layout(array(
-    '+#content'           => array('!'),
+    '=nav #group title'   => array('='.__('vanemart::order.title')),
+    '=nav #group list'    => array('!'),
   ));
 
 VRoute::on('(:bundle)/orders/(:num)')
   ->as('vanemart::order')
   ->servers('VaneMart::order@show')
+  ->layout(array(
+    '=nav #group title'   => array('='.__('vanemart::order.title')),
+    '=nav #group list'    => array('VaneMart::order@briefs'),
+    '+#content'           => array('!'),
+  ));
+
+VRoute::on('(:bundle)/user/(:any?)/(:num?)')
+  ->as('vanemart::user')
+  ->servers('VaneMart::user@(:1)')
   ->layout(array(
     '+#content'           => array('!'),
   ));

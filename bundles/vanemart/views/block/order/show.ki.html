@@ -1,0 +1,31 @@
+<?extract($order, EXTR_SKIP)?>
+
+<h1>{ __('vanemart::order.show.title', $order) }</h1>
+
+<table "col-2 wide color status-$status">
+  <tr "status">
+    <th>"vanemart::order.status.title"</th>
+    <td>
+      <textarea "status"></textarea>
+    </td>
+  </tr>
+  <tr "sum">
+    <th>"vanemart::order.total"</th>
+    <td>{= HLEx::langNum(__('vanemart::general.price'), $sum) }</td>
+  </tr>
+  <tr "link">
+    <th>"vanemart::order.link"</th>
+    <td>
+      {= __('vanemart::order.link_text', array('<a href="'.$url.'">', '</a>')) }
+    </td>
+  </tr>
+
+  <each ${ array('name', 'surname', 'address', 'phone', 'notes', 'ip') }>
+    <tr "$item">
+      <th>{ __("vanemart::field.$item") }</th>
+      <td>
+        { $$item ?: '—' }
+      </td>
+    </tr>
+  </each>
+</table>

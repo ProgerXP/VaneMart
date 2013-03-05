@@ -1,0 +1,38 @@
+<h1>"vanemart::user.reg.title"</h1>
+
+<p "info">
+  {= __('vanemart::user.reg.legend', array('<a href='.action('vanemart::user@login').'>', '</a>')) }
+</p>
+
+<form "vanemart::user@reg" "col-2">
+  <table "col-2 color">
+    <each ${ array('name', 'surname', 'phone', 'email') }>
+      <tr>
+        <th>{ __("vanemart::field.$item") }</th>
+        <td>
+          <input "$item">
+          <errors>
+        </td>
+      </tr>
+    </each>
+    <tr>
+      <th>"vanemart::field.password"</th>
+      <td>
+        <password "password">
+      </td>
+    </tr>
+    <tr>
+      <th>"vanemart::user.reg.referee"</th>
+      <td>
+        <input "referee">
+        <p>"vanemart::user.reg.reflegend"</p>
+      </td>
+    </tr>
+    <tr "btn">
+      <td colspan=2>
+        <submit class=default>"vanemart::user.reg.submit"</submit>
+        <submit "to_login">"vanemart::user.reg.ordered"</submit>
+      </td>
+    </tr>
+  </table>
+</form>
