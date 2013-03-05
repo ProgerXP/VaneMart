@@ -5,13 +5,22 @@ class Block_Checkout extends BaseBlock {
     $this->filter('before', 'csrf')->only(array('add', 'set'));
   }
 
-  // GET checkout/index       - outputs forms for checking out
+  /*---------------------------------------------------------------------
+  | GET checkout/index
+  |
+  | Outputs form for checking out.
+  |--------------------------------------------------------------------*/
   function get_index() {
     return true;
   }
 
-  // POST checkout/index      - completes the order
-  //   ?csrf=CSRF             - REQUIRED
+  /*---------------------------------------------------------------------
+  | POST checkout/index
+  |
+  | Places the order.
+  |----------------------------------------------------------------------
+  | * csrf=CSRF     - REQUIRED.
+  |--------------------------------------------------------------------*/
   function post_index() {
     if (!Cart::has()) {
       return static::back();

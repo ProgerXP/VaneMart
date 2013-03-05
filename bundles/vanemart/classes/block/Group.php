@@ -4,35 +4,45 @@ class Block_Group extends ModelBlock {
   static $model = 'VaneMart\\Group';
 
   static function listResponse(array $rows) {
-    // precache all connected images as they're used in the view.
-    File::all(prop('image', $rows));
+    if ($rows) {
+      $current = static::detectCurrentProduct();
+      // prefetch all connected images as they're used in the view.
+      File::all(prop('image', $rows));
 
-    $current = static::detectCurrentProduct();
-
-    return array('rows' => S($rows, function ($product) use ($current) {
-      return array(
-        'image'           => $product->image(320),
-        'current'         => $current and $current->id === $product->id,
-      ) + $product->to_array();
-    }));
+      return array('rows' => S($rows, function ($product) use ($current) {
+        return array(
+          'image'           => $product->image(320),
+          'current'         => $current and $current->id === $product->id,
+        ) + $product->to_array();
+      }));
+    }
   }
 
   //= Product
   static function detectCurrentProduct() {
     $route = \Vane\Route::current();
-
-    if ($route and $route->lastServer instanceof Block_Product and
-        $route->lastServer->product) {
+    if ($route and $route->lastServer instanceof Block_Product) {
       return $route->lastServer->product;
     }
   }
 
+  /*---------------------------------------------------------------------
+  | GET group/title/ID
+  |
+  | Simply returns group's title.
+  |--------------------------------------------------------------------*/
   function get_title($id = null) {
     if ($group = static::find($id)) {
       return $group->title;
     }
   }
 
+  /*---------------------------------------------------------------------
+  | GET group/index/ID
+  |
+  | Outputs group contents in proper order ignoring unavailable items and
+  | variations of a product.
+  |--------------------------------------------------------------------*/
   function ajax_get_index($id = null) {
     if ($group = static::find($id)) {
       $rows = $group->goods(true)
@@ -49,11 +59,21 @@ class Block_Group extends ModelBlock {
     }
   }
 
+  /*---------------------------------------------------------------------
+  | GET group/titleByProduct/ID
+  |
+  | Returns title of the group to which product ID belongs to.
+  |--------------------------------------------------------------------*/
   function get_titleByProduct($id = null) {
     return $this->actByProduct('get_title', $id);
   }
 
-  function get_listByProduct($id = null) {
+  /*---------------------------------------------------------------------
+  | GET group/byProduct/ID
+  |
+  | Same as GET group/index but ID is product's ID which group is listed.
+  |--------------------------------------------------------------------*/
+  function get_byProduct($id = null) {
     return $this->actByProduct('ajax_get_index', $id);
   }
 
@@ -62,40 +82,60 @@ class Block_Group extends ModelBlock {
       $group = Group::find($model->group);
 
       if ($group and $group = $group->root()) {
-        $view = $this->name.'.'.substr(strrchr($method, '_'), 1);
-        View::exists($view) and $this->layout = View::make($view);
+        $this->layout = '.'.substr(strrchr($method, '_'), 1);
         return $this->$method($group);
       }
     }
   }
 
+  /*---------------------------------------------------------------------
+  | GET group/byProduct [/NAME]
+  |
+  | Same as GET group/index but displays items listed in vm_goods_lists
+  | table under the given NAME.
+  |----------------------------------------------------------------------
+  | * NAME          - optional; primary list name to look up. Defaults to
+  |   'main'. Can be '*' - if this block is part of another block with a
+  |   specific server its controller name is used: 'bndl::ctl.sub@actn' -
+  |   list name is 'ctl.sub'. If controller starts with 'block.' (e.g.
+  |   'vanemart::block.group' it's removed.
+  | * default=NAME  - optional; if present and no list with NAME passed
+  |   in the URL exists this name is used instead. Defaults to 'main'.
+  |--------------------------------------------------------------------*/
   function get_byList($name = 'main') {
-    $query = ProductListItem
-      ::order_by('sort')
-      ->where('type', '=', $name);
-
-    if ($default = $this->in('default', 'main')) {
-      $query->or_where('type', '=', $default);
+    if ($name === '*') {
+      if ($route = \Vane\Route::current() and $route->lastServer) {
+        $name = \Bundle::element($route->lastServer->name);
+        $name = S::tryUnprefix(strtok($name, '@'), 'block.');
+      } else {
+        $name = null;
+      }
     }
 
-    $list = $query->get();
+    $query = ProductListItem::order_by('sort');
 
-    if ($default and !S::first($list, array('?->type === ?', $name))) {
-      $type = $default;
-    } else {
-      $type = $name;
+    "$name" === '' or $query->where('type', '=', $name);
+    $default = $this->in('default', 'main');
+    "$default" === '' or $query->or_where('type', '=', $default);
+
+    if ($query->table->wheres and $list = $query->get()) {
+      if ($default and !S::first($list, array('?->type === ?', $name))) {
+        $type = $default;
+      } else {
+        $type = $name;
+      }
+
+      $list = S::keep($list, array('?->type === ?', $type));
+      $goods = S::keys(Product::all(prop('product', $list)), '?->id');
+      $ordered = array();
+
+      foreach ($list as $item) {
+        $product = &$goods[$item->product];
+        $product and $ordered[] = $product;
+      }
+
+      $this->layout = '.index';
+      return static::listResponse($ordered);
     }
-
-    $list = S::keep($list, array('?->type === ?', $type));
-    $goods = S::keys(Product::all(prop('product', $list)), '?->id');
-    $ordered = array();
-
-    foreach ($list as $item) {
-      $product = &$goods[$item->product];
-      $product and $ordered[] = $product;
-    }
-
-    $this->layout = '.index';
-    return static::listResponse($ordered);
   }
 }

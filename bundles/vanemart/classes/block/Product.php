@@ -4,6 +4,11 @@ class Block_Product extends ModelBlock {
   static $model = 'VaneMart\\Product';
   public $product;      //= Product model
 
+  /*---------------------------------------------------------------------
+  | GET goods/index/ID
+  |
+  | Displays product info.
+  |--------------------------------------------------------------------*/
   function ajax_get_index($id = null) {
     if ($model = static::find($id)) {
       $vars = $model->to_array() + array('root' => $model->group()->first()->root()->title);

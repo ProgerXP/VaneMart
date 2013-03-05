@@ -21,7 +21,11 @@ class Block_Cart extends BaseBlock {
     $this->filter('before', 'csrf')->only(array('add', 'set'));
   }
 
-  // GET cart/index           - lists cart contents
+  /*---------------------------------------------------------------------
+  | GET cart/index
+  |
+  | Lists cart contents.
+  |--------------------------------------------------------------------*/
   function get_index() {
     return array('rows' => $this->ajax());
   }
@@ -32,13 +36,18 @@ class Block_Cart extends BaseBlock {
     });
   }
 
-  // GET cart/add             - adds or removes (qty <= 0) items to/from cart
-  //   [/ID]                  - optional; if given and not present in ?id and
-  //                            ?sku adds ID product with a qty of 1
-  //   ?csrf=CSRF             - REQUIRED
-  //   ?id[ID]=QTY            - optional; adds items by their ID
-  //   ?sku[SKU]=QTY          - optional; adds items by SKU ignoring unknown codes
-  //   ?checkout=1            - optional; redirects to checkout@index instead of back
+  /*---------------------------------------------------------------------
+  | GET cart/add [/ID]
+  |
+  | Adds or removes (qty <= 0) cart items.
+  |----------------------------------------------------------------------
+  | * ID            - optional; if given and not present in ?id and ?sku
+  |   adds ID product with a qty of 1.
+  | * csrf=CSRF     - REQUIRED
+  | * id[ID]=QTY    - optional; adds items by their ID.
+  | * sku[SKU]=QTY  - optional; adds items by SKU ignoring unknown codes.
+  | * checkout=1    - optional; redirects to checkout@index instead of back.
+  |--------------------------------------------------------------------*/
   function get_add($id = null) {
     $goods = static::fromSKU(Input::get('sku')) + arrize(Input::get('id'));
     $id and $goods += array($id => 1);
@@ -61,18 +70,26 @@ class Block_Cart extends BaseBlock {
     }
   }
 
-  // GET cart/set[/ID]
-  // Parameters are identical to GET cart/add.
+  /*---------------------------------------------------------------------
+  | GET cart/set [/ID]
+  |
+  | Clears cart contents and adds listed items.
+  |----------------------------------------------------------------------
+  | Parameters are identical to GET cart/add.
+  |--------------------------------------------------------------------*/
   function get_set() {
     Cart::clear();
     return $this->makeResponse($this->get_add());
   }
 
-  // GET cart/clear           - removes one or all items from cart
-  //   [/ID]                  - optional; alias to ?id[]=ID
-  //   ?id[]=ID&...           - optional; items to remove from cart
-  //
-  // If no IDs are given removes all items.
+  /*---------------------------------------------------------------------
+  | GET cart/clear [/ID]
+  |
+  | Removes items from cart. If no IDs are given removes everything.
+  |----------------------------------------------------------------------
+  | * ID            - optional; alias to ?id[]=ID.
+  | * id[]=ID       - optional; items to remove from cart.
+  |--------------------------------------------------------------------*/
   function get_clear($id = null) {
     $ids = (array) Input::get('id');
     $id and $ids[] = $id;
@@ -85,7 +102,7 @@ class Block_Cart extends BaseBlock {
       $status = 'vanemart::cart.clear';
     }
 
-    return static::back( Cart::has() ? action('vanemart::cart@') : '/' )
+    return static::back( Cart::has() ? route('vanemart::cart') : '/' )
       ->with('status', __($status, array('title' => ''))->get());
   }
 }
