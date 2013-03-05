@@ -12,6 +12,7 @@ return array(
 
   'login'                 => 'Вход',
   'register'              => 'Регистрация',
-  'user'                  => ':0',
+  'user'                  => ':name',
   'orders'                => 'Ваши заказы',
+  'logout'                => 'Выйти',
 );
