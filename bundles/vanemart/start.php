@@ -7,7 +7,8 @@ if (!Bundle::exists('vane')) {
   Vane\Current::set('vanemart::');
 }
 
-Px\Plarx::supersede('VaneMart');
+Autoloader::alias('Vane\\Str', 'VaneMart\\Str');
+Px\Plarx::supersede('VaneMart', 'Str');
 Squall\initEx('VaneMart');
 Vane\overrideHTMLki('vanemart::', 'VaneMart');
 

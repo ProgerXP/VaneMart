@@ -26,8 +26,8 @@ class Block_Checkout extends BaseBlock {
       return static::back();
     } elseif ($min = Cart::isTooSmall()) {
       $status = HLEx::lang('vanemart::checkout.small', array(
-        'min'     => HLEx::langNum(__('vanemart::general.price'), $min),
-        'total'   => HLEx::langNum(__('vanemart::general.price'), Cart::subtotal()),
+        'min'     => HLEx::langNum('general.price', $min),
+        'total'   => HLEx::langNum('general.price', Cart::subtotal()),
       ));
 
       return static::back()->with(copact('status'));

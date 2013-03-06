@@ -15,10 +15,10 @@ class Block_MenuHandlers extends BaseBlock {
 
       $replaces = array(
         'sumn'              => Str::number($sum),
-        'summ'              => Str::langNum(__('vanemart::general.price'), $sum),
-        'sumf'              => Str::langNum(__('vanemart::general.currency_full'), $sum),
-        'sums'              => Str::langNum(__('vanemart::general.currency_short'), $sum),
-        'count'             => Str::langNum(__('vanemart::general.goods'), Cart::count()),
+        'summ'              => Str::langNum('general.price', $sum),
+        'sumf'              => Str::langNum('general.currency_full', $sum),
+        'sums'              => Str::langNum('general.currency_short', $sum),
+        'count'             => Str::langNum('general.goods', Cart::count()),
       );
 
       $item->caption = Str::format($item->caption, $replaces);
