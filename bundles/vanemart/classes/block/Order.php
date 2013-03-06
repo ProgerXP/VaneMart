@@ -18,15 +18,6 @@ class Block_Order extends BaseBlock {
   | Ouputs list of orders current user (buyer or manager) has access to.
   |--------------------------------------------------------------------*/
   function get_index() {
-    return $this->briefs();
-  }
-
-  /*---------------------------------------------------------------------
-  | GET order/briefs
-  |
-  | Similar to GET order/index but outputs a list with only some info.
-  |--------------------------------------------------------------------*/
-  function get_briefs() {
     $orders = Order::order_by('updated_at', 'desc')->order_by('created_at', 'desc');
     $orders = $orders->get();
 

@@ -20,12 +20,18 @@ VRoute::on('(:bundle)/goods/(\d+-?[^/]*)')
     '+#content'           => array('!'),
   ));
 
-VRoute::map('(:bundle)/cart/(:any?)', 'VaneMart::cart@(:1)', true);
+VRoute::on('(:bundle)/cart/(:any?)')
+  ->as('vanemart::cart')
+  ->servers('VaneMart::cart@(:1)')
+  ->layout(array(
+    '=nav #group list'   => array('!'),
+  ));
+
 VRoute::map('(:bundle)/checkout', 'VaneMart::checkout', true);
 
 VRoute::on('(:bundle)/orders')
   ->as('vanemart::orders')
-  ->servers('VaneMart::order@briefs')
+  ->servers('VaneMart::order')
   ->layout(array(
     '=nav #group title'   => array('='.__('vanemart::order.title')),
     '=nav #group list'    => array('!'),
@@ -36,7 +42,7 @@ VRoute::on('(:bundle)/orders/(:num)')
   ->servers('VaneMart::order@show')
   ->layout(array(
     '=nav #group title'   => array('='.__('vanemart::order.title')),
-    '=nav #group list'    => array('VaneMart::order@briefs'),
+    '=nav #group list'    => array('VaneMart::order'),
     '+#content'           => array('!'),
   ));
 

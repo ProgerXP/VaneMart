@@ -1,4 +1,4 @@
-<ul $rows "vmart-order-briefs v-rows">
+<ul $rows "vmart-orders v-rows">
   <li "status-$status { $current ? 'current' : '' } { $recent ? 'recent' : '' }" data-id=$id>
     $=created
       <span "created">
@@ -32,22 +32,22 @@
 
     <p "title">
       <a "$url">
-        {= __('vanemart::order.briefs.item_title', $item + compact('created')) }
+        {= __('vanemart::order.index.item_title', $item + compact('created')) }
       </a>
     </p>
 
     <div "details">
       <p "from">
-        { __('vanemart::order.briefs.from', compact('name', 'surname')) }
+        { __('vanemart::order.index.from', compact('name', 'surname')) }
       </p>
 
       <p "contents">
-        {= __('vanemart::order.briefs.count_sum', compact('counts', 'sums')) }
+        {= __('vanemart::order.index.count_sum', compact('counts', 'sums')) }
       </p>
 
       <p "status">
         <if $updated_at>
-          {= __('vanemart::order.briefs.info', compact('status', 'updated')) }
+          {= __('vanemart::order.index.info', compact('status', 'updated')) }
         <else>
           {= $status }
         </if>

@@ -10,8 +10,8 @@ return array(
     'new'                 => 'Новый',
   ),
 
-  // order@briefs
-  'briefs'                => array(
+  // order@index
+  'index'                 => array(
     'item_title'          => 'Заказ №:id от :created',
     'from'                => ':surname :name',
     'count_sum'           => ':counts на сумму :sums',
