@@ -33,7 +33,7 @@ class Current {
     return \Config::get(static::expand($name));
   }
 
-  static function lang($name) {
-    return \Lang::line(static::expand($name))->get();
+  static function lang($name, $default = null) {
+    return \Lang::line(static::expand($name))->get(null, $default);
   }
 }

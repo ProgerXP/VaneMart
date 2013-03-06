@@ -59,7 +59,7 @@ class Block_Cart extends BaseBlock {
     }
 
     if ($single) {
-      $key = 'vanemart::cart.'.($single[1] ? 'put' : 'removed');
+      $key = 'vanemart::cart.status.'.($single[1] ? 'put' : 'removed');
       \Session::flash('status', HLEx::lang($key, $single[0]->to_array()));
     }
 
@@ -96,10 +96,10 @@ class Block_Cart extends BaseBlock {
 
     if ($ids) {
       foreach ($ids as $id) { Cart::clear($id); }
-      $status = 'vanemart::cart.remove';
+      $status = 'vanemart::cart.status.remove';
     } else {
       Cart::clear();
-      $status = 'vanemart::cart.clear';
+      $status = 'vanemart::cart.status.clear';
     }
 
     return static::back( Cart::has() ? route('vanemart::cart') : '/' )
