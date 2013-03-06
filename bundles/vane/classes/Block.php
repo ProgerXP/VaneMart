@@ -198,24 +198,28 @@ class Block extends DoubleEdge {
 
   protected function afterAction($action, array $params, &$response) {
     $title = $this->title;
-    is_array($title) and $title = $this->formatTitle($this->title, $action);
 
-    if (isset($title) and !is_bool($title)) {
+    if (is_array($title)) {
+      $vars = $this->titleVars($this->title, $action);
+      $this->viewData('title', $vars['page']);
+
+      $winTitle  = \Lang::line('vanemart::general.window_title', $vars)->get();
+      $this->viewData('winTitle', $winTitle);
+    } elseif (isset($title) and !is_bool($title)) {
       $this->viewData('title', (string) $title);
     }
 
     return parent::afterAction($action, $params, $response);
   }
 
-  //= null, str
-  function formatTitle(array $vars, $action) {
+  //= null, array vars
+  function titleVars(array $vars, $action) {
     $name = str_replace('::block.', '::', $this->name).".$action.title";
 
     if (\Lang::has($name)) {
       $page = \Lang::line($name, $this->title)->get();
       $vars = compact('page') + \Vane\Current::config('company');
-      $vars = S::keep($vars, 'is_scalar');
-      return \Lang::line('vanemart::general.title', $vars)->get();
+      return S::keep($vars, 'is_scalar');
     }
   }
 
