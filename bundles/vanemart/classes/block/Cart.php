@@ -49,7 +49,7 @@ class Block_Cart extends BaseBlock {
   | * checkout=1    - optional; redirects to checkout@index instead of back.
   |--------------------------------------------------------------------*/
   function get_add($id = null) {
-    $goods = static::fromSKU(Input::get('sku')) + arrize(Input::get('id'));
+    $goods = static::fromSKU($this->in('sku', null)) + arrize($this->in('id', null));
     $id and $goods += array($id => 1);
     $single = null;
 
@@ -63,7 +63,7 @@ class Block_Cart extends BaseBlock {
       \Session::flash('status', HLEx::lang($key, $single[0]->to_array()));
     }
 
-    if (Input::get('checkout')) {
+    if ($this->in('checkout', null)) {
       return Redirect::to_route('vanemart::checkout');
     } else {
       return static::back();
@@ -91,7 +91,7 @@ class Block_Cart extends BaseBlock {
   | * id[]=ID       - optional; items to remove from cart.
   |--------------------------------------------------------------------*/
   function get_clear($id = null) {
-    $ids = (array) Input::get('id');
+    $ids = (array) $this->in('id', null);
     $id and $ids[] = $id;
 
     if ($ids) {

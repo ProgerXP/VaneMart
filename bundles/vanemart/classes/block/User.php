@@ -5,16 +5,28 @@ use Auth;
 class Block_User extends BaseBlock {
   const PASSWORD_RULE = 'required|min:6|max:50';
 
-  // GET user/index           - login form
-  //   ?back=URL              - optional; URL to return to after successful login
-  //   ?remember=1            - remember login in this browser or not
-  //   ?to_reg=1              - if set the user is redirected to user@reg
+  /*---------------------------------------------------------------------
+  | GET user/index
+  |
+  | Shows login form.
+  |--------------------------------------------------------------------*/
   function get_login() {
     return true;
   }
 
+  /*---------------------------------------------------------------------
+  | POST user/index
+  |
+  | Attempts to log the user into the system. Does nothing if he's
+  | already authorized.
+  |----------------------------------------------------------------------
+  | * back=URL      - optional; URL to return to after successful login.
+  | * remember=0    - optional; remember login in this browser or not.
+  | * to_reg=0      - optional; if set the user is redirected with the
+  |   input to GET user/reg instead of being attempted to log in.
+  |--------------------------------------------------------------------*/
   function post_login() {
-    if (Input::get('to_reg')) {
+    if ($this->in('to_reg', false)) {
       return Redirect::to_route('vanemart::register')->with_input();
     } elseif ($this->ajax()) {
       return static::back(route('vanemart::orders'));
@@ -25,7 +37,7 @@ class Block_User extends BaseBlock {
 
   function ajax_post_login() {
     if (!Auth::check()) {
-      $credentials = array('username' => Input::must('email')) +
+      $credentials = array('username' => $this->in('email')) +
                      Input::only(array('password', 'remember'));
       Auth::attempt($credentials);
     }
@@ -33,20 +45,32 @@ class Block_User extends BaseBlock {
     return Auth::check();
   }
 
-  // GET user/reg             - signup form
-  //   ?back=URL              - optional; URL to return to after registration
-  //   ?to_login=1            - if set the user is redirected to user@login
+  /*---------------------------------------------------------------------
+  | GET user/index
+  |
+  | Shows registration form.
+  |--------------------------------------------------------------------*/
   function get_reg() {dd(\Hash::make('a'));
     return true;
   }
 
+  /*---------------------------------------------------------------------
+  | POST user/index
+  |
+  | Attempts to log the user into the system.
+  |----------------------------------------------------------------------
+  | * back=URL      - optional; URL to return to after successful signup.
+  | * to_login=0    - optional; if set the user is redirected with the
+  |   input to GET user/login instead of attempting to being registered.
+  |--------------------------------------------------------------------*/
   function post_reg() {
-    if (Input::get('to_login')) {
+    if ($this->in('to_login', false)) {
       return Redirect::to_route('vanemart::login')->with_input();
     } else {
       $result = Auth::guest() ? $this->ajax() : Auth::user();
 
       if ($result instanceof Eloquent) {
+        Auth::logout();
         Auth::login($result->id);
         return static::back(route('vanemart::orders'));
       } else {
@@ -65,9 +89,10 @@ class Block_User extends BaseBlock {
       'referee'           => 'integer',
     );
 
-    $valid = Validator::make(Input::all(), $rules);
+    $valid = Validator::make($this->in(), $rules);
+    $email = $this->in('email', null);
 
-    if (User::where('email', '=', Input::get('email'))->count()) {
+    if ($email and User::where('email', '=', $email)->count()) {
       return Validator::withError('login', 'taken');
     } elseif ($valid->fails()) {
       return $valid;
@@ -76,7 +101,7 @@ class Block_User extends BaseBlock {
       $user->referee = null;
       $user->reg_ip = Request::ip();
 
-      if ($referee = Input::get('referee')) {
+      if ($referee = $this->in('referee', 0)) {
         $referee = User
           ::where('id', '=', $referee)
           ->or_where('email', '=', $referee)
@@ -94,8 +119,13 @@ class Block_User extends BaseBlock {
     }
   }
 
-  // GET user/logout          - lougs user out of the system
-  //   ?back=URL              - optional
+  /*---------------------------------------------------------------------
+  | GET user/index
+  |
+  | Logs user out of the system. Does nothing if he's unauthorized.
+  |----------------------------------------------------------------------
+  | * back=URL      - optional; URL to redirect to.
+  |--------------------------------------------------------------------*/
   function get_logout() {
     $this->ajax();
     return static::back();

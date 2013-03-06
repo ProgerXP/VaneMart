@@ -47,12 +47,12 @@ class Block_Order extends BaseBlock {
   |
   | Displays order info.
   |--------------------------------------------------------------------*/
-  function get_show($id) {
+  function get_show($id = null) {
     if ($order = Order::find($id)) {
       $this->title = array($id);
       $this->order = $order;
 
-      if ($order->password === Input::get('code')) {
+      if ($order->password === $this->in('code')) {
         $goods = $order->goods()->get();
         return array('order' => $order->to_array(), 'goods' => S($goods, '?.to_array'));
       } else {

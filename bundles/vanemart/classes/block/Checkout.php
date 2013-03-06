@@ -44,7 +44,8 @@ class Block_Checkout extends BaseBlock {
   }
 
   function ajax_post_index() {
-    $valid = Validator::make(Input::get(), array(
+    $input = $this->in();
+    $valid = Validator::make($input, array(
       'email'           => 'required|email',
       'name'            => 'required',
       'surname'         => 'required',
@@ -57,11 +58,11 @@ class Block_Checkout extends BaseBlock {
     } elseif ($valid->fails()) {
       return $valid;
     } else {
-      $user = User::findOrCreate(Input::get());
+      $user = User::findOrCreate($input);
       $order = null;
 
-      \DB::transaction(function () use ($user, &$order) {
-        $order = Order::createBy($user, Input::get());
+      \DB::transaction(function () use (&$input, $user, &$order) {
+        $order = Order::createBy($user, $input);
 
         $goods = S(Cart::all(), function ($qty, $product) use ($order) {
           return compact('qty', 'product') + array('order' => $order->id);

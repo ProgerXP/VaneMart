@@ -14,7 +14,7 @@ class Block_Thumb extends BaseBlock {
   }
 
   static function hash(array $input) {
-    $str = \Config::get('application.key')."~vm:thumb";
+    $str = \Config::get('application.key')."~vm:thumb~".date('W');
 
     foreach (static::$protectedVars as $var) {
       $str .= "\5".array_get($input, $var);
@@ -49,6 +49,23 @@ class Block_Thumb extends BaseBlock {
     return $thumb;
   }
 
+  /*---------------------------------------------------------------------
+  | GET thumb/index
+  |
+  | Generates thumbnail, caches it and redirects the client to static file.
+  |----------------------------------------------------------------------
+  | * source=PATH   - REQUIRED; URL or local path of image to
+  |   scale; can be relative to File::storage().
+  | * hash=HASH     - REQUIRED; used to verify that ?source was generated
+  |   by this system and that the user didn't puts his own path there.
+  | * width=PX      - optional; thumbnail width; see also ?step and ?fill.
+  | * height=PX     - optional; thumbnail height; see also ?step and ?fill.
+  | * up=0          - optional; if given dimensions are not even to configured
+  |   step and this is set the thumbnail will be scaled to the next even
+  |   step so it'll be larger than specified ?width and/or ?height.
+  | * fill=0        - optional; if set thumbnail will be larger than given
+  |   dimensions filling all space within width*height rectangle.
+  |--------------------------------------------------------------------*/
   function get_index() {
     $source = $this->in('source');
     if ($this->in('hash') !== static::hash($this->in())) {
