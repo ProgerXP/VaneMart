@@ -33,7 +33,7 @@ return array(
     ),
 
     // Page content.
-    '|#content goldw'     => array('Vane::status'),
+    '|#content goldw'     => array('Vane::status', 'Vane::title'),
   ),
 
   // Additional named layouts.

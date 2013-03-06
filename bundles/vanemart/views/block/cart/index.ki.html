@@ -1,47 +1,39 @@
 <div "vmart-cart">
-  <h1>"vanemart::cart.title"</h1>
+  <form "vanemart::cart@set" "liner">
+    <csrf>
+    <input "sku" placeholder={ __('vanemart::cart.set.sku') }>
+    <submit>"vanemart::cart.set.sku_add"</submit>
+  </form>
 
   <form "vanemart::cart@set">
-    <csrf>
-
-    <if $rows>
-      <table $rows "cart-goods">
-        <tr>
-          <th>
-            №{= HLEx::number($i + 1) }
-          </th>
-          <td>
-            <a "$url">
-              <img $image "$image" "thumb" alt=$title>
-              { $title }
-            </a>
-          </td>
-          <td "qty">
-            <input "id[$id]" value=$qty size=1>
-          </td>
-          <td "volume">
-            $volume
-          </td>
-          <td "sum">
-            {= HLEx::langNum(__('vanemart::general.price'), $sum) }
-          </td>
-          <td "btn">
-            <a "vanemart::cart@clear/$id">"vanemart::cart.delete"</a>
-          </td>
-        </tr>
-      </endtable>
+    <table $rows "vmart-cart-goods">
+      <tr>
+        <th>
+          №{= HLEx::number($i + 1) }
+        </th>
+        <td>
+          <a "$url">
+            <img $image "$image" "thumb" alt=$title>
+            { $title }
+          </a>
+        </td>
+        <td "qty">
+          <input "id[$id]" value=$qty size=1>
+        </td>
+        <td "volume">
+          $volume
+        </td>
+        <td "price">
+          {= HLEx::langNum('general.price', $retail) }
+        </td>
+      </tr>
+      <tr "btn">
+        <td colspan=5>
+          <submit "clear">"vanemart::cart.index.clear"</submit>
+        </td>
+      </tr>
     <else>
       <p "empty">"vanemart::cart.empty"</p>
-    </if>
-
-    <p "skus">
-      <b>"vanemart::cart.from_skus"</b>
-      <input "sku">
-    </p>
-
-    <p "btn">
-      <submit "clear">"vanemart::cart.clear"</submit>
-      <submit class=default>"vanemart::cart.update"</submit>
-    </p>
+    </endtable>
   </form>
 </div>
