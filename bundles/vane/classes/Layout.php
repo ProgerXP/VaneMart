@@ -281,7 +281,8 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
       });
 
       return $this->alter($alter);
-    } elseif ($block = $this->find($name)) {
+    } elseif (!$this->isViewEndpoint() and $view = $this->find('') and
+              $block = $view->find($name)) {
       return Rendering::likeViewVar($block, $this, $this->slugs);
     }
   }

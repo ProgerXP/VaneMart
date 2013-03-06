@@ -6,6 +6,16 @@ class BaseModel extends Eloquent {
   //= bool enables automatic url() generation
   static $hasURL = false;
 
+  static function toTimestamp($value) {
+    if (is_string($value)) {
+      return strtotime($value);
+    } elseif (is_object($value)) {
+      return $value->getTimestamp();
+    } else {
+      return $value;
+    }
+  }
+
   static function cached($id, $clone = true) {
     $class = get_called_class();
 
@@ -87,9 +97,14 @@ class BaseModel extends Eloquent {
   }
 
   function to_array() {
-    return parent::to_array() + array(
-      'url'     => $this->url(),
+    $array = array(
+      'created_at'        => $this->asTimestamp(),
+      'updated_at'        => $this->asTimestamp('updated_at'),
     );
+
+    $array += parent::to_array();
+    isset($array['url']) or $array['url'] = $this->url();
+    return $array;
   }
 
   function url() {
@@ -104,19 +119,7 @@ class BaseModel extends Eloquent {
     }
   }
 
-  function get_created_at($attr = 'created_at') {
-    $value = $this->get_attribute($attr);
-
-    if (is_string($value)) {
-      return strtotime($value);
-    } elseif (is_object($value)) {
-      return $value->getTimestamp();
-    } else {
-      return $value;
-    }
-  }
-
-  function get_updated_at() {
-    return $this->get_created_at('updated_at');
+  function asTimestamp($attr = 'created_at') {
+    return static::toTimestamp($this->$attr);
   }
 }
