@@ -4,6 +4,7 @@ return array(
   'total'                 => 'Общая сумма:',
   'link'                  => 'Ссылка для отслеживания:',
   'link_text'             => '[ :0ссылка:1 ]:',
+  'posts'                 => 'Задайте нам вопрос',
 
   'status'                => array(
     'title'               => 'Статус:',
@@ -20,6 +21,6 @@ return array(
 
   // order@show
   'show'                  => array(
-    'title'               => 'Заказ №:id',
+    'title'               => 'Заказ №:0',
   ),
 );

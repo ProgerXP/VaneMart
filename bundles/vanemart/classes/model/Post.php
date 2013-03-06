@@ -16,7 +16,7 @@ class Post extends BaseModel {
   }
 
   function author() {
-    return $this->has_one(NS.'User', 'author');
+    return $this->belongs_to(NS.'User', 'author');
   }
 
   function parent() {

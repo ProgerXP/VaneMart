@@ -1,0 +1,18 @@
+<ul $rows "vmart-posts v-rows">
+  <li "$flags" data-id=$id>
+    <h3>$title</h3>
+
+    <if $author>
+      <p ${ array($author) } "author">
+        <img ${ !!$avatar } "$avatar" "avatar" alt=$name>
+        { __('vanemart::post.index.author', $item) }
+      </endp>
+    </if>
+
+    {= HLEx::time(date('d.m.y', $created_at), $created_at, true) }
+
+    <article>
+      {= $html }
+    </article>
+  </li>
+</endul>

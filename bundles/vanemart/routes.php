@@ -43,7 +43,12 @@ VRoute::on('(:bundle)/orders/(:num)')
   ->layout(array(
     '=nav #group title'   => array('='.__('vanemart::order.title')),
     '=nav #group list'    => array('VaneMart::order'),
-    '+#content'           => array('!'),
+    '+#content'           => array(
+      '|order goldw'      => '!',
+      '|posts goldn'      => array(
+        'VaneMart::post@add orders (:1)', 'VaneMart::post orders (:1)',
+      ),
+    ),
   ));
 
 VRoute::map('(:bundle)/user/(:num)', 'VaneMart::user@show', true);
@@ -54,6 +59,10 @@ VRoute::map('(:bundle)/user/logout', 'VaneMart::user@logout', 'vanemart::logout'
 VRoute::on('GET (:bundle)/thumb')
   ->as('vanemart::thumb')
   ->naked('VaneMart::thumb');
+
+VRoute::on('GET (:bundle)/post/add/(:any)/(:num?)')
+  ->as('vanemart::post')
+  ->naked('VaneMart::post@add');
 
 VRoute::on('(:bundle)/help/(:all?)')
   ->as('vanemart::help')
