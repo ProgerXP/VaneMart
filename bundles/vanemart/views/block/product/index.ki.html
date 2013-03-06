@@ -17,7 +17,7 @@
               <if isset($_hadPrice)>,</if>
               $=_hadPrice true
 
-              {= HLEx::langNum(__('vanemart::general.price'), $item) }
+              {= HLEx::langNum('general.price', $item) }
             </if>
           </each>
         </td>
@@ -37,7 +37,7 @@
         <th />
         <td>
           <select ${ range(1, 5) } "id[$id]" "flat">
-            <option "$item">{= HLEx::langNum(__('vanemart::general.qty'), $item) }</option>
+            <option "$item">{= HLEx::langNum('general.qty', $item) }</option>
           </endselect>
         </td>
       </tr>

@@ -5,7 +5,7 @@ class Str extends \Px\Str {
 
   // Unlike default $strings can be a Lang object or a string - passed to Lang::line().
   static function langNum($strings, $number, $html = false) {
-    is_scalar($strings) and $strings = Lang::line($strings);
+    is_scalar($strings) and $strings = Current::lang($strings);
     return parent::langNum($strings, $number, $html);
   }
 }

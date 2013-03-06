@@ -1,30 +1,57 @@
-<ol $rows "vmart-order-briefs">
-  <li "status-$status { $updated_at + 3*24*3600 >= time() ? 'recent' : '' }">
-    <a "$url">
-      {= HLEx::time(date('d.m.Y', $created_at), $created_at, true) }
-      —
-      { __('vanemart::order.briefs.from', compact('name', 'surname')) }
-    </a>
+<ul $rows "vmart-order-briefs v-rows">
+  <li "status-$status { $current ? 'current' : '' } { $recent ? 'recent' : '' }" data-id=$id>
+    $=created
+      <span "created">
+        {= HLEx::time(date('d.m.Y', $created_at), $created_at, true) }
+      </span>
+    $^created
+
+    $=updated
+      <span $_{ $updated_at } "updated">
+        {= HLEx::time(date('d.m', $updated_at), $updated_at) }
+      </endspan>
+    $^updated
 
     $=counts
-      <span "count">{= HLEx::langNum(__('vanemart::general.goods'), $count) }</span>
+      <span "count">
+        {= HLEx::langNum('general.goods', $count) }
+      </span>
     $^counts
 
     $=sums
-      <span "sum">{= HLEx::langNum(__('vanemart::general.price'), $sum) }</span>
+      <span "sum">
+        {= HLEx::langNum('general.price', $sum) }
+      </span>
     $^sums
 
-    <span "inside">
-      {= __('vanemart::order.briefs.count_sum', compact('counts', 'sums')) }
-    </span>
-
-    <span "info">
+    $=status
       <span "status">
-        { __("vanemart::order.status.$status") }</span
-      >"vanemart::order.briefs.separator"
-      <span "updated">
-        {= __('vanemart::order.updated', HLEx::time(date('d.m', $updated_at), $updated_at)) }
+        { __("vanemart::order.status.$status") }
       </span>
-    </span>
+    $^status
+
+    <p "title">
+      <a "$url">
+        {= __('vanemart::order.briefs.item_title', $item + compact('created')) }
+      </a>
+    </p>
+
+    <div "details">
+      <p "from">
+        { __('vanemart::order.briefs.from', compact('name', 'surname')) }
+      </p>
+
+      <p "contents">
+        {= __('vanemart::order.briefs.count_sum', compact('counts', 'sums')) }
+      </p>
+
+      <p "status">
+        <if $updated_at>
+          {= __('vanemart::order.briefs.info', compact('status', 'updated')) }
+        <else>
+          {= $status }
+        </if>
+      </p>
+    </div>
   </li>
-</endol>
+</endul>

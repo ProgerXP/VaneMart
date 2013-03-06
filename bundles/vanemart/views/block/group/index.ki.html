@@ -1,26 +1,24 @@
-<ul "vmart-goods -rows">
-  <each $rows>
-    <li "{ $current ? 'current' : '' }" data-id=$id>
-      <p $_{ $image } "title thumb">
-        <a "{ $url }">
-          <img $image "{ $image }" "thumb" alt=$title>
-          <span>{ $title }</span>
-        </a>
-      <else>
-        <p "title">
-          <a "$url"><span>$title</span></a>
-        </p>
-      </endp>
-
-      <p "origin">
-        <span>$country</span>
-        <span>$maker</span>
+<ul $rows "vmart-goods v-rows">
+  <li "{ $current ? 'current' : '' }" data-id=$id>
+    <p $_{ $image } "title thumb">
+      <a "{ $url }">
+        <img $image "{ $image }" "thumb" alt=$title>
+        <span>{ $title }</span>
+      </a>
+    <else>
+      <p "title">
+        <a "$url"><span>$title</span></a>
       </p>
+    </endp>
 
-      <p "price">
-        $=price $retail ?: $wholesale
-        { __('vanemart::group.index.price', compact('price') + $item) }
-      </p>
-    </li>
-  </each>
-</ul>
+    <p "origin">
+      <span>$country</span>
+      <span>$maker</span>
+    </p>
+
+    <p "price">
+      $=price HLEx::langNum('general.currency_short', $retail ?: $wholesale)
+      {= __('vanemart::group.index.price', compact('price') + $item) }
+    </p>
+  </li>
+</endul>

@@ -27,7 +27,7 @@ if (!\Bundle::exists('plarx')) {
   throw new Error('Vane requires Plarx bundle installed.');
 } else {
   \Bundle::start('plarx');
-  \Px\Plarx::supersede(__NAMESPACE__, 'Str');
+  \Px\Plarx::supersede(__NAMESPACE__, array('Str', 'HLEx'));
 }
 
 if (!\Bundle::exists('squall')) {
