@@ -43,9 +43,11 @@ class Block_Order extends BaseBlock {
   }
 
   /*---------------------------------------------------------------------
-  | GET order/show
+  | GET order/show/ID
   |
   | Displays order info.
+  |----------------------------------------------------------------------
+  | * ID            - REQUIRED.
   |--------------------------------------------------------------------*/
   function get_show($id = null) {
     if ($order = Order::find($id)) {
@@ -58,6 +60,96 @@ class Block_Order extends BaseBlock {
       } else {
         return E_DENIED;
       }
+    }
+  }
+
+  /*---------------------------------------------------------------------
+  | POST order/show/ID
+  |
+  | Updates order fields like name and address.
+  |----------------------------------------------------------------------
+  | * ID            - REQUIRED.
+  | * back=URL      - optional; page to return to after successful update.
+  | * relink=0      - optional; if set only regenerates order password
+  |   (used in permalink URL). Changes no other fields.
+  |--------------------------------------------------------------------*/
+  function post_show($id = null) {
+    if ($order = Order::find($id)) {
+      if ($this->in('relink', false)) {
+        if ($order->regeneratePassword()->save()) {
+          return Redirect::to($order->url());
+        } else {
+          return E_SERVER;
+        }
+      }
+
+      $statuses = join(array_keys(__('vanemart::order.status')->get()));
+
+      $valid = Validator::make($this->in(), array(
+        'status'          => 'in:'.$statuses,
+      ));
+
+      if ($valid->fails()) {
+        return $valid;
+      }
+
+      $fields = array('status', 'name', 'surname', 'phone', 'address', 'notes');
+      $order->fill_raw(S::trim(Input::only($fields)));
+
+      $changed = $order->get_dirty();
+
+      if (!$changed) {
+        //return E_UNCHANGED;
+        return static::back($order->url());
+      }
+
+      $logs = array();
+
+      foreach ($changed as $field => $value) {
+        $vars = array(
+          'field'       => __("vanemart::field.$field")->get(),
+          'old'         => trim($order->original[$field]),
+          'new'         => $value,
+        );
+
+        $type = $vars['old'] === '' ? 'add' : ($value === '' ? 'delete' : 'set');
+        $logs[] = __("vanemart::order.set.line.$type", $vars);
+      }
+
+      $msg = __('vanemart::order.set.post', join($logs, "\n"))->get();
+
+      \DB::transaction(function () use ($order, $msg) {
+        $post = with(new Post)->fill_raw(array(
+          'type'        => 'orders',
+          'object'      => $order->id,
+          'author'      => \Auth::user()->id,
+          'flags'       => 'field-change',
+          'body'        => $msg,
+          'ip'          => Request::ip(),
+        ));
+
+        if (!$post->save()) {
+          throw new Error("Cannot save new system post for order {$order->id}.");
+        }
+
+        if (!$order->save()) {
+          throw new Error("Cannot update fields of order {$order->id}.");
+        }
+      });
+
+      return static::back($order->url())
+        ->with('status', __('vanemart::order.set.status'));
+    }
+  }
+
+  function get_goods($id = null) {
+    if ($order = Order::find($id)) {
+      $goods = OrderProduct::name('op')
+        ->where('order', '=', $order->id)
+        ->join(Product::$table.' AS p', 'p.id', '=', 'product')
+        ->get();
+
+      return array('rows' => S($goods, '?.to_array'));
     }
   }
 }

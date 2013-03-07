@@ -13,6 +13,7 @@ return array(
   'phone'                 => 'Телефон:',
   'address'               => 'Адрес для доставки:',
   'notes'                 => 'Примечание:',
+  'status'                => 'Статус:',
 
   // Product
   'price'                 => 'Цена:',

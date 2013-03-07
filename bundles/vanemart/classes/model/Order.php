@@ -4,19 +4,23 @@ class Order extends BaseModel {
   static $table = 'orders';
   static $hasURL = true;
 
-  static function createBy(User $user, array $info) {
-    static $fields = array('name', 'surname', 'address', 'phone', 'notes');
-
-    $password = Str::password(array(
+  //= str
+  static function generatePassword() {
+    return Str::password(array(
       'length'            => 10,
       'symbols'           => 0,
       'capitals'          => 3,
       'digits'            => 3,
     ));
+  }
 
-    $order = with(new static(compact('password')))
+  static function createBy(User $user, array $info) {
+    static $fields = array('name', 'surname', 'address', 'phone', 'notes');
+
+    $order = with(new static)
       ->fill_raw(array_intersect_key($info, array_flip($fields)))
       ->fill_raw(array(
+        'password'        => static::generatePassword(),
         'user'            => $user->id,
         'sum'             => Cart::subtotal(),
         'ip'              => Request::ip(),
@@ -27,6 +31,11 @@ class Order extends BaseModel {
     }
 
     return $order;
+  }
+
+  function regeneratePassword() {
+    $this->password = static::generatePassword();
+    return $this;
   }
 
   function url() {
@@ -43,6 +52,10 @@ class Order extends BaseModel {
 
   function manager() {
     return $this->has_one(NS.'User', 'manager');
+  }
+
+  function posts() {
+    return $this->has_many(NS.'Post', 'post')->where('type', '=', 'orders');
   }
 }
 Order::$table = \Config::get('vanemart::general.table_prefix').Order::$table;
