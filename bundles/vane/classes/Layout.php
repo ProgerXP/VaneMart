@@ -330,15 +330,21 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
   // Builds a complete response according to layout and client input.
   //= Laravel\Response
   function response() {
-    $onlyBlocks = Input::get('_blocks');
-    $rendering = new Rendering($this, $onlyBlocks);
-    $rendering->slugs = $this->slugs;
-
     $ajax = Request::ajax();
     $ajax === 'd' and Request::ajax(true);
+    $naked = Input::get(Block::$nakedVar, $ajax);
 
+    $onlyBlocks = Input::get('_blocks');
     $singleBlock = (isset($onlyBlocks) and !is_array($onlyBlocks));
     $firstServed = in_array(head((array) $onlyBlocks), array('!', '1', ''));
+
+    if ($singleBlock and !$naked) {
+      // preventing DoubleEdge from wrapping response into $fullView.
+      Input::merge(array(Block::$nakedVar => 1));
+    }
+
+    $rendering = new Rendering($this, $onlyBlocks);
+    $rendering->slugs = $this->slugs;
 
     if (($singleBlock and $firstServed) or $this->breaksout()) {
       isset($this->served) or Log::info_Layout('No specific server on this route.');
@@ -347,8 +353,10 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
       $rendering->render($this);
 
       if ($singleBlock) {
+        $rendering->result = array_slice($rendering->result, 1, -1, true);
+
         foreach ($rendering->result as $block) {
-          foreach ($block as $response) {
+          foreach (arrize($block) as $response) {
             is_object($response) and $response->isServed = true;
           }
         }
@@ -356,12 +364,12 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
     }
 
     Request::ajax(null);
-    $naked = Input::get(Block::$nakedVar, $ajax) and $rendering->unwrap();
+    $naked and $rendering->unwrap();
 
     $response = $rendering->served ?: Response::adapt('');
     $content = $rendering->join($ajax);
 
-    if (!$naked and is_scalar($content) and $full = $this->view()) {
+    if (!$naked and !$singleBlock and is_scalar($content) and $full = $this->view()) {
       $content = $full->with(compact('content'));
     }
 
@@ -371,6 +379,8 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
       $response->content = $content;
     }
 
+    // restoring value that could have been set in the beginning.
+    Input::merge(array(Block::$nakedVar => $naked));
     return Response::postprocess($response);
   }
 

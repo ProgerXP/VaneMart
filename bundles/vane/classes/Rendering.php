@@ -46,8 +46,9 @@ class Rendering {
 
   // Renders given layout recursively, adding opening/closing tags and matching
   // blocks against $onlyBlocks.
-  function render(LayoutItem $block, $parent = null) {
-    if ($parent === null or $this->includes($block)) {
+  function render(LayoutItem $block, $parent = null, $includeChildren = false) {
+    if ($parent === null or ($includeChildren or $this->includes($block))) {
+      $includeChildren |= (isset($parent) and $this->onlyBlocks);
       $key = $this->keyOf($block, $parent);
 
       if (isset($parent)) {
@@ -55,7 +56,7 @@ class Rendering {
       }
 
       if ($block instanceof Layout) {
-        foreach ($block as $child) { $this->render($child, $key); }
+        foreach ($block as $child) { $this->render($child, $key, $includeChildren); }
       } elseif ($block->isServed()) {
         $this->put($block, $key, $this->served);
       } else {
@@ -78,10 +79,9 @@ class Rendering {
     if ($block instanceof Layout and $block->isView()) {
       return false;
     } else {
-      $onlyBlocks = array_flip((array) $this->onlyBlocks);
       $matches = null;
 
-      foreach ($onlyBlocks as $classes) {
+      foreach ((array) $this->onlyBlocks as $classes) {
         $matches = $block->matches($classes);
         if ($matches) { break; }
       }
