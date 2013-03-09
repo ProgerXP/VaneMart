@@ -54,7 +54,7 @@ class Cart {
   //
   //* $product Product, mixed see idFrom()
   //* $qty mixed - string allows both ',' and '.' separators for decimal part.
-  //= null error, array (Product $product, float $qty)
+  //= null error, Product
   //
   //? put(5, 11.2);       // places 11.2 portions of product with ID 5
   //? put($model, 0);     // removes $model->id from cart
@@ -79,7 +79,7 @@ class Cart {
         Session::put($key, $qty);
       }
 
-      return array($product, $qty);
+      return $product;
     }
   }
 

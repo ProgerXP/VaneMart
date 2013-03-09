@@ -4,14 +4,17 @@ class Block_Cart extends BaseBlock {
   //* $skus hash 'sku' => qty, str list of SKUs to add as 1 qty
   //= hash id => Product with 'qty' attribute set
   static function fromSKU($skus) {
+    if (!is_array($skus)) {
+      $skus = array_filter(preg_split('/\s+/', trim($skus)));
+      $skus = array_count_values($skus);
+    }
+
+    $goods = $skus ? Product::where_in('sku', array_keys($skus))->get() : array();
     $result = array();
 
-    is_array($skus) or $skus = S::combine(explode(' ', $skus), 1);
-    $skus = S::keys($skus, '#trim#');
-    $goods = Product::where_in('sku', array_keys($skus))->get();
-
     foreach ($goods as $model) {
-      $result[$model->id] = $model->fill_raw(array('qty' => $skus[$model->sku]));
+      $model->qty = $skus[$model->sku];
+      $result[$model->id] = $model;
     }
 
     return $result;
@@ -47,20 +50,29 @@ class Block_Cart extends BaseBlock {
   | * id[ID]=QTY    - optional; adds items by their ID.
   | * sku[SKU]=QTY  - optional; adds items by SKU ignoring unknown codes.
   | * checkout=1    - optional; redirects to checkout@index instead of back.
+  | * clear=1       - optional; if set effect is as if doing GET cart/clear.
   |--------------------------------------------------------------------*/
   function get_add($id = null) {
-    $goods = static::fromSKU($this->in('sku', null)) + arrize($this->in('id', null));
+    if ($this->in('clear', false)) {
+      $this->input = array();
+      return $this->get_clear();
+    }
+
+    $goods = static::fromSKU($this->in('sku', null));
+    $goods += arrize($this->in('id', null));
     $id and $goods += array($id => 1);
+
     $single = null;
 
     foreach ($goods as $id => $item) {
       $result = Cart::put($id, is_object($item) ? $item->qty : $item);
-      $result and $single = $single ? null : $result;
+      $result and $single = $single ? true : $result;
     }
 
-    if ($single) {
-      $key = 'vanemart::cart.status.'.($single[1] ? 'put' : 'removed');
-      \Session::flash('status', HLEx::lang($key, $single[0]->to_array()));
+    if ($single === true) {
+      $this->status('add_many');
+    } elseif ($single !== null) {
+      $this->status(Cart::has($single) ? 'add_one' : 'remove', $single->to_array());
     }
 
     if ($this->in('checkout', null)) {
@@ -68,6 +80,16 @@ class Block_Cart extends BaseBlock {
     } else {
       return static::back();
     }
+  }
+
+  /*---------------------------------------------------------------------
+  | GET cart/addBySKU
+  |
+  | Displays form for adding items by their SKU codes. POST cart/add is
+  | used to handle the action with its ?sku[] parameter.
+  |--------------------------------------------------------------------*/
+  function get_addBySKU() {
+    return true;
   }
 
   /*---------------------------------------------------------------------
@@ -96,13 +118,11 @@ class Block_Cart extends BaseBlock {
 
     if ($ids) {
       foreach ($ids as $id) { Cart::clear($id); }
-      $status = 'vanemart::cart.status.remove';
     } else {
       Cart::clear();
-      $status = 'vanemart::cart.status.clear';
     }
 
-    return static::back( Cart::has() ? route('vanemart::cart') : '/' )
-      ->with('status', __($status, array('title' => ''))->get());
+    $this->status($ids ? 'remove' : 'clear', array('title' => ''));
+    return static::back( Cart::has() ? route('vanemart::cart') : '/' );
   }
 }

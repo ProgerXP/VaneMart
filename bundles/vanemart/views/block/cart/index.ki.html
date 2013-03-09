@@ -1,39 +1,8 @@
-<div "vmart-cart">
-  <form "vanemart::cart@set" "liner">
-    <csrf>
-    <input "sku" placeholder={ __('vanemart::cart.set.sku') }>
-    <submit>"vanemart::cart.set.sku_add"</submit>
-  </form>
+<form ${ !!$rows } "vanemart::cart@set" "vmart-cart">
+  <csrf>
 
-  <form "vanemart::cart@set">
-    <table $rows "vmart-cart-goods">
-      <tr>
-        <th>
-          №{= HLEx::number($i + 1) }
-        </th>
-        <td>
-          <a "$url">
-            <img $image "$image" "thumb" alt=$title>
-            { $title }
-          </a>
-        </td>
-        <td "qty">
-          <input "id[$id]" value=$qty size=1>
-        </td>
-        <td "volume">
-          $volume
-        </td>
-        <td "price">
-          {= HLEx::langNum('general.price', $retail) }
-        </td>
-      </tr>
-      <tr "btn">
-        <td colspan=5>
-          <submit "clear">"vanemart::cart.index.clear"</submit>
-        </td>
-      </tr>
-    <else>
-      <p "empty">"vanemart::cart.empty"</p>
-    </endtable>
-  </form>
-</div>
+  $=editCart true
+  <include vanemart::block.cart.goods>
+<else>
+  <p "empty"><span>"vanemart::cart.empty"</span></p>
+</endform>

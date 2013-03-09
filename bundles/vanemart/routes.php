@@ -20,11 +20,11 @@ VRoute::on('(:bundle)/goods/(\d+-?[^/]*)')
     '+#content'           => array('!'),
   ));
 
-VRoute::on('(:bundle)/cart/(:any?)')
+VRoute::on('(:bundle)/cart/(:any?)/(:num?)')
   ->as('vanemart::cart')
   ->servers('VaneMart::cart@(:1)')
   ->layout(array(
-    '=nav #group list'   => array('!'),
+    '+#content'           => array('!', 'VaneMart::cart@addBySKU'),
   ));
 
 VRoute::map('(:bundle)/checkout', 'VaneMart::checkout', true);

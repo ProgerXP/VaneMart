@@ -1,0 +1,47 @@
+$=editCart    !empty($editCart)
+$=colCount    5
+$=thumbless   !S::keep($rows, '?["image"]')
+
+<table "vmart-cart { $thumbless ? 'thumbless' : '' }">
+  <each $rows>
+    <tr "title { !$image ? 'thumbless' : '' }">
+      <td "thumb" rowspan=2>
+        <a $image "$url"><img "$image" alt=$title></enda>
+      </td>
+      <td "title" colspan={ $colCount - 2 }>
+        <span "index">{ number($i + 1) }.</span>
+        <a "$url">{ $title }</a>
+
+        <if $editCart>
+          $=link
+            <a "vanemart::cart@clear/$id" "remove">
+          $^link
+
+          {= __('vanemart::cart.set.delete', array($link, '</a>')) }
+        </if>
+      </td>
+    </tr>
+    <tr "qty">
+      <td "qty">
+        <if $editCart>
+          <input "id[$id]" "gen shade" value=$qty size=1>
+        <else>
+          {= number($qty) }
+        </if>
+        &times; $volume
+      </td>
+      <td "price">
+        {= langNum('general.price', $retail ?: $wholesale) }
+      </td>
+      <td "total">
+        {= langNum('general.price', $qty * ($retail ?: $wholesale)) }
+      </td>
+    </tr>
+  </each>
+  <tr $editCart "btn">
+    <td colspan=$colCount>
+      <submit class=default>"vanemart::cart.set.update"</submit>
+      <submit "clear">"vanemart::cart.set.clear"</submit>
+    </td>
+  </endtr>
+</table>
