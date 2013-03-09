@@ -50,7 +50,7 @@ class Block_User extends BaseBlock {
   |
   | Shows registration form.
   |--------------------------------------------------------------------*/
-  function get_reg() {dd(\Hash::make('a'));
+  function get_reg() {
     return true;
   }
 

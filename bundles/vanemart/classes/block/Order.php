@@ -12,6 +12,23 @@ class Block_Order extends BaseBlock {
     }
   }
 
+  protected function init() {
+    parent::init();
+    $this->filter('before', 'vane::auth')->only('index');
+    $this->filter('before', 'csrf')->on('post');
+  }
+
+  function accessible(Order $order) {
+    return $this->can('order.show.all') or
+           $order->isOf($this->user(false)) or
+           $order->password === $this->in('code', '');
+  }
+
+  function editable(Order $order) {
+    return $this->can('order.edit.all') or
+           ($this->can('order.edit.self') and $order->isOf($this->user(false)));
+  }
+
   /*---------------------------------------------------------------------
   | GET order/index
   |
@@ -19,7 +36,14 @@ class Block_Order extends BaseBlock {
   |--------------------------------------------------------------------*/
   function get_index() {
     $orders = Order::order_by('updated_at', 'desc')->order_by('created_at', 'desc');
+
+    if (!$this->can('order.list.all')) {
+      $field = $this->can('manager') ? 'manager' : 'user';
+      $orders->where($field, '=', $this->user()->id);
+    }
+
     $orders = $orders->get();
+    if (!$orders) { return; }
 
     $counts = OrderProduct
       ::where_in('order', prop('id', $orders))
@@ -54,11 +78,11 @@ class Block_Order extends BaseBlock {
       $this->title = array($id);
       $this->order = $order;
 
-      if ($order->password === $this->in('code')) {
-        $goods = $order->goods()->get();
-        return array('order' => $order->to_array(), 'goods' => S($goods, '?.to_array'));
+      if (!$this->accessible($order)) {
+        return false;
       } else {
-        return E_DENIED;
+        $this->editable($order) and $this->layout = '.set';
+        return $order->to_array();
       }
     }
   }
@@ -74,82 +98,103 @@ class Block_Order extends BaseBlock {
   |   (used in permalink URL). Changes no other fields.
   |--------------------------------------------------------------------*/
   function post_show($id = null) {
-    if ($order = Order::find($id)) {
-      if ($this->in('relink', false)) {
-        if ($order->regeneratePassword()->save()) {
-          return Redirect::to($order->url());
-        } else {
-          return E_SERVER;
-        }
+    if (!($order = Order::find($id))) {
+      return;
+    } elseif ($this->in('relink', false)) {
+      if ($order->regeneratePassword()->save()) {
+        return Redirect::to($order->url());
+      } else {
+        throw new Error("Cannot save order {$order->id} with regenerated password.");
       }
+    }
 
-      $statuses = join(array_keys(__('vanemart::order.status')->get()));
+    $result = $this->ajax($order->id);
 
-      $valid = Validator::make($this->in(), array(
-        'status'          => 'in:'.$statuses,
-      ));
-
-      if ($valid->fails()) {
-        return $valid;
-      }
-
-      $fields = array('status', 'name', 'surname', 'phone', 'address', 'notes');
-      $order->fill_raw(S::trim(Input::only($fields)));
-
-      $changed = $order->get_dirty();
-
-      if (!$changed) {
-        //return E_UNCHANGED;
-        return static::back($order->url());
-      }
-
-      $logs = array();
-
-      foreach ($changed as $field => $value) {
-        $vars = array(
-          'field'       => __("vanemart::field.$field")->get(),
-          'old'         => trim($order->original[$field]),
-          'new'         => $value,
-        );
-
-        $type = $vars['old'] === '' ? 'add' : ($value === '' ? 'delete' : 'set');
-        $logs[] = __("vanemart::order.set.line.$type", $vars);
-      }
-
-      $msg = __('vanemart::order.set.post', join($logs, "\n"))->get();
-
-      \DB::transaction(function () use ($order, $msg) {
-        $post = with(new Post)->fill_raw(array(
-          'type'        => 'orders',
-          'object'      => $order->id,
-          'author'      => \Auth::user()->id,
-          'flags'       => 'field-change',
-          'body'        => $msg,
-          'ip'          => Request::ip(),
-        ));
-
-        if (!$post->save()) {
-          throw new Error("Cannot save new system post for order {$order->id}.");
-        }
-
-        if (!$order->save()) {
-          throw new Error("Cannot update fields of order {$order->id}.");
-        }
-      });
-
-      return static::back($order->url())
-        ->with('status', __('vanemart::order.set.status'));
+    if ($result instanceof Order) {
+      $status = __('vanemart::order.set.status');
+      return static::back($order->url())->with('status', $status);
+    } elseif ($result === E_UNCHANGED) {
+      return static::back($order->url());
+    } else {
+      return $result;
     }
   }
 
-  function get_goods($id = null) {
-    if ($order = Order::find($id)) {
-      $goods = OrderProduct::name('op')
-        ->where('order', '=', $order->id)
-        ->join(Product::$table.' AS p', 'p.id', '=', 'product')
-        ->get();
+  function ajax_post_show($id = null) {
+    $valid = Validator::make($this->in(), array(
+      'status'          => 'in:'.join(',', Order::statuses()),
+    ));
 
-      return array('rows' => S($goods, '?.to_array'));
+    if ($valid->fails()) {
+      return $valid;
+    } elseif (!($order = Order::find($id))) {
+      return;
+    } elseif (!$this->editable($order)) {
+      return false;
+    }
+
+    $fields = array('status', 'name', 'surname', 'phone', 'address', 'notes');
+    $order->fill_raw(S::trim(Input::only($fields)));
+
+    if (!$order->dirty()) {
+      return E_UNCHANGED;
+    }
+
+    $changes = $order->changeMessages();
+    $msg = __('vanemart::order.set.post', join($changes, "\n"))->get();
+
+    $post = with(new Post)->fill_raw(array(
+      'type'              => 'orders',
+      'object'            => $order->id,
+      'author'            => $this->user()->id,
+      'flags'             => 'field-change',
+      'body'              => $msg,
+      'ip'                => Request::ip(),
+    ));
+
+    \DB::transaction(function () use ($order, $post) {
+      if (!$post->save()) {
+        throw new Error("Cannot save new system post for order {$order->id}.");
+      } elseif (!$order->save()) {
+        throw new Error("Cannot update fields of order {$order->id}.");
+      }
+    });
+
+    return $order;
+  }
+
+  /*---------------------------------------------------------------------
+  | GET order/goods
+  |
+  | Ouputs list of products in the order.
+  |--------------------------------------------------------------------*/
+  function get_goods($id = null) {
+    if ($result = $this->ajax($id)) {
+      $this->layout = 'vanemart::block.cart.goods';
+
+      $goods = $result->get();
+      // cache connected images all at once.
+      File::all(prop('image', $goods));
+
+      $rows = S($goods, function ($product) {
+        return array('image' => $product->image(150)) + $product->to_array();
+      });
+
+      return compact('rows');
+    } else {
+      return $result;
+    }
+  }
+
+  function ajax_get_goods($id = null) {
+    if (!($order = Order::find($id))) {
+      return;
+    } elseif (!$this->accessible($order)) {
+      return false;
+    } else {
+      return Product::name('p')
+        ->join(OrderProduct::$table, 'p.id', '=', 'product')
+        ->where('order', '=', $order->id);
     }
   }
 }

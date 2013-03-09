@@ -1,6 +1,6 @@
 <?php namespace VaneMart;
 
-class User extends BaseModel {
+class User extends BaseModel implements \Vane\UserInterface {
   static $table = 'users';
   static $hasURL = true;
 
@@ -58,6 +58,34 @@ class User extends BaseModel {
 
   function set_password($str) {
     $this->set_attribute('password', \Hash::make($str));
+  }
+
+  // See Vane\UserInterface::can() for details.
+  function can($feature) {
+    $perms = $this->perms;
+
+    if (!is_string($feature) or "$perms" === '') {
+      return false;
+    } elseif ($feature === '') {
+      return true;
+    }
+
+    $hasWildcards = strrchr(ltrim($perms, '*'), '*') !== false;
+    $perms = explode(' ', $perms);
+    $allBut = S::unprefix($perms, '*');
+
+    if ($feature === '*') {
+      // Is this a superuser (who can do anything)?
+      return $allBut and !$perms;
+    } elseif (!$hasWildcards) {
+      return 0 != $allBut ^ in_array($feature, $perms);
+    } else {
+      $matched = array_first($perms, function ($i, $perm) use ($feature) {
+        return fnmatch($perm, $feature, FNM_NOESCAPE | FNM_PATHNAME | FNM_CASEFOLD);
+      });
+
+      return 0 != $allBut ^ $matched;
+    }
   }
 }
 User::$table = \Config::get('vanemart::general.table_prefix').User::$table;

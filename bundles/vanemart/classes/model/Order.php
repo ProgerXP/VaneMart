@@ -4,6 +4,11 @@ class Order extends BaseModel {
   static $table = 'orders';
   static $hasURL = true;
 
+  //= array of str 'new', 'paid', etc.
+  static function statuses() {
+    return array_keys((array) __('vanemart::order.status')->get());
+  }
+
   //= str
   static function generatePassword() {
     return Str::password(array(
@@ -56,6 +61,30 @@ class Order extends BaseModel {
 
   function posts() {
     return $this->has_many(NS.'Post', 'post')->where('type', '=', 'orders');
+  }
+
+  function changeMessages() {
+    $result = array();
+
+    foreach ($this->get_dirty() as $field => $value) {
+      $vars = array(
+        'field'       => __("vanemart::field.$field")->get(),
+        'old'         => trim($this->original[$field]),
+        'new'         => $value,
+      );
+
+      $type = $vars['old'] === '' ? 'add' : ($value === '' ? 'delete' : 'set');
+      $result[] = __("vanemart::order.set.line.$type", $vars);
+    }
+
+    return $result;
+  }
+
+  function isOf(User $user = null) {
+    if ($user) {
+      $field = $user->can('manager') ? 'manager' : 'user';
+      return $this->$field == $user->id;
+    }
   }
 }
 Order::$table = \Config::get('vanemart::general.table_prefix').Order::$table;

@@ -260,4 +260,11 @@ class Block extends DoubleEdge {
                       " top-Layout assigned.");
     }
   }
+
+  //= null unauthorized, bool
+  function can($feature) {
+    if ($user = $this->user(false)) {
+      return (bool) $user->can($feature);
+    }
+  }
 }

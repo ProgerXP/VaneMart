@@ -47,7 +47,7 @@ class Block_Post extends BaseBlock {
           'object'        => $object ?: 0,
           'parent'        => $this->in('parent', 0) ?: null,
           'flags'         => '',
-          'author'        => \Auth::user()->id,
+          'author'        => $this->user()->id,
           'ip'            => Request::ip(),
         ));
 
