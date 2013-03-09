@@ -11,14 +11,16 @@ return array(
   // cart@index
   'index'                 => array(
     'title'               => 'Ваша корзина',
-    'clear'               => 'Очистить корзину',
-    'update'              => 'Пересчитать',
-    'delete'              => 'Выложить',
   ),
 
   // cart@set
   'set'                   => array(
     'sku'                 => 'Артикулы через пробел',
     'sku_add'             => 'Добавить',
+
+    // used by goods.ki view in 'edit mode'
+    'clear'               => 'Очистить корзину',
+    'update'              => 'Пересчитать',
+    'delete'              => '(:0выложить:1)',
   ),
 );

@@ -45,3 +45,23 @@ function prettyText($str, $typography = true) {
 
   return $str;
 }
+
+/*-----------------------------------------------------------------------
+| SHORTCUTS FOR CALLING HTML FUNCTIONS FROM VIEWS
+|----------------------------------------------------------------------*/
+
+function q($str, $quotes = ENT_COMPAT, $doubleEncode = true) {
+  return HLEx::q($str, $quotes, $doubleEncode);
+}
+
+function number($num, $options = null) {
+  return HLEx::number($num, $options);
+}
+
+function langNum($strings, $number) {
+  return HLEx::langNum($strings, $number);
+}
+
+function htmlLang($string, $replaces = array(), $quote = true) {
+  return HLEx::lang($string, $replaces, $quote);
+}

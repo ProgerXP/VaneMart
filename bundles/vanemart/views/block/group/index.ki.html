@@ -17,7 +17,7 @@
     </p>
 
     <p "price">
-      $=price HLEx::langNum('general.currency_short', $retail ?: $wholesale)
+      $=price langNum('general.currency_short', $retail ?: $wholesale)
       {= __('vanemart::group.index.price', compact('price') + $item) }
     </p>
   </li>

@@ -1,0 +1,38 @@
+<form "vanemart::order/$id" "vmart-order col-2 status-$status">
+  <csrf>
+
+  <table "col-2 wide color">
+    <tr "status">
+      <th>"vanemart::field.status"</th>
+      <td>
+        <b>{ __("vanemart::order.status.$status") }</b>
+        "vanemart::order.set.change_to"
+
+        <select ${ Order::statuses() } "status">
+          <if $item !== $status>
+            <option "$item">{ __("vanemart::order.status.$item") }</option>
+          </if>
+        </endselect>
+
+        <errors>
+      </td>
+    </tr>
+    <tr "sum">
+      <th>"vanemart::order.total"</th>
+      <td>{= langNum('general.price', $sum) }</td>
+    </tr>
+    <tr "link">
+      <th>"vanemart::order.link"</th>
+      <td>
+        {= __('vanemart::order.link_text', array('<a href="'.q($url).'">', '</a>')) }
+        <submit "relink" "flat">"vanemart::order.set.relink"</submit>
+      </td>
+    </tr>
+    <include vanemart::block.checkout.fields>
+    <tr "btn">
+      <td colspan=2>
+        <submit class=default>"vanemart::order.set.submit"</submit>
+      </td>
+    </tr>
+  </table>
+</form>

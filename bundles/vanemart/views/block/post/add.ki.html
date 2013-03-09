@@ -1,13 +1,19 @@
-<form "vanemart::post@add/$type/$object" class=vmart-post>
+<form "vanemart::post@add/$type/$object" "vmart-post type-$type">
   $=title __("vanemart::".substr($type, 0, -1).".posts")->get(null, '')
-  <h2 $title>$item</endh2>
+  <h2 $title "block-title">$item</endh2>
 
   <csrf>
   <each $hidden> <hidden "$key" "$item"> </each>
 
-  <input "title" placeholder={ __('vanemart::post.add.title') }>
+  <p "title">
+    <input "title" placeholder={ __('vanemart::post.add.title') }>
+  </p>
 
-  <textarea "body" placeholder={ __('vanemart::post.add.body') } />
+  <p "body">
+    <textarea "body" rows=1 placeholder={ __('vanemart::post.add.body') } />
+  </p>
 
-  <submit class=default>"vanemart::post.add.submit"</submit>
+  <p "btn">
+    <submit class=default>"vanemart::post.add.submit"</submit>
+  </p>
 </form>

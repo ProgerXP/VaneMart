@@ -2,30 +2,14 @@
   <csrf>
 
   <table "col-2">
-    <each ${ array('name', 'surname', 'phone', 'email') }>
-      <tr>
-        <th>{ __("vanemart::checkout.$item") }</th>
-        <td>
-          <input "$item">
-          <errors>
-        </td>
-      </tr>
-    </each>
-    <tr>
-      <th>"vanemart::checkout.address"</th>
+    <tr "email">
+      <th>{ __("vanemart::checkout.email") }</th>
       <td>
-        <textarea "address" />
-        <p "pick">"vanemart::checkout.pick"</p>
+        <input "email">
         <errors>
       </td>
     </tr>
-    <tr>
-      <th>"vanemart::checkout.notes"</th>
-      <td>
-        <textarea "notes" />
-        <errors>
-      </td>
-    </tr>
+    <include vanemart::block.checkout.fields>
   </table>
 
   <p "btn"> <submit>"vanemart::checkout.submit"</submit> </p>

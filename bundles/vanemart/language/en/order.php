@@ -21,9 +21,6 @@ return array(
   // order@show
   'show'                  => array(
     'title'               => 'Заказ №:0',
-    'change'              => 'Сохранить изменения',
-    'change_to'           => 'изменить на:',
-    'relink'              => 'Создать новую',
   ),
 
   // POST order@show
@@ -31,9 +28,14 @@ return array(
     'status'              => 'Параметры заказа были изменены.',
     'post'                => "Параметры заказа были изменены:\n:0",
     'line'                => array(
-      'add'               => '  * :field :new.',
-      'set'               => '  * :field :old → :new.',
-      'delete'            => '  * :field (удалено, было :new).',
+      'add'               => '  * :field :new',
+      'set'               => '  * :field :old → :new',
+      'delete'            => '  * :field (удалено :old)',
     ),
+
+    // used by order@show in 'edit mode' (e.g. for managers)
+    'submit'              => 'Сохранить изменения',
+    'change_to'           => '— изменить на:',
+    'relink'              => 'Создать новую',
   ),
 );

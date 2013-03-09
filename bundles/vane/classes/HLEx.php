@@ -8,4 +8,8 @@ class HLEx extends \Px\HLEx {
   static function langNum($strings, $number) {
     return Str::langNum($strings, $number, true);
   }
+
+  static function lang($string, $replaces = array(), $quote = true) {
+    return parent::lang(Current::lang($string), $replaces, $quote);
+  }
 }

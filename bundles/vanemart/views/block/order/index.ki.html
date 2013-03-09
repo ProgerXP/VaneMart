@@ -1,53 +1,29 @@
 <ul $rows "vmart-orders v-rows">
   <li "status-$status { $current ? 'current' : '' } { $recent ? 'recent' : '' }" data-id=$id>
-    $=created
-      <span "created">
-        {= HLEx::time(date('d.m.Y', $created_at), $created_at, true) }
-      </span>
-    $^created
-
-    $=updated
-      <span $_{ $updated_at } "updated">
-        {= HLEx::time(date('d.m', $updated_at), $updated_at) }
-      </endspan>
-    $^updated
-
-    $=counts
-      <span "count">
-        {= HLEx::langNum('general.goods', $count) }
-      </span>
-    $^counts
-
-    $=sums
-      <span "sum">
-        {= HLEx::langNum('general.price', $sum) }
-      </span>
-    $^sums
-
-    $=status
-      <span "status">
-        { __("vanemart::order.status.$status") }
-      </span>
-    $^status
+    $=created   HLEx::time(date('d.m.Y', $created_at), $created_at, true)
+    $=updated   $updated_at ? HLEx::time(date('d.m', $updated_at), $updated_at) : ''
+    $=counts    Str::langNum('general.goods', $count)
+    $=sums      Str::langNum('general.price', $sum)
+    $=status    __("vanemart::order.status.$status")
 
     <p "title">
       <a "$url">
-        {= __('vanemart::order.index.item_title', $item + compact('created')) }
+        {= htmlLang('order.index.item_title', compact('id', 'created'), false) }
       </a>
     </p>
 
     <div "details">
       <p "from">
-        { __('vanemart::order.index.from', compact('name', 'surname')) }
+        {= htmlLang('order.index.from', compact('name', 'surname')) }
       </p>
 
       <p "contents">
-        {= __('vanemart::order.index.count_sum', compact('counts', 'sums')) }
+        {= htmlLang('order.index.count_sum', compact('counts', 'sums')) }
       </p>
 
       <p "status">
         <if $updated_at>
-          {= __('vanemart::order.index.info', compact('status', 'updated')) }
+          {= htmlLang('order.index.info', compact('status', 'updated'), false) }
         <else>
           {= $status }
         </if>
