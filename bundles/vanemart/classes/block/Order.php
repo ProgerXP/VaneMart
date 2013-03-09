@@ -111,8 +111,8 @@ class Block_Order extends BaseBlock {
     $result = $this->ajax($order->id);
 
     if ($result instanceof Order) {
-      $status = __('vanemart::order.set.status');
-      return static::back($order->url())->with('status', $status);
+      $this->status('set');
+      return static::back($order->url());
     } elseif ($result === E_UNCHANGED) {
       return static::back($order->url());
     } else {

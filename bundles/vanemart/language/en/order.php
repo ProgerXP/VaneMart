@@ -10,6 +10,10 @@ return array(
     'new'                 => 'Новый',
   ),
 
+  'ctlstatus'             => array(
+    'set'                 => 'Параметры заказа были изменены.',
+  ),
+
   // order@index
   'index'                 => array(
     'item_title'          => 'Заказ №:id от :created',
@@ -25,7 +29,6 @@ return array(
 
   // POST order@show
   'set'                   => array(
-    'status'              => 'Параметры заказа были изменены.',
     'post'                => "Параметры заказа были изменены:\n:0",
     'line'                => array(
       'add'               => '  * :field :new',

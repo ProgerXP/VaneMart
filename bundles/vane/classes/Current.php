@@ -34,6 +34,10 @@ class Current {
   }
 
   static function lang($name, $default = null) {
-    return \Lang::line(static::expand($name))->get(null, $default);
+    if ($name instanceof \Lang) {
+      return $name;
+    } else {
+      return \Lang::line(static::expand($name))->get(null, $default);
+    }
   }
 }

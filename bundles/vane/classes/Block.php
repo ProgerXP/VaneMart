@@ -214,13 +214,17 @@ class Block extends DoubleEdge {
 
   //= null, array vars
   function titleVars(array $vars, $action) {
-    $name = str_replace('::block.', '::', $this->name).".$action.title";
+    $name = $this->langVarName("$action.title");
 
     if (\Lang::has($name)) {
       $page = \Lang::line($name, $this->title)->get();
       $vars = compact('page') + \Vane\Current::config('company');
       return S::keep($vars, 'is_scalar');
     }
+  }
+
+  function langVarName($var) {
+    return str_replace('::block.', '::', $this->name).".$var";
   }
 
   // function ()
@@ -265,6 +269,35 @@ class Block extends DoubleEdge {
   function can($feature) {
     if ($user = $this->user(false)) {
       return (bool) $user->can($feature);
+    }
+  }
+
+  // function ()
+  // Read current status string. It may contain unescaped HTML.
+  //= str
+  //
+  // function ($name, $replaces)
+  // Set (flash) new status string.
+  //* $name str - language string name, See getStatus().
+  //* $replaces array, mixed - language string variables. HTML is escaped.
+  function status($name = null, $replaces = array()) {
+    if (!isset($name)) {
+      return \Session::get('status');
+    } else {
+      $str = $this->getStatus($name, $replaces);
+      $str === null or \Session::flash('status', $str);
+      return $this;
+    }
+  }
+
+  //= str with possible HTML entities
+  function getStatus($name, $replaces = array()) {
+    \Lang::has($name) or $name = $this->langVarName("ctlstatus.$name");
+
+    if (\Lang::has($name)) {
+      return HLEx::lang(__($name), $replaces);
+    } else {
+      Log::warn_Block("Block is missing status language string [$name].");
     }
   }
 }

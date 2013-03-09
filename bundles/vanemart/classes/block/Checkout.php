@@ -25,21 +25,21 @@ class Block_Checkout extends BaseBlock {
     if (!Cart::has()) {
       return static::back();
     } elseif ($min = Cart::isTooSmall()) {
-      $status = HLEx::lang('vanemart::checkout.small', array(
+      $this->status('small', array(
         'min'     => HLEx::langNum('general.price', $min),
         'total'   => HLEx::langNum('general.price', Cart::subtotal()),
       ));
 
-      return static::back()->with(copact('status'));
-    }
-
-    $result = $this->ajax();
-
-    if ($result instanceof Order) {
-      return Redirect::to(route('vanemart::order', $result->id).
-                          '?code='.urlencode($result->password));
+      return static::back();
     } else {
-      return $result;
+      $result = $this->ajax();
+
+      if ($result instanceof Order) {
+        return Redirect::to(route('vanemart::order', $result->id).
+                            '?code='.urlencode($result->password));
+      } else {
+        return $result;
+      }
     }
   }
 
