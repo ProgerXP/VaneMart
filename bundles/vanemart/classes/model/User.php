@@ -72,19 +72,19 @@ class User extends BaseModel implements \Vane\UserInterface {
 
     $hasWildcards = strrchr(ltrim($perms, '*'), '*') !== false;
     $perms = explode(' ', $perms);
-    $allBut = S::unprefix($perms, '*');
+    $allBut = S::unprefix($perms, array('*'));
 
     if ($feature === '*') {
       // Is this a superuser (who can do anything)?
       return $allBut and !$perms;
     } elseif (!$hasWildcards) {
-      return 0 != $allBut ^ in_array($feature, $perms);
+      return (bool) ($allBut ^ in_array($feature, $perms));
     } else {
       $matched = array_first($perms, function ($i, $perm) use ($feature) {
         return fnmatch($perm, $feature, FNM_NOESCAPE | FNM_PATHNAME | FNM_CASEFOLD);
       });
 
-      return 0 != $allBut ^ $matched;
+      return (bool) ($allBut ^ $matched);
     }
   }
 }

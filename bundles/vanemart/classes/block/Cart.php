@@ -24,6 +24,11 @@ class Block_Cart extends BaseBlock {
     $this->filter('before', 'csrf')->only(array('add', 'set'));
   }
 
+  protected function beforeAction($action, array $params) {
+    parent::beforeAction($action, $params);
+    return $this->can('cart.disable') ? false : null;
+  }
+
   /*---------------------------------------------------------------------
   | GET cart/index
   |
