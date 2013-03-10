@@ -1,6 +1,11 @@
 <?php namespace VaneMart;
 
 class Block_File extends BaseBlock {
+  /*---------------------------------------------------------------------
+  | GET post/index [/TYPE] [/OBJID]
+  |
+  | Initiates download of a registered file.
+  ---------------------------------------------------------------------*/
   function get_dl($id = null) {
     if (ltrim($id, '0..9') === '') {
       $file = File::find($id);
@@ -25,6 +30,7 @@ class Block_File extends BaseBlock {
       return Response::download($file->file(), $file->name, array(
         'Etag'            => $file->md5,
         'Last-Modified'   => gmdate('D, d M Y H:i:s', filemtime($file->file())).' GMT',
+        'Content-Type'    => $file->mime ?: 'application/octet-stream',
       ));
     }
   }

@@ -28,8 +28,11 @@ class File extends BaseModel {
   // Generates unique base name and returns path to that non-existing file.
   //= str absolute local path
   static function generatePath($name) {
-    list($name, $ext) = S::chopTo('.', static::safeName($name));
-    "$ext" === '' or $ext = ".$ext";
+    list($name, $ext) = S::chopTo('.', $name);
+
+    $name = substr(Str::slug($name), 0, 50);
+    "$ext" === '' or $ext = '.'.Str::slug($ext);
+    static::safeName($name.$ext);
 
     $base = static::storage();
     $result = "$base$name[0]/$name$ext";

@@ -58,28 +58,26 @@ class Block_Post extends BaseBlock {
 
     $rows = $rows->get();
 
-    if (!$rows) {
-      return;
-    }
-
-    $files = array();
-
-    if (!$this->can('post.hidefiles')) {
+    if ($rows and !$this->can('post.hidefiles')) {
       $fileRows = FileListItem
         ::where('type', '=', 'posts')
         ->where_in('object', prop('id', $rows))
         ->join(File::$table.' AS f', 'f.id', '=', 'file')
         ->get();
 
+      $files = array();
+
       foreach ($fileRows as $file) {
         $files[$file->object][] = with(new File)->fill_raw($file->attributes)->to_array();
       }
+
+      $rows = S($rows, function ($model) use ($files) {
+        $attachments = (array) array_get($files, $model->id);
+        return compact('attachments') + $model->withHTML()->to_array();
+      });
     }
 
-    return array('rows' => S($rows, function ($model) use ($files) {
-      $attachments = (array) array_get($files, $model->id);
-      return compact('attachments') + $model->withHTML()->to_array();
-    }));
+    return compact('rows');
   }
 
   /*---------------------------------------------------------------------
