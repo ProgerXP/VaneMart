@@ -12,7 +12,11 @@ Autoloader::alias('Vane\\HLEx', 'VaneMart\\HLEx');
 Px\Plarx::supersede('VaneMart', array('Str', 'HLEx'));
 
 Squall\initEx('VaneMart');
-Vane\overrideHTMLki('vanemart::', 'VaneMart');
+
+Vane\overrideHTMLki('vanemart::', array(
+  'ns'                    => 'VaneMart',
+  'stickyFormHiddens'     => array('back'),
+));
 
 require_once __DIR__.DS.'core.php';
 

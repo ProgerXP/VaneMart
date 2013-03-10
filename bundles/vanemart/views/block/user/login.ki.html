@@ -5,13 +5,11 @@
 <p "b-info">"vanemart::user.login.legend"</p>
 
 <form "vanemart::user@login" "col-2">
-  <hidden "back" value={ Input::get('back') }>
-
   <table "col-2 color">
     <tr>
       <th>"vanemart::field.email"</th>
       <td>
-        <input "email" class={ $ok === false ? 'invalid' : '' }>
+        <input "email" id=login class={ $ok === false ? 'invalid' : '' }>
 
         <ul ${ $ok === false } "errors">
           <li>"vanemart::user.login.wrong"</li>
@@ -40,3 +38,7 @@
     </tr>
   </table>
 </form>
+
+<script>
+  try {{ document.getElementById('login').focus() } catch (e) {}
+</script>
