@@ -176,8 +176,8 @@ class Block extends DoubleEdge {
   protected function filters($event, $action) {
     $filters = parent::filters($event, $action);
 
-    foreach ($filters as $collection) {
-      $collection->parameters[] = $this;
+    foreach ($filters as &$collection) {
+      $collection = new BlockFilterCollection($this, $collection);
     }
 
     return $filters;
@@ -317,5 +317,29 @@ class Block extends DoubleEdge {
       Log::warn_Block("Block is missing status language string [$name];".
                       " current action: [{$this->currentAction}].");
     }
+  }
+}
+
+class BlockFilterCollection {
+  public $block;        //= Vane\Block being filtered
+  public $collection;   //= Laravel\Routing\Filter_Collection
+
+  function __construct(Block $filtering, $collection) {
+    $this->block = $filtering;
+    $this->collection = $collection;
+
+    foreach (get_object_vars($collection) as $prop => $value) {
+      $this->$prop = &$collection->$prop;
+    }
+  }
+
+  function __call($method, $params) {
+    return call_user_func_array(array($this->collection, $method), $params);
+  }
+
+  function get($filter) {
+    list($filter, $params) = $this->collection->get($filter);
+    $params[] = $this->block;
+    return array($filter, $params);
   }
 }
