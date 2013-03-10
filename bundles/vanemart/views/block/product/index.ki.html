@@ -1,25 +1,20 @@
 <div "vmart-product">
-  <h1>$title</h1>
-
   <img $image "$image" "image" alt=$title>
   <div "bottom-folder" />
 
   <form "vanemart::cart@add">
     <csrf>
 
-    <table "col-2">
+    <table "col-2 wide">
       <tr>
-        <th>"vanemart::product.price"</th>
+        <th>"vanemart::field.price"</th>
         <td>
-          $=prices compact('retail', 'wholesale')
-          <each $prices>
-            <if $item>
-              <if isset($_hadPrice)>,</if>
-              $=_hadPrice true
+          $=tretail     langNum('general.price', $retail)
+          $=twholesale  langNum('general.price', $wholesale)
 
-              {= langNum('general.price', $item) }
-            </if>
-          </each>
+          <if $retail and $wholesale>
+            {= htmlLang('product.index.prices', compact('tretail', 'twholesale'), false) }
+          </if>
         </td>
       </tr>
 
@@ -27,23 +22,17 @@
       <each $fields>
         <if $item>
           <tr>
-            <th>{ __('vanemart::product.'.$key) }</th>
+            <th>{ __('vanemart::field.'.$key) }</th>
             <td>$item</td>
           </tr>
         </if>
       </each>
 
       <tr "cart">
-        <th />
-        <td>
-          <select ${ range(1, 5) } "id[$id]" "flat">
-            <option "$item">{= langNum('general.qty', $item) }</option>
-          </endselect>
-        </td>
-      </tr>
-
-      <tr "btn">
-        <th />
+        <th>
+          <input "id[$id]" "gen shade qty" default=1 onfocus="this.select()">
+          &times; $volume
+        </th>
         <td>
           <submit class=default>
             <i "b-basket" />
