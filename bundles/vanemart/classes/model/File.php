@@ -2,6 +2,7 @@
 
 class File extends BaseModel {
   static $table = 'files';
+  static $hasURL = true;
 
   //* $path null, str - if given returns path to file with that name; can only
   //  contain a limited number of symbols including '/' - see safeName().
@@ -52,7 +53,7 @@ class File extends BaseModel {
   //= File new saved model
   static function reuseOrPlace($file, array $attributes = array()) {
     if ($model = static::where('md5', '=', md5($file))->first()) {
-      return $model;
+      return $model->used();
     } else {
       return static::place($file, $attributes);
     }
@@ -60,7 +61,7 @@ class File extends BaseModel {
 
   // Registers new file in the database and saves it locally. Throws exceptions
   // if any error occurs.
-  //* $file str file data, stream
+  //* $file str file data, stream - this is not a path!
   //* $attributes hash - file info, see the first line for the list of fields.
   //= File new saved model
   static function place($file, array $attributes = array()) {
@@ -76,17 +77,15 @@ class File extends BaseModel {
 
     if (!empty($attributes['name'])) {
       $attributes['name'] = basename($attributes['name']);
-    } elseif (is_resource($file)) {
-      $ext = ltrim($attributes['ext'], '.');
+    } else {
+      $ext = strtolower(ltrim($attributes['ext'], '.'));
       $attributes['name'] = substr(uniqid(), 0, 8).".$ext";
 
-      $msg = "Placing a file from stream with random name: $attributes[name].";
+      $msg = "Placing a file without explicit name, generated random: $attributes[name].";
       Log::info_File($msg);
-    } else {
-      $attributes['name'] = basename($file);
     }
 
-    $ext = $attributes['ext'] = ltrim(S::ext($attributes['name']), '.');
+    $ext = $attributes['ext'] = strtolower(ltrim(S::ext($attributes['name']), '.'));
     $ext === '' and $attributes['ext'] = 'dat';
 
     $dest = static::generatePath($attributes['name']);
@@ -97,10 +96,10 @@ class File extends BaseModel {
     if (is_resource($file)) {
       $attributes['size'] = static::streamCopyTo($dest, $file);
     } else {
-      $attributes['size'] = filesize($file);
+      $attributes['size'] = strlen($file);
 
-      if (!copy($file, $dest)) {
-        throw new Error("Cannot copy File [$file] to [$dest].");
+      if (!\File::put($dest, $file)) {
+        throw new Error("Cannot write new File data [$dest].");
       }
     }
 
@@ -149,10 +148,20 @@ class File extends BaseModel {
     return static::storage($this->path);
   }
 
+  function used() {
+    $this->uses += 1;
+
+    if ($this->save()) {
+      return $this;
+    } else {
+      throw new Error("Cannot update usage counter of File [{$model->id}].");
+    }
+  }
+
   // Decrements reference counter for this file and removes it if it becomes empty.
   function unused() {
-    if ($this->count > 1) {
-      $this->count -= 1;
+    if ($this->uses > 1) {
+      $this->uses -= 1;
 
       if ($this->exists and !$this->save()) {
         throw new Error("Cannot save File model of ID [{$this->id}].");

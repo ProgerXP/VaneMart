@@ -1,4 +1,4 @@
-<form "vanemart::post@add/$type/$object" "vmart-post type-$type">
+<form "vanemart::post@add/$type/$object" "vmart-post type-$type" upload>
   $=title __("vanemart::".substr($type, 0, -1).".posts")->get(null, '')
   <h2 $title "block-title">$item</endh2>
 
@@ -12,6 +12,11 @@
   <p "body">
     <textarea "body" rows=1 placeholder={ __('vanemart::post.add.body') } />
   </p>
+
+  <p $canAttach "b-attach attach">
+    <span "js-link attach">"vanemart::post.add.attach"</span>
+    <file "attach[]">
+  </endp>
 
   <p "btn">
     <submit class=default>"vanemart::post.add.submit"</submit>

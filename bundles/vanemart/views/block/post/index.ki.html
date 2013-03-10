@@ -20,5 +20,11 @@ $=today with(new \DateTime)->setTime(0, 0)->getTimestamp()
     <article>
       {= $html }
     </article>
+
+    <ul $attachments "vmart-attachments">
+      <li "b-attach b-file-{ strtolower($ext) } b-r">
+        <a "$url" title={ S::sizeStr($size) }>$name</a>
+      </li>
+    </endul>
   </li>
 </endul>

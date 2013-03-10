@@ -66,6 +66,10 @@ VRoute::on('GET (:bundle)/post/add/(:any)/(:num?)')
   ->as('vanemart::post')
   ->naked('VaneMart::post@add');
 
+VRoute::on('GET (:bundle)/file/(:any)')
+  ->as('vanemart::file')
+  ->naked('VaneMart::file@dl');
+
 VRoute::on('(:bundle)/help/(:all?)')
   ->as('vanemart::help')
   ->servers('Vane::textpub help')
