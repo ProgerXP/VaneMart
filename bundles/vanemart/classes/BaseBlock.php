@@ -8,14 +8,14 @@ class BaseBlock extends \Vane\Block {
     return $input ? Redirect::to($input) : Redirect::back($default);
   }
 
-  protected function afterAction($action, array $params, &$response) {
+  protected function makeResponse($response, $internal = true) {
     if ($response === false and $this->isServer) {
-      $response = Redirect
+      return Redirect
         ::to( route('vanemart::login').'?back='.urlencode(\URI::full()) )
         ->with('passthru', 1);
+    } else {
+      return parent::makeResponse($response, $internal);
     }
-
-    return parent::afterAction($action, $params, $response);
   }
 
   //= null unauthorized, bool

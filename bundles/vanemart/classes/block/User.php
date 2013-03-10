@@ -128,7 +128,11 @@ class Block_User extends BaseBlock {
   |--------------------------------------------------------------------*/
   function get_logout() {
     $this->ajax();
-    return static::back();
+    $this->status('logout');
+    // not redirecting back() because the user might have been on a protected
+    // page (e.g. his orders); returning him there will cause the login form
+    // to appear again which may be confusing.
+    return Redirect::to(\Vane\Current::bundleURL());
   }
 
   function ajax_get_logout() {

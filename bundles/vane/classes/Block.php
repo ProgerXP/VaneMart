@@ -169,6 +169,20 @@ class Block extends DoubleEdge {
     }
   }
 
+  // Unlike default this function appends $this to parameter of each returned
+  // filter so that the handler has more information about the block being filtered.
+  // For example, 'vane::auth' either redirects the user or outputs a static message
+  // depending on whether this block $isServer or not.
+  protected function filters($event, $action) {
+    $filters = parent::filters($event, $action);
+
+    foreach ($filters as $collection) {
+      $collection->parameters[] = $this;
+    }
+
+    return $filters;
+  }
+
   // Unlike default doesn't wrap response into $fullView if it's not being explicitly
   // converted to Response object (by calling toResponse()). Also, sets $server
   // and $breakout properties of the returned object to match this instance.

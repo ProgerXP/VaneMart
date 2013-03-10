@@ -1,5 +1,9 @@
 <?php
 return array(
+  'ctlstatus'             => array(
+    'logout'              => 'Всего доброго! Ждём вас вновь.',
+  ),
+
   // user@login
   'login'                 => array(
     'title'               => 'Вход в ваш кабинет',
