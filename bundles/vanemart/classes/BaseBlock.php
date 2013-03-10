@@ -9,7 +9,8 @@ class BaseBlock extends \Vane\Block {
   }
 
   protected function makeResponse($response, $internal = true) {
-    if ($response === false and $this->isServer) {
+    if ($this->isServer and ($response === false or $response === E_UNAUTH) and
+        !$this->user(false)) {
       return Redirect
         ::to( route('vanemart::login').'?back='.urlencode(\URI::full()) )
         ->with('passthru', 1);

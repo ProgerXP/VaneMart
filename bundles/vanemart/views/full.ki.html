@@ -36,6 +36,8 @@
     <![endif]-->
   </head>
   <body "{ join(' ', (array) $classes) }">
+    <script>document.body.className += ' js'</script>
+
     {= $content }
 
     <each $scripts>
