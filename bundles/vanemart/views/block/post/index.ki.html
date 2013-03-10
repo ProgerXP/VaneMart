@@ -1,14 +1,16 @@
+$=today with(new \DateTime)->setTime(0, 0)->getTimestamp()
+
 <ul $rows "vmart-posts v-rows type-$type">
-  <li "$flags" data-id=$id>
+  <li "$flags { $created_at >= $today ? 'today' : '' }" data-id=$id>
     <if "$title" !== ''>
       <h3>$title</h3>
     </if>
 
     <div "info">
       <if $author>
-        <p ${ array($author) } "author">
-          <img ${ !!$avatar } "$avatar" "avatar" alt=$name>
-          { __('vanemart::post.index.author', $item) }
+        <p $a{ array($author) } "author">
+          <img ${ !!$a_avatar } "$a_avatar" "avatar" alt=$a_name>
+          { __('vanemart::post.index.author', $item_a) }
         </endp>
       </if>
 

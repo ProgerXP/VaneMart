@@ -51,7 +51,12 @@ class Block_Post extends BaseBlock {
           'ip'            => Request::ip(),
         ));
 
-      return $model->save() ? $model : E_SERVER;
+      if ($model->save()) {
+        $object and $model->object()->update(array('updated_at' => new \DateTime));
+        return $model;
+      } else {
+        return E_SERVER;
+      }
     }
   }
 }

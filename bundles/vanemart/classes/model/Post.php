@@ -9,7 +9,7 @@ class Post extends BaseModel {
     $class = array_get(static::$typeModels, $this->type);
 
     if ($class) {
-      return $this->belongs_to(NS.$class, 'item');
+      return $this->belongs_to(NS.$class, 'object');
     } else {
       Log::error_FileListItem("Unknown object type [{$this->type}].");
     }
