@@ -24,6 +24,9 @@ class Block extends DoubleEdge {
   //= true act as array() if this block is a server, otherwise do nothing
   public $title = true;
 
+  // Is set if this block is a Route server (aka '!' block).
+  public $isServer = false;
+
   // Executes block controller and converts its result to Response. See exec()
   // for the description of arguments.
   //= Laravel\Response
@@ -178,7 +181,7 @@ class Block extends DoubleEdge {
 
     $response = parent::makeResponse($response);
     $response->server = $this;
-    $response->breakout = $this->breakout;
+    empty($response->breakout) and $response->breakout = $this->breakout;
 
     $internal and $this->fullView = $oldView;
     return $response;
@@ -297,7 +300,8 @@ class Block extends DoubleEdge {
     if (\Lang::has($name)) {
       return HLEx::lang(__($name), $replaces);
     } else {
-      Log::warn_Block("Block is missing status language string [$name].");
+      Log::warn_Block("Block is missing status language string [$name];".
+                      " current action: [{$this->currentAction}].");
     }
   }
 }

@@ -349,18 +349,17 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
     if (($singleBlock and $firstServed) or $this->breaksout()) {
       isset($this->served) or Log::info_Layout('No specific server on this route.');
       $rendering->result = array($this->servedResponse());
-    } else {
+    } elseif ($singleBlock) {
       $rendering->render($this);
+      $rendering->result = array_slice($rendering->result, 1, -1, true);
 
-      if ($singleBlock) {
-        $rendering->result = array_slice($rendering->result, 1, -1, true);
-
-        foreach ($rendering->result as $block) {
-          foreach (arrize($block) as $response) {
-            is_object($response) and $response->isServed = true;
-          }
+      foreach ($rendering->result as $block) {
+        foreach (arrize($block) as $response) {
+          is_object($response) and $response->isServed = true;
         }
       }
+    } else {
+      $rendering->render($this);
     }
 
     Request::ajax(null);

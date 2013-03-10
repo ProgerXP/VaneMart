@@ -1,8 +1,12 @@
-<h1>"vanemart::user.login.title"</h1>
+<if \Session::get('passthru')>
+  <p "b-lock gen vmart-unauth">"vanemart::user.unauth.required"</p>
+</if>
 
-<p "info">"vanemart::user.login.legend"</p>
+<p "b-info">"vanemart::user.login.legend"</p>
 
 <form "vanemart::user@login" "col-2">
+  <hidden "back" value={ Input::get('back') }>
+
   <table "col-2 color">
     <tr>
       <th>"vanemart::field.email"</th>
@@ -20,7 +24,7 @@
         <password "password" class={ $ok === false ? 'invalid' : '' }>
     </tr>
     <tr>
-      <th />
+      <th "no-bk" />
       <td>
         <label>
           <checkbox "remember" checked>
