@@ -6,13 +6,14 @@ if (Auth::guest()) {
   $user = array('Vane::user', 'orders' => 'vanemart::orders', 'logout' => 'vanemart::logout');
 }
 
-return compact('user') + array(
-  'cart'                  => array('VaneMart::cart', 'checkout' => 'vanemart::checkout'),
+$cart = array('VaneMart::cart');
+VaneMart\Cart::has() and $cart['checkout'] = 'vanemart::checkout';
 
-  'main'                  => array(
-    'help' => 'vanemart::help', 'delivery' => 'help/delivery', 'wholesale' => 'help/opt',
-    'contacts' => 'vanemart::contacts',
+return compact('user', 'cart') + array(
+  'main' => array(
+    'help' => 'vanemart::help', 'delivery' => 'help/delivery',
+    'wholesale' => 'help/opt', 'contacts' => 'vanemart::contacts',
   ),
 
-  'groups'                => 'VaneMart::categories',
+  'groups' => 'VaneMart::categories',
 );
