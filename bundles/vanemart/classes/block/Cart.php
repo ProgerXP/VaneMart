@@ -88,12 +88,12 @@ class Block_Cart extends BaseBlock {
   }
 
   /*---------------------------------------------------------------------
-  | GET cart/addBySKU
+  | GET cart/add_sku
   |
   | Displays form for adding items by their SKU codes. POST cart/add is
   | used to handle the action with its ?sku[] parameter.
   |--------------------------------------------------------------------*/
-  function get_addBySKU() {
+  function get_add_sku() {
     return true;
   }
 

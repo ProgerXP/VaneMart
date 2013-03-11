@@ -27,7 +27,7 @@ class Block_Group extends ModelBlock {
   }
 
   /*---------------------------------------------------------------------
-  | GET group/title/ID
+  | GET group/title /ID
   |
   | Simply returns group's title.
   |--------------------------------------------------------------------*/
@@ -38,7 +38,7 @@ class Block_Group extends ModelBlock {
   }
 
   /*---------------------------------------------------------------------
-  | GET group/index/ID
+  | GET group/index /ID
   |
   | Outputs group contents in proper order ignoring unavailable items and
   | variations of a product.
@@ -60,20 +60,20 @@ class Block_Group extends ModelBlock {
   }
 
   /*---------------------------------------------------------------------
-  | GET group/titleByProduct/ID
+  | GET group/title_by_product /ID
   |
   | Returns title of the group to which product ID belongs to.
   |--------------------------------------------------------------------*/
-  function get_titleByProduct($id = null) {
+  function get_title_by_product($id = null) {
     return $this->actByProduct('get_title', $id);
   }
 
   /*---------------------------------------------------------------------
-  | GET group/byProduct/ID
+  | GET group/by_product /ID
   |
   | Same as GET group/index but ID is product's ID which group is listed.
   |--------------------------------------------------------------------*/
-  function get_byProduct($id = null) {
+  function get_by_product($id = null) {
     return $this->actByProduct('ajax_get_index', $id);
   }
 
@@ -89,7 +89,7 @@ class Block_Group extends ModelBlock {
   }
 
   /*---------------------------------------------------------------------
-  | GET group/byProduct [/NAME]
+  | GET group/by_list [/NAME]
   |
   | Same as GET group/index but displays items listed in vm_goods_lists
   | table under the given NAME.
@@ -102,7 +102,7 @@ class Block_Group extends ModelBlock {
   | * default=NAME  - optional; if present and no list with NAME passed
   |   in the URL exists this name is used instead. Defaults to 'main'.
   |--------------------------------------------------------------------*/
-  function get_byList($name = 'main') {
+  function get_by_list($name = 'main') {
     if ($name === '*') {
       if ($route = \Vane\Route::current() and $route->lastServer) {
         $name = \Bundle::element($route->lastServer->name);

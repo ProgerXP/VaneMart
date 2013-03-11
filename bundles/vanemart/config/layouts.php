@@ -28,7 +28,7 @@ return array(
       '|nav/#menu goldn'  => array('Vane::logo', 'Vane::menu groups'),
       '|#group goldw'     => array(
         '-title'          => array(),
-        '-list'           => 'VaneMart::group@byList *',
+        '-list'           => 'VaneMart::group@by_list *',
       ),
     ),
 
