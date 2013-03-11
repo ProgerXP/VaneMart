@@ -165,8 +165,10 @@ class Route {
   //  defaults to '*' (all). Set multiple methods by calling methods('get, post').
   function __construct($url) {
     @list($method, $rest) = explode(' ', $url, 2);
+
     if (isset($rest) and in_array(strtoupper($method), \Router::$methods)) {
       $url = $rest;
+      $this->methods = $method;
     }
 
     $this->url($url);
