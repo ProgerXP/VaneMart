@@ -335,12 +335,16 @@ class ThumbGen {
   |----------------------------------------------------------------------*/
 
   // Scales source image and caches it unless cache exists and is upToDate().
+  //* $regenerate bool - if set cache is ignored and new thumb is always generated.
   //= str path to scaled file (see cacheFile())
-  function scaled() {
-    if (!$this->upToDate()) {
+  function scaled($regenerate = false) {
+    if ($regenerate or !$this->upToDate()) {
       $this->keepAspect();
       $this->normalize();
-      $this->upToDate() or $this->generate();
+
+      if ($regenerate or !$this->upToDate()) {
+        $this->generate();
+      }
     }
 
     return $this->cacheFile();

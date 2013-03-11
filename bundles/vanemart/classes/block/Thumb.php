@@ -65,6 +65,8 @@ class Block_Thumb extends BaseBlock {
   |   step so it'll be larger than specified ?width and/or ?height.
   | * fill=0        - optional; if set thumbnail will be larger than given
   |   dimensions filling all space within width*height rectangle.
+  | * regen=0       - optional; if set cache is ignored and new image is
+  |   regenerated; needs special permissions to be available.
   |--------------------------------------------------------------------*/
   function get_index() {
     $source = $this->in('source');
@@ -75,7 +77,13 @@ class Block_Thumb extends BaseBlock {
     $source = File::storage($source);
     $thumb = static::configure(\ThumbGen::make($source), $this->in());
 
-    $url = $thumb->scaled();
+    $regen = $this->in('regen', false);
+    if ($regen and !$this->can('manager') and !$this->can('thumb.regen')) {
+      $regen = false;
+    }
+
+    $url = $thumb->scaled($regen);
+
     if (!S::unprefix($url, $thumb->temp())) {
       throw new Exception("Cannot determine thumbnail URL from [$url].");
     }
