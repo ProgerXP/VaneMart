@@ -36,7 +36,7 @@ class MenuItem {
       return $this->current;
     } else {
       $url = Menu::expand($this->url);
-      return \URL::current() === $url;
+      return trim(strtok(\URI::full(), '?'), '/') === trim($url, '/');
     }
   }
 

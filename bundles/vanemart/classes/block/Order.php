@@ -178,7 +178,7 @@ class Block_Order extends BaseBlock {
       File::all(prop('image', $goods));
 
       $rows = S($goods, function ($product) {
-        return array('image' => $product->image(150)) + $product->to_array();
+        return array('image' => $product->image(200)) + $product->to_array();
       });
 
       return compact('rows');

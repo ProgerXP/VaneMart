@@ -5,12 +5,8 @@ if (!Bundle::exists('vane')) {
 } else {
   Bundle::start('vane');
   Vane\Current::set('vanemart::');
+  Vane\aliasIn('VaneMart');
 }
-
-Autoloader::alias('Vane\\Log', 'VaneMart\\Log');
-Autoloader::alias('Vane\\Str', 'VaneMart\\Str');
-Autoloader::alias('Vane\\HLEx', 'VaneMart\\HLEx');
-Px\Plarx::supersede('VaneMart', array('Str', 'HLEx'));
 
 Squall\initEx('VaneMart');
 

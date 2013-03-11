@@ -23,6 +23,19 @@ function overrideHTMLki($path, $overrides) {
   }
 }
 
+function aliasIn($ns) {
+  static $overridenPlarx = array('Str', 'HLEx');
+
+  $ns = trim($ns, '\\');
+
+  foreach ($overridenPlarx as $class) {
+    \Autoloader::alias("Vane\\$class", "$ns\\$class");
+  }
+
+  \Autoloader::alias('Vane\\Log', "$ns\\Log");
+  Plarx::supersede($ns, $overridenPlarx);
+}
+
 if (!\Bundle::exists('plarx')) {
   throw new Error('Vane requires Plarx bundle installed.');
 } else {
