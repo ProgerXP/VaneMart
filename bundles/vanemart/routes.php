@@ -47,9 +47,11 @@ VRoute::on('(:bundle)/orders/(:num)')
     '=nav #group title'   => array('='.__('vanemart::order.title')),
     '=nav #group list'    => array('VaneMart::order'),
     '+#content'           => array(
-      '|order goldw'      => array('!', 'VaneMart::order@goods (:1)'),
+      '|order goldw'      => array('!', 'VaneMart::order@goods (:1)' => '!'),
       '|posts goldn'      => array(
-        'VaneMart::post@add orders (:1)', 'VaneMart::post orders (:1)',
+        'Vane::title vanemart::order.posts',
+        'VaneMart::post@add orders (:1)',
+        'VaneMart::post orders (:1)',
       ),
     ),
   ));

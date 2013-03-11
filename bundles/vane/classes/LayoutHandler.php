@@ -5,7 +5,7 @@ class LayoutHandler extends LayoutItem {
   public $controller;       //= str like 'bundle::ctl.subctl'
   public $action;           //= str can be empty
   public $args;             //= array, str to pass to the controller
-  public $options;          //= hash
+  public $options;          //= null use global input, hash
   public $layout;           //= null, Layout main layout that's being rendered
 
   function __construct($handler, $options = array()) {
@@ -24,7 +24,7 @@ class LayoutHandler extends LayoutItem {
       $this->classes = static::splitClasses(strtok(null));
     }
 
-    $this->options = arrize($options);
+    $this->options = $options === '!' ? null : arrize($options);
   }
 
   //= Laravel\Response
