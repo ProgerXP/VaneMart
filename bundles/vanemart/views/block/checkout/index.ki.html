@@ -1,16 +1,25 @@
-<form "vanemart::checkout" "col-2">
+<form "vanemart::checkout" "col-2 vmart-checkout">
   <csrf>
 
-  <table "col-2">
+  <p "b-car">"vanemart::checkout.index.encourage"</p>
+
+  <table "col-2 color">
     <tr "email">
-      <th>{ __("vanemart::checkout.email") }</th>
+      <th>"vanemart::field.email"</th>
       <td>
-        <input "email">
+        <input "email" id=email>
         <errors>
+
+        <script>
+          try {{ document.getElementById('email').focus() } catch (e) {}
+        </script>
       </td>
     </tr>
     <include vanemart::block.checkout.fields>
+    <tr "btn">
+      <td colspan=2>
+        <submit class=default>"vanemart::checkout.index.submit"</submit>
+      </td>
+    </tr>
   </table>
-
-  <p "btn"> <submit>"vanemart::checkout.submit"</submit> </p>
 </form>

@@ -2,7 +2,22 @@
 
 class Block_Checkout extends BaseBlock {
   protected function init() {
-    $this->filter('before', 'csrf')->only(array('add', 'set'));
+    $this->filter('before', 'csrf')->on('post');
+  }
+
+  function prereq() {
+    if (!Cart::has()) {
+      return static::back();
+    } elseif ($this->can('checkout.deny')) {
+      return false;
+    } elseif ($min = Cart::isTooSmall()) {
+      $this->status('small', array(
+        'min'     => Str::langNum('general.price', $min),
+        'total'   => Str::langNum('general.price', Cart::subtotal()),
+      ));
+
+      return static::back();
+    }
   }
 
   /*---------------------------------------------------------------------
@@ -11,7 +26,11 @@ class Block_Checkout extends BaseBlock {
   | Outputs form for checking out.
   |--------------------------------------------------------------------*/
   function get_index() {
-    return true;
+    if ($response = $this->prereq()) {
+      return $response;
+    } else {
+      return Cart::has() ? true : static::back();
+    }
   }
 
   /*---------------------------------------------------------------------
@@ -22,21 +41,13 @@ class Block_Checkout extends BaseBlock {
   | * csrf=CSRF     - REQUIRED.
   |--------------------------------------------------------------------*/
   function post_index() {
-    if (!Cart::has()) {
-      return static::back();
-    } elseif ($min = Cart::isTooSmall()) {
-      $this->status('small', array(
-        'min'     => HLEx::langNum('general.price', $min),
-        'total'   => HLEx::langNum('general.price', Cart::subtotal()),
-      ));
-
-      return static::back();
+    if ($response = $this->prereq()) {
+      return $response;
     } else {
       $result = $this->ajax();
 
       if ($result instanceof Order) {
-        return Redirect::to(route('vanemart::order', $result->id).
-                            '?code='.urlencode($result->password));
+        return Redirect::to($result->url());
       } else {
         return $result;
       }
@@ -53,7 +64,9 @@ class Block_Checkout extends BaseBlock {
       'phone'           => 'required|min:7',
     ));
 
-    if (!Cart::has() or Cart::isTooSmall()) {
+    if ($this->can('checkout.deny')) {
+      return false;
+    } elseif (!Cart::has() or Cart::isTooSmall()) {
       return E_INPUT;
     } elseif ($valid->fails()) {
       return $valid;
@@ -71,6 +84,7 @@ class Block_Checkout extends BaseBlock {
         OrderProduct::insert($goods);
       });
 
+      Cart::clear();
       return $order;
     }
   }

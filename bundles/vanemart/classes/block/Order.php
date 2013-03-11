@@ -67,7 +67,7 @@ class Block_Order extends BaseBlock {
   }
 
   /*---------------------------------------------------------------------
-  | GET order/show/ID
+  | GET order/show /ID
   |
   | Displays order info.
   |----------------------------------------------------------------------
@@ -88,7 +88,7 @@ class Block_Order extends BaseBlock {
   }
 
   /*---------------------------------------------------------------------
-  | POST order/show/ID
+  | POST order/show /ID
   |
   | Updates order fields like name and address.
   |----------------------------------------------------------------------
