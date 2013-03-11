@@ -47,6 +47,24 @@ class File extends BaseModel {
     return $result;
   }
 
+  static function generateID() {
+    do {
+      if (function_exists('openssl_random_pseudo_bytes')) {
+        $bytes = S( str_split(openssl_random_pseudo_bytes(4)), 'ord' );
+      } else {
+        $bytes = array(mt_rand(), mt_rand(), mt_rand(), mt_rand());
+      }
+
+      $id = (float) 0;
+
+      foreach ($bytes as $pos => $octet) {
+        $id += ($octet & 0xFF) << ($pos * 8);
+      }
+    } while (static::find($id));
+
+    return $id;
+  }
+
   // Checks if a file with that exact data is already registered in the database.
   // If so, returns its model (doesn't change its attributes like uploader, name
   // or description). If not calls place() to create a new file.
@@ -107,6 +125,8 @@ class File extends BaseModel {
     }
 
     try {
+      // explicit ID so it's harder to guess new file's ID and they're not sequental.
+      $attributes['id'] = static::generateID();
       $model = with(new static)->fill_raw($attributes);
       $model->md5 = md5_file($dest);
       $model->mime = $attributes['mime'] ?: \File::mime($model->ext, '');
@@ -181,6 +201,14 @@ class File extends BaseModel {
   //= Query
   function same() {
     return static::where('md5', '=', $this->md5);
+  }
+
+  function url() {
+    if ($url = parent::url()) {
+      $this->ext and $url .= '.'.$this->ext;
+    }
+
+    return $url;
   }
 }
 File::$table = \Config::get('vanemart::general.table_prefix').File::$table;

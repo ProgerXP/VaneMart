@@ -2,15 +2,22 @@
 
 class Block_File extends BaseBlock {
   /*---------------------------------------------------------------------
-  | GET post/index [/TYPE] [/OBJID]
+  | GET file/index /REF
   |
   | Initiates download of a registered file.
+  -----------------------------------------------------------------------
+  | * REF           - REQUIRED; either contain full name (e.g.
+  |   /file/a%20name.txt) or numeric ID optionally with extension
+  |   (e.g. /file/123.dat) for better visual link perception.
   ---------------------------------------------------------------------*/
   function get_dl($id = null) {
-    if (ltrim($id, '0..9') === '') {
-      $file = File::find($id);
+    $digitless = ltrim($id, '0..9');
+
+    // file link can be either
+    if ($digitless === '' or $digitless[0] === '.') {
+      $file = File::find(strtok($id, '.'));
     } else {
-      $file = File::where('name', '=', $file)->get();
+      $file = File::where('name', '=', $id)->get();
     }
 
     if (!$file) {
