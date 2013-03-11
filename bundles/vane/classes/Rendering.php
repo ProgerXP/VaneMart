@@ -2,6 +2,8 @@
 
 // Intermediate class storing context of current Layout rendering.
 class Rendering {
+  static $insignificantHeaders = array('cache-control', 'date');
+
   public $main;             //= Layout top-level
   public $onlyBlocks;       //= null, array of block classes to include into $result
   public $served;           //= null, Laravel\Response see $main->served()
@@ -13,6 +15,11 @@ class Rendering {
 
   static function on(Layout $toRender, Layout $main = null) {
     return static::make($main ?: $toRender)->render($toRender);
+  }
+
+  static function ignoredHeadersOf(\Laravel\Response $response) {
+    $headers = $response->headers()->keys();
+    return array_diff($headers, static::$insignificantHeaders);
   }
 
   static function likeViewVar(Layout $toRender, Layout $main = null, $slugs = null) {
@@ -144,10 +151,14 @@ class Rendering {
 
   // Converts accumulated results into strings.
   function renderResults($ajax = false) {
-    $render = function ($response, $name) use ($ajax) {
+    $self = $this;
+
+    $render = function ($response, $name) use ($self, $ajax) {
       if (is_object($response)) {
-        if ($response->headers() and empty($response->isServed)) {
-          Log::warn_Layout("Ignoring headers when inserting response of [$name].");
+        if ($ignored = $self::ignoredHeadersOf($response) and
+            empty($response->isServed)) {
+          Log::warn_Layout("Ignoring headers when inserting response of [$name]: ".
+                           join(', ', $ignored).".");
         }
 
         if ($ajax and $type = $response->headers()->get('Content-Type') and
