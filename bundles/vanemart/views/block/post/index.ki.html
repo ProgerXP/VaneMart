@@ -1,4 +1,4 @@
-$=today with(new \DateTime)->setTime(0, 0)->getTimestamp()
+$=today             with(new \DateTime)->setTime(0, 0)->getTimestamp()
 
 <ul $rows "vmart-posts v-rows type-$type">
   <li "$flags { $created_at >= $today ? 'today' : '' }" data-id=$id>

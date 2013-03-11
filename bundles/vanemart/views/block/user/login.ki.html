@@ -1,19 +1,23 @@
-<if \Session::get('passthru')>
-  <p "b-lock gen vmart-unauth">"vanemart::user.unauth.required"</p>
-</if>
+<form "vanemart::user@login" "col-2 cmart-login">
+  <if \Session::get('passthru')>
+    <p "b-lock gen vmart-unauth">"vanemart::user.unauth.required"</p>
+  </if>
 
-<p "b-info">"vanemart::user.login.legend"</p>
+  <p "b-info">"vanemart::user.login.legend"</p>
 
-<form "vanemart::user@login" "col-2">
   <table "col-2 color">
     <tr>
       <th>"vanemart::field.email"</th>
       <td>
-        <input "email" id=login class={ $ok === false ? 'invalid' : '' }>
+        <input "email" id=email class={ $ok === false ? 'invalid' : '' }>
 
         <ul ${ $ok === false } "errors">
           <li>"vanemart::user.login.wrong"</li>
         </endul>
+
+        <script>
+          try {{ document.getElementById('email').focus() } catch (e) {}
+        </script>
       </td>
     </tr>
     <tr>
@@ -38,7 +42,3 @@
     </tr>
   </table>
 </form>
-
-<script>
-  try {{ document.getElementById('login').focus() } catch (e) {}
-</script>

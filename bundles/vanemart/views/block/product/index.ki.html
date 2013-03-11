@@ -30,8 +30,12 @@
 
       <tr "cart">
         <th>
-          <input "id[$id]" "gen shade qty" default=1 onfocus="this.select()">
+          <input "id[$id]" "gen shade qty" id=qty default=1 onfocus="this.select()">
           &times; $volume
+
+          <script>
+            try {{ document.getElementById('qty').focus() } catch (e) {}
+          </script>
         </th>
         <td>
           <submit class=default>

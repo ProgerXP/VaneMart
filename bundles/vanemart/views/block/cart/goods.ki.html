@@ -1,15 +1,15 @@
-$=editCart    !empty($editCart)
-$=colCount    5
-$=thumbless   !S::keep($rows, '?["image"]')
+$=editCart          !empty($editCart)
+$=colCount          5
+$=thumbless         !S::keep($rows, '?["image"]')
 
 <table "vmart-cart { $thumbless ? 'thumbless' : '' }">
   <each $rows>
     <tr "title { !$image ? 'thumbless' : '' }">
       <td "thumb" rowspan=2>
-        <a $image "$url"><img "$image" alt=$title></enda>
+        <a $_{ $image } "$url"><img "$image" alt=$title></enda>
       </td>
       <td "title" colspan={ $colCount - 2 }>
-        <span "index">{ number($i + 1) }.</span>
+        <span "index">{= number($i + 1) }.</span>
         <a "$url">{ $title }</a>
 
         <if $editCart>

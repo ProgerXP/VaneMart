@@ -1,7 +1,7 @@
 <?php
 return array(
   'ctlstatus'             => array(
-    'logout'              => 'Всего доброго! Ждём вас вновь.',
+    'logout'              => 'Всего доброго! Ждём вас снова.',
   ),
 
   // user@login

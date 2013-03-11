@@ -16,6 +16,7 @@ return array(
 
   // order@index
   'index'                 => array(
+    'title'               => 'Ваши заказы',
     'item_title'          => 'Заказ №:id от :created',
     'from'                => ':surname :name',
     'count_sum'           => ':counts на сумму :sums',
@@ -40,5 +41,10 @@ return array(
     'submit'              => 'Сохранить изменения',
     'change_to'           => '— изменить на:',
     'relink'              => 'Создать новую',
+  ),
+
+  // order@goods
+  'goods'                 => array(
+    'title'               => 'Заказанный товар',
   ),
 );

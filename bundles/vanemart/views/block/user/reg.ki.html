@@ -1,8 +1,8 @@
-<p "b-info">
-  {= __('vanemart::user.reg.legend', array('<a href='.action('vanemart::user@login').'>', '</a>')) }
-</p>
+<form "vanemart::user@reg" "col-2 vmart-reg">
+  <p "b-info">
+    {= __('vanemart::user.reg.legend', array('<a href='.action('vanemart::user@login').'>', '</a>')) }
+  </p>
 
-<form "vanemart::user@reg" "col-2">
   <table "col-2 color">
     <each ${ array('name', 'surname', 'phone', 'email') }>
       <tr>

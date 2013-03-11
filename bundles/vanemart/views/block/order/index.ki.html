@@ -1,4 +1,4 @@
-<ul $rows "vmart-orders v-rows">
+<ul $rows "v-rows vmart-orders">
   <li "status-$status { $current ? 'current' : '' } { $recent ? 'recent' : '' }" data-id=$id>
     $=created       HLEx::time(date('d.m.Y', $created_at), $created_at, true)
     $=updated       $updated_at ? HLEx::time(date('d.m', $updated_at), $updated_at) : ''
