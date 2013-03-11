@@ -1,7 +1,4 @@
 <form "vanemart::post@add/$type/$object" "vmart-post type-$type" upload>
-  $=title __("vanemart::".substr($type, 0, -1).".posts")->get(null, '')
-  <h2 $title "block-title">$item</endh2>
-
   <csrf>
   <each $hidden> <hidden "$key" "$item"> </each>
 

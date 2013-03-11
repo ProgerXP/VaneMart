@@ -26,7 +26,8 @@ class Block_Order extends BaseBlock {
 
   function editable(Order $order) {
     return $this->can('order.edit.all') or
-           ($this->can('order.edit.self') and $order->isOf($this->user(false)));
+           (($this->can('manager') or $this->can('order.edit.self'))
+             and $order->isOf($this->user(false)));
   }
 
   /*---------------------------------------------------------------------
