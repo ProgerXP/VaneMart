@@ -56,20 +56,20 @@ VRoute::on('(:bundle)/orders/(:num)')
     ),
   ));
 
-VRoute::map('(:bundle)/user/(:num)', 'VaneMart::user@show', true);
-VRoute::map('(:bundle)/user/reg', 'VaneMart::user@reg', 'vanemart::register');
-VRoute::map('(:bundle)/user/login', 'VaneMart::user@login', 'vanemart::login');
-VRoute::map('(:bundle)/user/logout', 'VaneMart::user@logout', 'vanemart::logout');
+VRoute::map('(:bundle)/users/(:num)', 'VaneMart::user@show', true);
+VRoute::map('(:bundle)/users/reg', 'VaneMart::user@reg', 'vanemart::register');
+VRoute::map('(:bundle)/users/login', 'VaneMart::user@login', 'vanemart::login');
+VRoute::map('(:bundle)/users/logout', 'VaneMart::user@logout', 'vanemart::logout');
 
 VRoute::on('GET (:bundle)/thumb')
   ->as('vanemart::thumb')
   ->naked('VaneMart::thumb');
 
-VRoute::on('GET (:bundle)/post/add/(:any)/(:num?)')
+VRoute::on('(:bundle)/posts/add/(:any)/(:num?)')
   ->as('vanemart::post')
   ->naked('VaneMart::post@add');
 
-VRoute::on('GET (:bundle)/file/(:any)')
+VRoute::on('(:bundle)/files/(:any)')
   ->as('vanemart::file')
   ->naked('VaneMart::file@dl');
 
