@@ -335,6 +335,7 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
     $naked = Input::get(Block::$nakedVar, $ajax);
 
     $onlyBlocks = Input::get('_blocks');
+    if (!isset($onlyBlocks) and $ajax) { $onlyBlocks = ''; }
     $singleBlock = (isset($onlyBlocks) and !is_array($onlyBlocks));
     $firstServed = in_array(head((array) $onlyBlocks), array('!', '1', ''));
 
@@ -345,17 +346,20 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
 
     $rendering = new Rendering($this, $onlyBlocks);
     $rendering->slugs = $this->slugs;
+    $response = null;
 
     if (($singleBlock and $firstServed) or $this->breaksout()) {
       isset($this->served) or Log::info_Layout('No specific server on this route.');
       $rendering->result = array($this->servedResponse());
+
+      $ajax and $response = $rendering->result[0];
     } elseif ($singleBlock) {
       $rendering->render($this);
       $rendering->result = array_slice($rendering->result, 1, -1, true);
 
       foreach ($rendering->result as $block) {
-        foreach (arrize($block) as $response) {
-          is_object($response) and $response->isServed = true;
+        foreach (arrize($block) as $blockResponse) {
+          is_object($blockResponse) and $blockResponse->isServed = true;
         }
       }
     } else {
@@ -363,19 +367,22 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
     }
 
     Request::ajax(null);
-    $naked and $rendering->unwrap();
 
-    $response = $rendering->served ?: Response::adapt('');
-    $content = $rendering->join($ajax);
+    if (!$response) {
+      $naked and $rendering->unwrap();
 
-    if (!$naked and !$singleBlock and is_scalar($content) and $full = $this->view()) {
-      $content = $full->with(compact('content'));
-    }
+      $response = $rendering->served ?: Response::adapt('');
+      $content = $rendering->join($ajax);
 
-    if (method_exists($response, 'set')) {
-      $response->set($content);
-    } else {
-      $response->content = $content;
+      if (!$naked and !$singleBlock and is_scalar($content) and $full = $this->view()) {
+        $content = $full->with(compact('content'));
+      }
+
+      if (method_exists($response, 'set')) {
+        $response->set($content);
+      } else {
+        $response->content = $content;
+      }
     }
 
     // restoring value that could have been set in the beginning.

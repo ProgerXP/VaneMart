@@ -133,10 +133,10 @@ class Rendering {
     return $this;
   }
 
-  //= null if nothing was produced (aka 404), array if $ajax, str otherwise
+  //= null if nothing was produced (aka 404), Response if $ajax, str otherwise
   function join($ajax = false) {
     if ($this->renderResults($ajax)->result) {
-      return $ajax ? $this->result : join($this->joinContents());
+      return $ajax ? Response::json($this->result) : join($this->joinContents());
     }
   }
 
