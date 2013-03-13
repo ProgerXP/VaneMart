@@ -34,11 +34,19 @@
     <!--[if lt IE 9]>
       <script "vanemart::ie9.js"></script>
     <![endif]-->
+
+    {= join((array) $headEnd) }
   </head>
   <body "{ join(' ', (array) $classes) }">
     <script>document.body.className += ' js'</script>
 
     {= $content }
+    {= join((array) $bodyEnd) }
+
+    <div id=ajax>
+      <span "busy">"vanemart::ajax.busy"</span>
+      <span "error">"vanemart::ajax.error"</span>
+    </div>
 
     <each $scripts>
       {= \HTML::script($key, $item) }

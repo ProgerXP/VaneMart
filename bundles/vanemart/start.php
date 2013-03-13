@@ -55,6 +55,7 @@ View::composer('vanemart::full', function ($view) {
   $normAssets('styles');
   $normAssets('scripts');
 
+  $view->data += array('headEnd' => '', 'bodyEnd' => '');
   $view->classes = (array) $view['classes'];
 
   if (Request::$route and $name = array_get(Request::$route->action, 'as')) {
