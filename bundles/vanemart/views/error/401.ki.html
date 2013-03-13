@@ -1,4 +1,5 @@
 <p "b-lock gen vmart-unauth">
   $=url             route('vanemart::login').'?back='.urlencode(\URI::full())
   {= __('vanemart::user.unauth.required', array('<a href="'.$url.'">', '</a>')) }
+  <!-- $dbg -->
 </p>

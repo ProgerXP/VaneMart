@@ -1,9 +1,9 @@
 <ul $rows "v-rows vmart-goods">
   <li "{ $current ? 'current' : '' }" data-id=$id>
     <p $_{ $image } "title thumb">
-      <a "{ $url }">
-        <img $image "{ $image }" "thumb" alt=$title>
-        <span>{ $title }</span>
+      <a "$url">
+        <img $image "$image" "thumb" alt=$title>
+        <span>$title</span>
       </a>
     <else>
       <p "title">
