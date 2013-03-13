@@ -19,6 +19,8 @@ class Vane_Test_Task extends Task {
   }
 
   static function start() {
+    Bundle::start('htmlki');
+
     error_reporting(-1);
     static::$logged = array();
     assert_options(ASSERT_BAIL, 1);
@@ -101,7 +103,7 @@ class Vane_Test_Task extends Task {
     assert($l->blocks[0]->tag === 'header');
     assert($l->blocks[0]->classes === array('top', 'cl-1', 'cl-2'));
     assert($l->blocks[0]->size === '150px');
-    assert(trim($l->blocks[0]->openTag()) === '<header class="top-block cl-1 cl-2" style="width: 150px">');
+    assert(trim($l->blocks[0]->openTag()) === '<header class="row top-block cl-1 cl-2" style="width: 150px">');
     assert(trim($l->blocks[0]->closeTag()) === '</header>');
 
     assert($l->blocks[1]->column === false);
@@ -109,7 +111,7 @@ class Vane_Test_Task extends Task {
     assert($l->blocks[1]->tag === 'div');
     assert($l->blocks[1]->classes === array('page'));
     assert($l->blocks[1]->size == null);
-    assert(trim($l->blocks[1]->openTag()) === '<div class="page-block">');
+    assert(trim($l->blocks[1]->openTag()) === '<div class="row page-block">');
     assert(trim($l->blocks[1]->closeTag()) === '</div>');
 
     //
@@ -123,7 +125,7 @@ class Vane_Test_Task extends Task {
 
       assert($row->blocks[0]->column === true);
       assert($row->blocks[0]->row === false);
-      assert(trim($row->blocks[0]->openTag()) === '<div class="logo-block" style="width: 100px">');
+      assert(trim($row->blocks[0]->openTag()) === '<div class="col logo-block" style="width: 100px">');
 
       //
       // |logo 100px
@@ -144,7 +146,7 @@ class Vane_Test_Task extends Task {
 
       assert($row->blocks[1]->column === true);
       assert($row->blocks[1]->row === false);
-      assert(trim($row->blocks[1]->openTag()) === '<div class="menu-block main size-goldn">');
+      assert(trim($row->blocks[1]->openTag()) === '<div class="col menu-block main size-goldn">');
 
       //
       // |menu.main goldn
@@ -183,7 +185,7 @@ class Vane_Test_Task extends Task {
 
       assert($row->blocks[0]->column === true);
       assert($row->blocks[0]->row === false);
-      assert(trim($row->blocks[0]->openTag()) === '<nav class="menu-block left span-3">');
+      assert(trim($row->blocks[0]->openTag()) === '<nav class="col menu-block left span3">');
 
       $handlers = $row->blocks[0]->parseAll();
 
@@ -198,7 +200,7 @@ class Vane_Test_Task extends Task {
 
       assert($row->blocks[1]->column === true);
       assert($row->blocks[1]->row === false);
-      assert(trim($row->blocks[1]->openTag()) === '<div class="content-block span-9">');
+      assert(trim($row->blocks[1]->openTag()) === '<div class="col content-block span9">');
 
       $handlers = $row->blocks[1]->parseAll();
 
@@ -284,7 +286,7 @@ class Vane_Test_Task extends Task {
     $l->alter(array('-new.item' => 'my@handler', '=missing' => 'x'));
     assert($l->blocks[2]->column === false);
     assert($l->blocks[2]->row === true);
-    assert(trim($l->blocks[2]->openTag()) === '<div class="new-block item">');
+    assert(trim($l->blocks[2]->openTag()) === '<div class="row new-block item">');
     assert($l->blocks[2]->blocks === array('my@handler'));
     logged('No matching block');
   }
