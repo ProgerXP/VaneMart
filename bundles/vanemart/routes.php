@@ -1,7 +1,10 @@
 <?php
 use Vane\Route as VRoute;
 
-VRoute::on('(:bundle)');
+VRoute::on('(:bundle)')
+  ->layout(array(
+    '+#content'           => array('VaneMart::group@by_list main-slide slides'),
+  ));
 
 VRoute::on('(:bundle)/groups/(\d+-?[^/]*)')
   ->as('vanemart::group')

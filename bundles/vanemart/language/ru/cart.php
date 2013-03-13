@@ -19,7 +19,7 @@ return array(
     // used by goods.ki view in 'edit mode'
     'clear'               => 'Очистить корзину',
     'update'              => 'Пересчитать',
-    'delete'              => '(:0выложить:1)',
+    'delete'              => '(:0удалить:1)',
   ),
 
   // cart@add_sku

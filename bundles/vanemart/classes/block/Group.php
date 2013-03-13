@@ -3,15 +3,15 @@
 class Block_Group extends ModelBlock {
   static $model = 'VaneMart\\Group';
 
-  static function listResponse(array $rows) {
+  static function listResponse($imageSize, array $rows) {
     if ($rows) {
       $current = static::detectCurrentProduct();
       // prefetch all connected images as they're used in the view.
       File::all(prop('image', $rows));
 
-      return array('rows' => S($rows, function ($product) use ($current) {
+      return array('rows' => S($rows, function ($product) use ($current, $imageSize) {
         return array(
-          'image'           => $product->image(320),
+          'image'           => $product->image($imageSize),
           'current'         => $current and $current->id === $product->id,
         ) + $product->to_array();
       }));
@@ -54,7 +54,7 @@ class Block_Group extends ModelBlock {
       if (Request::ajax()) {
         return $rows;
       } elseif ($rows) {
-        return static::listResponse($rows);
+        return static::listResponse(320, $rows);
       }
     }
   }
@@ -89,7 +89,7 @@ class Block_Group extends ModelBlock {
   }
 
   /*---------------------------------------------------------------------
-  | GET group/by_list [/NAME]
+  | GET group/by_list [/NAME] [/SLIDES]
   |
   | Same as GET group/index but displays items listed in vm_goods_lists
   | table under the given NAME.
@@ -99,10 +99,12 @@ class Block_Group extends ModelBlock {
   |   specific server its controller name is used: 'bndl::ctl.sub@actn' -
   |   list name is 'ctl.sub'. If controller starts with 'block.' (e.g.
   |   'vanemart::block.group' it's removed.
+  | * SLIDES        - optional; indicates to use slideshow view instead
+  |   of plain list. Also, if set only products with images are shown.
   | * default=NAME  - optional; if present and no list with NAME passed
   |   in the URL exists this name is used instead. Defaults to 'main'.
   |--------------------------------------------------------------------*/
-  function get_by_list($name = 'main') {
+  function get_by_list($name = 'main', $slides = false) {
     if ($name === '*') {
       if ($route = \Vane\Route::current() and $route->lastServer) {
         $name = \Bundle::element($route->lastServer->name);
@@ -112,13 +114,16 @@ class Block_Group extends ModelBlock {
       }
     }
 
-    $query = ProductListItem::order_by('sort');
-
-    "$name" === '' or $query->where('type', '=', $name);
     $default = $this->in('default', 'main');
-    "$default" === '' or $query->or_where('type', '=', $default);
+    if (!$name and !$default) {
+      return E_INPUT;
+    }
 
-    if ($query->table->wheres and $list = $query->get()) {
+    $query = ProductListItem::order_by('sort');
+    $name and $query->where('type', '=', $name);
+    $default and $query->or_where('type', '=', $default);
+
+    if ($list = $query->get()) {
       if ($default and !S::first($list, array('?->type === ?', $name))) {
         $type = $default;
       } else {
@@ -131,11 +136,15 @@ class Block_Group extends ModelBlock {
 
       foreach ($list as $item) {
         $product = &$goods[$item->product];
-        $product and $ordered[] = $product;
+
+        if ($product and (!$slides or $product->image)) {
+          $product->extra = $item->extra;
+          $ordered[] = $product;
+        }
       }
 
-      $this->layout = '.index';
-      return static::listResponse($ordered);
+      $this->layout = $slides ? '.slides' : '.index';
+      return static::listResponse($slides ? 1000 : 320, $ordered);
     }
   }
 }

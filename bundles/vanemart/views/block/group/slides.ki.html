@@ -1,0 +1,12 @@
+<div $rows "v-rows v-slides vmart-goods-slides">
+  <div data-id=$id>
+    <h3><a "$url">$title</a></h3>
+
+    <a "$url">
+      <span $_{ "$extra" !== '' } "text">{= $extra }</endspan>
+      <img $image "$image" "thumb" alt=$title>
+    </a>
+  </div>
+</enddiv>
+
+<js "slides.js" { asset('jquery.slides.min.js') }>
