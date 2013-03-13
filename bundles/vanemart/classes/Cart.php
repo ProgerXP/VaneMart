@@ -115,4 +115,15 @@ class Cart {
     $min = \Config::get('vanemart::general.min_subtotal');
     if ($subtotal < $min) { return $min; }
   }
+
+  static function summary($html = false) {
+    $items = Str::langNum('general.goods', static::count(), $html);
+    $sum = Str::langNum('general.price', static::subtotal(), $html);
+
+    if ($html) {
+      return HLEx::lang('cart.summary', compact('items', 'sum'), false);
+    } else {
+      return __('vanemart::cart.summary', compact('items', 'sum'))->get();
+    }
+  }
 }

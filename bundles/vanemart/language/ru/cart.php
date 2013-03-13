@@ -1,6 +1,7 @@
 <?php
 return array(
   'empty'                 => 'Ваша корзина пуста.',
+  'summary'               => ':items на сумму :sum',
 
   'ctlstatus'             => array(
     'add_one'             => ':title теперь в вашей корзине.',

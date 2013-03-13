@@ -66,7 +66,7 @@ abstract class LayoutItem {
     if (!$size) {
       // do nothing.
     } elseif (ltrim($size, '0..9') === '') {
-      $classes["span$size"] = true;
+      $classes[] = "span$size";
     } elseif (ltrim($size[0], '0..9') === '') {
       $width = "width: $size";
     } else {

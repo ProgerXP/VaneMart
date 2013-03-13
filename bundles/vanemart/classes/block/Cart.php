@@ -51,7 +51,7 @@ class Block_Cart extends BaseBlock {
   |----------------------------------------------------------------------
   | * ID            - optional; if given and not present in ?id and ?sku
   |   adds ID product with a qty of 1.
-  | * csrf=CSRF     - REQUIRED
+  | * csrf=CSRF     - REQUIRED.
   | * id[ID]=QTY    - optional; adds items by their ID.
   | * sku[SKU]=QTY  - optional; adds items by SKU ignoring unknown codes.
   | * checkout=1    - optional; redirects to checkout@index instead of back.
@@ -63,16 +63,7 @@ class Block_Cart extends BaseBlock {
       return $this->get_clear();
     }
 
-    $goods = static::fromSKU($this->in('sku', null));
-    $goods += arrize($this->in('id', null));
-    $id and $goods += array($id => 1);
-
-    $single = null;
-
-    foreach ($goods as $id => $item) {
-      $result = Cart::put($id, is_object($item) ? $item->qty : $item);
-      $result and $single = $single ? true : $result;
-    }
+    $single = $this->addGetSingle($id);
 
     if ($single === true) {
       $this->status('add_many');
@@ -85,6 +76,47 @@ class Block_Cart extends BaseBlock {
     } else {
       return static::back();
     }
+  }
+
+  /*---------------------------------------------------------------------
+  | AJAX GET cart/add [/ID]
+  |
+  | Adds or removes (qty <= 0) cart items. Returns current cart contents:
+  | array of ID => qty (float). Can also include 'summary' key, see below.
+  |----------------------------------------------------------------------
+  | * ID            - optional; see GET cart/add.
+  | * csrf=CSRF     - REQUIRED.
+  | * id[ID]=QTY    - optional; see GET cart/add.
+  | * sku[SKU]=QTY  - optional; see GET cart/add.
+  | * summary=1     - optional; if set returned array contains 'summary'
+  |   member with a text string with items count and order subtotal.
+  |--------------------------------------------------------------------*/
+  function ajax_get_add($id = null) {
+    $this->addGetSingle($id);
+
+    $cart = Cart::all();
+    $this->in('summary', null) and $cart['summary'] = Cart::summary(true);
+    return $cart;
+  }
+
+  // Updates cart contents according to given /ID, ?qty[] and ?id[] query
+  // parameters. Returns Product instance if only one item was updated,
+  // otherwise (if none or multiple items were updated) returns null.
+  //
+  //= null, Product
+  function addGetSingle($id = null) {
+    $goods = static::fromSKU($this->in('sku', null));
+    $goods += arrize($this->in('id', null));
+    $id and $goods += array($id => 1);
+
+    $single = null;
+
+    foreach ($goods as $id => $item) {
+      $result = Cart::put($id, is_object($item) ? $item->qty : $item);
+      $result and $single = $single ? true : $result;
+    }
+
+    return $single;
   }
 
   /*---------------------------------------------------------------------
