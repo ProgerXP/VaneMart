@@ -3,7 +3,10 @@ use Vane\Route as VRoute;
 
 VRoute::on('(:bundle)')
   ->layout(array(
-    '+#content'           => array('VaneMart::group@by_list main-slide slides'),
+    '+#content'           => array(
+      'VaneMart::group@by_list main-slide slides',
+      'VaneMart::group@by_list main-bottom',
+    ),
   ));
 
 VRoute::on('(:bundle)/groups/(\d+-?[^/]*)')

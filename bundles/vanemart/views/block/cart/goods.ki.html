@@ -1,6 +1,7 @@
 $=editCart          !empty($editCart)
 $=colCount          5
 $=thumbless         !S::keep($rows, '?["image"]')
+$=total             0
 
 <table "vmart-cart { $thumbless ? 'thumbless' : '' }">
   <each $rows>
@@ -17,7 +18,7 @@ $=thumbless         !S::keep($rows, '?["image"]')
             <a "vanemart::cart@clear/$id" "remove">
           $^link
 
-          {= __('vanemart::cart.set.delete', array($link, '</a>')) }
+          {= __('vanemart::cart.set.delete', array(trim($link), '</a>')) }
         </if>
       </td>
     </tr>
@@ -34,10 +35,18 @@ $=thumbless         !S::keep($rows, '?["image"]')
         {= langNum('general.price', $retail ?: $wholesale) }
       </td>
       <td "total">
-        {= langNum('general.price', $qty * ($retail ?: $wholesale)) }
+        $=itemPrice       $qty * ($retail ?: $wholesale)
+        <?$total += $itemPrice?>
+
+        {= langNum('general.price', $itemPrice) }
       </td>
     </tr>
   </each>
+  <tr "total">
+    <td colspan=$colCount>
+      {= langNum('general.price', $total) }
+    </td>
+  </tr>
   <tr $editCart "btn">
     <td colspan=$colCount>
       <submit class=default>"vanemart::cart.set.update"</submit>
