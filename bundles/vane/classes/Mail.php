@@ -10,7 +10,7 @@ class Mail extends \MiMeil {
     $prefix = static::$eventPrefix;
 
     static::$onEvent = function ($event, $args) use ($prefix) {
-      \Event::until($prefix.$event, $args);
+      return \Event::until($prefix.$event, $args);
     };
 
     static::registerEventsUsing(array(get_called_class(), 'listen'));
@@ -24,7 +24,8 @@ class Mail extends \MiMeil {
   }
 
   static function listen($event, $callback) {
-    \Event::listen(static::$eventPrefix.$event, $callback);
+    \Event::listen($event = static::$eventPrefix.$event, $callback);
+    return $event;
   }
 
   //= MiMeil on successful transmission, null on error
@@ -32,15 +33,16 @@ class Mail extends \MiMeil {
     $mail = static::compose($view, $vars);
 
     if (!$mail->subject) {
-      throw new Error('No message subject sent by the e-mail template.');
+      is_object($view) and $view = $view->view;
+      throw new Error("No message subject set by the e-mail template [$view].");
     }
 
     $mail->to = arrize($recipients);
 
-    if (!$mail->Send()) {
-      Log::warn_Mail("Cannot send e-mail message to ".join(', ', $mail->to).".");
-    } else {
+    if ($mail->Send()) {
       return $mail;
+    } else {
+      Log::warn_Mail("Cannot send e-mail message to ".join(', ', $mail->to).".");
     }
   }
 
@@ -58,22 +60,25 @@ class Mail extends \MiMeil {
     return new static($to, $subject);
   }
 
-  // overriden MiMeil's MIME detector - using Laravel's native facility.
+  // Overriden MiMeil's MIME detector - using Laravel's native facility.
   function MimeByExt($ext, $default = true) {
     $default = $default ? self::$defaultMIME : $ext;
     return \File::mime($ext, $default);
   }
 
+  // Applies default settings from config/mail.php. Called by MiMeil->__construct().
   protected function init() {
     foreach (Current::config('mail') as $prop => $value) {
       $this->$prop = $value;
     }
   }
 
+  // Sets initial view variables regarding message composition to $view. These are
+  // accessible to all message templates being rendered.
   function initView(\Laravel\View $view) {
     $this->view = $view;
 
-    $view->data = $view->data + array(
+    $view->data += array(
       'mail'              => $this,
       'styles'            => array(),
       'header'            => array(),
@@ -87,17 +92,28 @@ class Mail extends \MiMeil {
   protected function defaultViewDataTo(array &$data) {
     $info = Current::config('company');
 
+    // Trying to reverse-map the logo URL to local path. Upon success attach that
+    // file to the message as "related" file so it's not visible in the attachment
+    // list and can be refered to with special "cid:NAME" prefix (e.g. in src).
+    // Unlike remote images attached ones are not hidden by most mail viewers.
     $logoFile = assetPath($info['logo']);
-    $this->attachRelatedLocal($logoFile, $name = 'head-logo'.S::ext($logoFile));
-    $info['logo'] = "cid:$name";
+    if ($logoFile) {
+      $this->attachRelatedLocal($logoFile, $name = 'head-logo'.S::ext($logoFile));
+      $info['logo'] = "cid:$name";
+    }
 
     $data['header']['logo'] = Block::execResponse('Vane::logo', null, $info)->render();
 
-    $info = array_filter(Current::config('company'), 'is_scalar');
+    $info = array_filter($info, 'is_scalar') + array(
+      'l0'                => HLEx::tag('a', \URL::to(Current::bundleURL())),
+      'l1'                => '</a>',
+    );
+
     $signature = __('vanemart::general.mail.signature', $info);
-    $data['footer']['signature'] = HLEx::p(\HTML::link(Current::bundleURL(), $signature));
+    $data['footer']['signature'] = HLEx::p($signature);
   }
 
+  // Attaches a file from local $path with $name visible to the recipient.
   function attachLocal($path, $name, $options = array()) {
     if (!is_file($path)) {
       Log::error_Mail("Attachment file [$path] doesn't exist - ignoring attachment.");
@@ -116,11 +132,21 @@ class Mail extends \MiMeil {
     return $this;
   }
 
+  // Similar to attachLocal() but marks the file as "related" - used in HTML
+  // decoration and invisible in the attachment list of the mail agent. Unlike
+  // normal related attachments can be referred to with "cid:NAME", e.g.:
+  // attachRelatedLocal('...', 'name.png');  ->  <img src="cid:name.png">
   function attachRelatedLocal($path, $name, $options = array()) {
     $options = arrize($options, 'mime') + array('related' => true);
     return $this->attachLocal($path, $name, $options);
   }
 
+  // Attaches a stylesheet to this message. If $path is omitted uses locates .css
+  // with the same name and directory as the main message template. If $path is
+  // given it can be of form [bndl::]path[.file[...]] - relative to bndl's views/
+  // or application/views/ if 'bndl::' is omitted or only '::' is present.
+  //
+  // If stylesheet file cannot be found logs a warning and does nothing.
   function styleLocal($path = null) {
     if ($view = $this->reqView()) {
       if (!$path) {
@@ -145,10 +171,11 @@ class Mail extends \MiMeil {
     if ($this->view) {
       return $this->view;
     } else {
-      Log::warn_Mail("E-mail message has no associated template (View).");
+      Log::warn_Mail("E-mail message has no associated template (\$this->view).");
     }
   }
 
+  // Sets message subject.
   function subject($lang, $vars = array()) {
     $this->subject = Str::format(Current::lang($lang), $vars);
     $this->view and $this->view->subject = $this->subject;
