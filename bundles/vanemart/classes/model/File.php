@@ -119,7 +119,7 @@ class File extends BaseModel {
     } else {
       $attributes['size'] = strlen($file);
 
-      if (!\File::put($dest, $file)) {
+      if (!file_put_contents($dest, $file, LOCK_EX)) {
         throw new Error("Cannot write new File data [$dest].");
       }
     }

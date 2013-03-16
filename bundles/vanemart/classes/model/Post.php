@@ -66,7 +66,7 @@ class Post extends BaseModel {
         }
 
         if (!$error and is_uploaded_file($tmp = $files['tmp_name'][$i])) {
-          $model = $models[] = File::reuseOrPlace(\File::get($tmp), array(
+          $model = $models[] = File::reuseOrPlace(file_get_contents($tmp), array(
             'uploader'    => $uploader ? $uploader->id : null,
             'mime'        => $files['type'][$i],
             'name'        => $files['name'][$i],
