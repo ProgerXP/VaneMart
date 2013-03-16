@@ -33,9 +33,11 @@ VRoute::on('(:bundle)/cart/(:any?)/(:num?)')
     '+#content'           => array('!', 'VaneMart::cart@add_sku'),
   ));
 
-VRoute::map('(:bundle)/checkout', 'VaneMart::checkout', true)
+VRoute::on('(:bundle)/checkout')
+  ->as('vanemart::checkout')
+  ->servers('VaneMart::checkout')
   ->layout(array(
-    '+#content' => array('!', 'VaneMart::cart'),
+    '+#content'           => array('!', 'VaneMart::cart'),
   ));
 
 VRoute::on('(:bundle)/orders')

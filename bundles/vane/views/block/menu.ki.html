@@ -1,5 +1,5 @@
 <if S::keep($menu, '?.visible')>
-  <ul "vane-menu vane-menu-{ $menu->name() }">
+  <ul "v-rows vane-menu vane-menu-{ $menu->name() }">
     <each $menu>
       <li $_{ $item->visible() } "{ $item->classes() }" title={ $item->hint }>
 

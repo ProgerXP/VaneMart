@@ -8,22 +8,27 @@ class User extends BaseModel implements \Vane\UserInterface {
     static $fields = array('name', 'surname', 'phone', 'email');
 
     $model = User::where('email', '=', $info['email'])->first();
-    if (!$model) {
+
+    if ($model) {
+      return $model;
+    } else {
       $password = Str::password(\Config::get('vanemart::password'));
 
       $model = with(new User)
         ->fill_raw(array_intersect_key($info, array_flip($fields)))
         ->fill_raw(array(
-          'password'      => $password,
           'reg_ip'        => Request::ip(),
         ));
 
-      if (!$model->save()) {
+      // it won't be hashed if set via fill_raw().
+      $model->password = $password;
+
+      if ($model->save()) {
+        return S::listable(compact('model', 'password'));
+      } else {
         throw new Error('Cannot register new user on checkout.');
       }
     }
-
-    return $model;
   }
 
   function addresses() {
@@ -86,6 +91,10 @@ class User extends BaseModel implements \Vane\UserInterface {
 
       return (bool) ($allBut ^ $matched);
     }
+  }
+
+  function emailRecipient() {
+    return $this->name.' '.$this->surname.'<'.$this->email.'>';
   }
 }
 User::$table = \Config::get('vanemart::general.table_prefix').User::$table;
