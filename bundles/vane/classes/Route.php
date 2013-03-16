@@ -158,7 +158,16 @@ class Route {
 
   //= null, Route
   static function find($name) {
-    return array_get(\Router::find($name), static::OPTION);
+    return array_get(head((array) \Router::find($name)), static::OPTION);
+  }
+
+  //= Route
+  static function mustFind($name) {
+    if ($route = static::find($name)) {
+      return $route;
+    } else {
+      throw new Error("Cannot find Vane route [$name].");
+    }
   }
 
   //* $url str - of form '[METHOD ]url/...' - METHOD can be lower case. If omitted

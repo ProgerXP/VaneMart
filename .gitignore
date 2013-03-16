@@ -10,6 +10,8 @@
 !/bundles/vanemart
 # Ignoring bundles' per-environment settings
 /bundles/*/config/*/
+# Files, outgoing mail, etc.
+/bundles/vanemart/storage/
 
 # Numerous always-ignore extensions
 *.diff
