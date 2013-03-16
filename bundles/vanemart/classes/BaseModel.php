@@ -16,6 +16,16 @@ class BaseModel extends Eloquent {
     }
   }
 
+  static function uncache($id = null) {
+    if (isset($id)) {
+      foreach ((array) $id as $id) {
+        static::$cachedModels[get_called_class()][$id] = null;
+      }
+    } else {
+      static::$cachedModels[get_called_class()] = array();
+    }
+  }
+
   static function cached($id, $clone = true) {
     $class = get_called_class();
 
@@ -91,8 +101,14 @@ class BaseModel extends Eloquent {
   }
 
   function save() {
+    $existing = $this->exists;
     $result = parent::save();
-    $result and static::cache($this);
+
+    // only caching updates of existing models because newly inserted model might
+    // not have all the table's fielsd (some can be set from default values) which
+    // might cause Undefined Index and other errors.
+    $result and $existing and static::cache($this);
+
     return $result;
   }
 
@@ -124,6 +140,6 @@ class BaseModel extends Eloquent {
   }
 
   function asTimestamp($attr = 'created_at') {
-    return static::toTimestamp($this->$attr);
+    return static::toTimestamp( $this->{"get_$attr"}() );
   }
 }

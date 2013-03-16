@@ -83,7 +83,7 @@ class Order extends BaseModel {
   function isOf(User $user = null) {
     if ($user) {
       $field = $user->can('manager') ? 'manager' : 'user';
-      return $this->$field == $user->id;
+      return $this->{"get_$field"}() == $user->id;
     }
   }
 }
