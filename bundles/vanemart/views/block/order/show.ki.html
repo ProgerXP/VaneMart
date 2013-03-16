@@ -10,7 +10,7 @@
   <tr "link">
     <th>"vanemart::order.link"</th>
     <td>
-      {= __('vanemart::order.link_text', array('<a href="'.$url.'">', '</a>')) }
+      {= __('vanemart::order.link_text', array(HLEx::tag('a', $url), '</a>')) }
     </td>
   </tr>
   <each ${ array('name', 'surname', 'phone', 'address', 'notes') }>

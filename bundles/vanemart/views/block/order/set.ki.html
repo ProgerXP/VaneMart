@@ -24,7 +24,7 @@
     <tr "link">
       <th>"vanemart::order.link"</th>
       <td>
-        {= __('vanemart::order.link_text', array('<a href="'.q($url).'">', '</a>')) }
+        {= __('vanemart::order.link_text', array(HLEx::tag('a', $url), '</a>')) }
         <submit "relink" "flat">"vanemart::order.set.relink"</submit>
       </td>
     </tr>
