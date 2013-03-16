@@ -1,0 +1,33 @@
+.vmart-cart {
+  background: #E6EFDE;
+  border: 3px solid #E6EFDE;
+  border-width: 3px 5px;
+}
+
+.vmart-cart .thumb img {
+  height: 50px;
+  margin-right: 5px;
+  display: block;
+}
+
+.vmart-cart.thumbless td.thumb {  display: none; }
+.vmart-cart span.index { margin-right: 3px; }
+.vmart-cart td.title { padding: 0 6px 6px 0; }
+.vmart-cart tr + tr.title td { padding-top: 12px; }
+
+.vmart-cart .qty td {
+  padding: 0.1em 0.5em;
+  background: white;
+}
+
+.vmart-cart td.total {
+  text-align: right;
+  font-weight: bold;
+}
+
+.vmart-cart tr.total td {
+  text-align: right;
+  font-weight: bold;
+  font-size: 1.1em;
+  padding-top: 10px;
+}

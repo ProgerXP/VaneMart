@@ -1,0 +1,14 @@
+<?$mail->subject('checkout.mail.user.subject', $order + \Vane\Current::config('company'))?>
+<?$mail->styleLocal('vanemart::mail.checkout.user')?>
+
+$=content
+  <p>{= htmlLang('checkout.mail.user.thanks', $user) }</p>
+  <p>{= htmlLang('checkout.mail.user.legend', $order) }</p>
+
+  {= $orderHTML }
+
+  <h2>"vanemart::checkout.mail.user.goods"</h2>
+  {= $goodsHTML }
+$^content
+
+<include vanemart::mail.full>

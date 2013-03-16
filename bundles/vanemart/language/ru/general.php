@@ -1,5 +1,9 @@
 <?php
 return array(
+  'mail'                  => array(
+    'signature'           => ':l0:long:l1',
+  ),
+
   // used by Vane\Str::number().
   'number'                => array('point' => ','),
 

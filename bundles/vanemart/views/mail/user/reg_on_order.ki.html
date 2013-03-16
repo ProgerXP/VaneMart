@@ -1,0 +1,31 @@
+<?$mail->subject('user.mail.reg_on_order.subject', \Vane\Current::config('company'))?>
+
+$=loginLink
+  <a "vanemart::login?email=$email">
+$^loginLink
+
+$=content
+  <h3>{= htmlLang('user.mail.reg_on_order.intro', compact('name' ,'surname')) }</h3>
+
+  <p>{= htmlLang('user.mail.reg_on_order.legend') }</p>
+  <p>{= htmlLang('user.mail.reg_on_order.login', array('l0' => trim($loginLink), 'l1' => '</a>'), false) }</p>
+
+  <table "col-2 color">
+    <tr "email">
+      <th>"vanemart::field.email"</th>
+      <td>$email</td>
+    </tr>
+    <tr "password">
+      <th>"vanemart::field.password"</th>
+      <td>$password</td>
+    </tr>
+    <tr "date">
+      <th>"vanemart::user.mail.reg_on_order.date"</th>
+      <td>{ date('d.m.Y') }</td>
+    </tr>
+  </table>
+
+  <p>{= htmlLang('user.mail.reg_on_order.thanks') }</p>
+$^content
+
+<include vanemart::mail.full>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang={ \Config::get('application.language') }>
+  <head>
+    <meta charset="utf-8">
+    <title>{ $mail->subject }</title>
+
+    <?/*
+      In reverse order so that styles of initial template come after views
+      that it has included.
+    */?>
+    <style ${ array_reverse($styles) }>
+      {= $item }
+    </endstyle>
+  </head>
+  <body>
+    <div $header id=header>
+      <div "block">{= $item }</div>
+    </enddiv>
+
+    <div id=content>
+      {= trim($content) }
+      <div "clearer" />
+    </div>
+
+    <div $footer id=footer>
+      <div "block">{= $item }</div>
+    </enddiv>
+  </body>
+</html>

@@ -1,0 +1,54 @@
+body {
+  background: #F7FFF3;
+  margin: 1em;
+  font-family: sans-serif;
+}
+
+a { color: blue; }
+a:hover { text-decoration: none; }
+a.anchor { display: none; }
+p { margin: 1em 0; }
+
+hr {
+  border: 1px solid #C5D6B7;
+  border-width: 1px 0 0 0;
+  margin: 30px 0;
+}
+
+.clearer { clear: both; margin: 0; padding: 0; height: 0; overflow: hidden; }
+#header a, #footer a { color: #6D8754; }
+
+#header {
+  margin: -1em -1em 1.25em;
+  background: #E6EFDE;
+  padding: 14px;
+}
+
+.vane-logo { font-style: italic; }
+.vane-logo:after { display: table; content: ""; clear: both; }
+.vane-logo > a { float: left; margin-right: 20px; }
+.vane-logo p { margin: 0.6em 0 0; }
+.vane-logo p.short { font-weight: bold; }
+
+#footer {
+  color: #595959;
+  font-size: 0.8em;
+  border-top: 1px solid #C5D6B7;
+  margin: 1em -1em 0;
+  padding-top: 0.3em 1em 1em;
+  text-align: center;
+}
+
+#content, #footer { clear: both; }
+
+table.col-2 th {
+  text-align: left;
+  vertical-align: top;
+  background: #E6EFDE;
+  padding: 0.3em 1em 0.3em 0.5em;
+}
+
+table.col-2 td {
+  padding: 0.3em 1em 0.3em 1em;
+  background: white;
+}

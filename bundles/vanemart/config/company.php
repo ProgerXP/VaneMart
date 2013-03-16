@@ -15,4 +15,7 @@ return array(
     ),
   ),
   'contactsURL'           => route('vanemart::contacts'),
+  // apart from contact info used in outgoing messages From field unless changed
+  // in config/mail.php.
+  'email'                 => '',
 );

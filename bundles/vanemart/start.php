@@ -62,3 +62,12 @@ View::composer('vanemart::full', function ($view) {
     $view->data['classes'][] = preg_replace('/[^\w\-]+/', '-', $name);
   }
 });
+
+View::composer('vanemart::mail.full', function ($view) {
+  if (isset($view->mail)) {
+    $view->mail->styleLocal('vanemart::mail.full');
+    // new value of 'styles' set by styleLocal() won't be passed to this view
+    // because it's already being rendered when the composer is called.
+    $view->data['styles'] = $view->mail->view->data['styles'];
+  }
+});
