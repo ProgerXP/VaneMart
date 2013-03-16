@@ -30,7 +30,7 @@ class Block extends DoubleEdge {
   // Executes block controller and converts its result to Response. See exec()
   // for the description of arguments.
   //= Laravel\Response
-  static function execResponse($block, $args = array(), array $input = null) {
+  static function execResponse($block, $args = array(), array $input = array()) {
     return static::execCustom($block, compact('args', 'input') + array(
       'response'          => true,
       'return'            => 'response',
@@ -44,12 +44,13 @@ class Block extends DoubleEdge {
   //* $args array, scalar becomes array - to pass to the controller; 1st member is
   //  passed as the method's 1st argument, 2nd - as 2nd, etc.
   //* $input null, hash - optionally set controller's input (options) to this
-  //  if it inherits from Vane\Block.
+  //  if it inherits from Vane\Block. If non-null, controller is executed as if
+  //  by GET request, if null - both global Input and Request::method() are used.
   //= mixed
   //
   //? exec('vanemart::cart@add', array(33, 2.5), array('clear' => 1))
   //      // rough equivalent of doing cart/add/33/2.5?clear=1
-  static function exec($block, $args = array(), array $input = null) {
+  static function exec($block, $args = array(), array $input = array()) {
     return static::execCustom($block, compact('args', 'input') + array(
       'return'            => 'exec',
     ));
@@ -59,12 +60,20 @@ class Block extends DoubleEdge {
   static function execCustom($block, array $options = array()) {
     $options += array(
       'args'              => array(),
+      'verb'              => null,
       'input'             => null,
       'layout'            => null,
+      'prepare'           => null,
       'response'          => false,
       'return'            => null,
     );
-    $input = isset($options['input']) ? arrize($options['input']) : null;
+
+    $input = &$options['input'];
+
+    if (isset($input)) {
+      $input = arrize($input);
+      isset($options['verb']) or $options['verb'] = 'get';
+    }
 
     $obj = static::factory($block);
 
@@ -73,7 +82,24 @@ class Block extends DoubleEdge {
       $obj->top = $options['layout'];
     }
 
-    $exec = $obj->execute(static::actionFrom($block), arrizeAny($options['args']));
+    $options['prepare'] and call_user_func($options['prepare'], $obj);
+
+    // Substituting Symfony's request method as Laravel is explicitly using
+    // global Request::method() when executing a controller's method.
+    if ($verb = $options['verb'] and $verb != Request::method()) {
+      $oldVerb = Request::foundation()->getMethod();
+      Request::foundation()->setMethod($verb);
+    }
+
+    try {
+      $exec = $obj->execute(static::actionFrom($block), arrizeAny($options['args']));
+
+      // Reverting old (current) request method.
+      isset($oldVerb) and Request::foundation()->setMethod($oldVerb);
+    } catch (\Exception $e) {
+      isset($oldVerb) and Request::foundation()->setMethod($oldVerb);
+      throw $e;
+    }
 
     if ($options['response']) {
       $response = with(new static)->toResponse($exec);
