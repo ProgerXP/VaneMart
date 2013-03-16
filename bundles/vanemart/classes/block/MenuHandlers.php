@@ -27,7 +27,7 @@ class Block_MenuHandlers extends BaseBlock {
   }
 
   static function menu_categories(MenuItem $item) {
-    $type = array_get($item->argArray(), 0, 'goods');
+    $type = array_get($item->argArray(), 0, 'product');
 
     $groups = Group
       ::where('type', '=', $type)

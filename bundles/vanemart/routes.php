@@ -58,8 +58,8 @@ VRoute::on('(:bundle)/orders/(:num)')
       '|order goldw'      => array('!', 'VaneMart::order@goods (:1)' => '!'),
       '|posts goldn'      => array(
         'Vane::title vanemart::order.posts',
-        'VaneMart::post@add orders (:1)',
-        'VaneMart::post orders (:1)',
+        'VaneMart::post@add order (:1)',
+        'VaneMart::post order (:1)',
       ),
     ),
   ));
@@ -73,9 +73,9 @@ VRoute::on('GET (:bundle)/thumb')
   ->as('vanemart::thumb')
   ->naked('VaneMart::thumb');
 
-VRoute::on('(:bundle)/posts/add/(:any)/(:num?)')
+VRoute::on('POST (:bundle)/(:any)/post/(:num)')
   ->as('vanemart::post')
-  ->naked('VaneMart::post@add');
+  ->naked('VaneMart::(:1)@post');
 
 VRoute::on('(:bundle)/files/(:any)')
   ->as('vanemart::file')

@@ -60,7 +60,7 @@ class Block_Post extends BaseBlock {
 
     if ($rows and !$this->can('post.hidefiles')) {
       $fileRows = FileListItem
-        ::where('type', '=', 'posts')
+        ::where('type', '=', 'post')
         ->where_in('object', prop('id', $rows))
         ->join(File::$table.' AS f', 'f.id', '=', 'file')
         ->get();
@@ -155,6 +155,7 @@ class Block_Post extends BaseBlock {
           'object'        => $object,
           'parent'        => $parent,
           'flags'         => '',
+          'html'          => nl2br(HLEx::q( $this->in('body') )),
           'author'        => $this->user()->id,
           'ip'            => Request::ip(),
         ));
@@ -174,6 +175,18 @@ class Block_Post extends BaseBlock {
       } catch (\Exception $e) {
         $model->delete();
         throw $e;
+      }
+
+      if ($type === 'order' and $order = Order::find($object) and
+          $order->user != $this->user()->id) {
+        $user = $this->user();
+        $to = $user->emailRecipient();
+
+        \Vane\Mail::sendTo($to, 'vanemart::mail.order.post', array(
+          'order'         => $order->to_array(),
+          'user'          => $user->to_array(),
+          'post'          => $model->to_array(),
+        ));
       }
 
       $object and $model->object()->update(array('updated_at' => new \DateTime));

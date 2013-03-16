@@ -14,6 +14,14 @@ return array(
     'set'                 => 'Параметры заказа были изменены.',
   ),
 
+  'mail'                  => array(
+    'post'                => array(
+      'subject'           => 'Обновление заказа №:id — :short',
+      'legend'            => ':l0Заказ №:id:l1 был обновлён:',
+      'signature'         => ':name :surname',
+    ),
+  ),
+
   // order@index
   'index'                 => array(
     'title'               => 'Ваши заказы',

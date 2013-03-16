@@ -145,11 +145,12 @@ class Block_Order extends BaseBlock {
     $msg = __('vanemart::order.set.post', join($changes, "\n"))->get();
 
     $post = with(new Post)->fill_raw(array(
-      'type'              => 'orders',
+      'type'              => 'order',
       'object'            => $order->id,
       'author'            => $this->user()->id,
       'flags'             => 'field-change',
       'body'              => $msg,
+      'html'              => nl2br(HLEx::q($msg)),
       'ip'                => Request::ip(),
     ));
 
@@ -161,7 +162,22 @@ class Block_Order extends BaseBlock {
       }
     });
 
+    if ($order->user != $this->user()->id) {
+      $user = $this->user();
+      $to = $user->emailRecipient();
+
+      \Vane\Mail::sendTo($to, 'vanemart::mail.order.post', array(
+        'order'         => $order->to_array(),
+        'user'          => $user->to_array(),
+        'post'          => $post->to_array(),
+      ));
+    }
+
     return $order;
+  }
+
+  function post_post($id = null) {
+    return  \Vane\Block::execResponse('VaneMart::post@add', array('order', $id), null);
   }
 
   /*---------------------------------------------------------------------

@@ -1,0 +1,11 @@
+<?$mail->subject('order.mail.post.subject', $order + \Vane\Current::config('company'))?>
+
+$=content
+  <p>{= htmlLang('order.mail.post.legend', $order + array('l0' => HLEx::tag('a', $order['url']), 'l1' => '</a>'), false) }</p>
+
+  <blockquote "post">{= $post['html'] }</blockquote>
+
+  <p "sign">{= htmlLang('order.mail.post.signature', $user) }</p>
+$^content
+
+<include vanemart::mail.full>

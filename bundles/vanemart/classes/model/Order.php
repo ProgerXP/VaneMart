@@ -60,7 +60,7 @@ class Order extends BaseModel {
   }
 
   function posts() {
-    return $this->has_many(NS.'Post', 'post')->where('type', '=', 'orders');
+    return $this->has_many(NS.'Post', 'post')->where('type', '=', 'order');
   }
 
   function changeMessages() {

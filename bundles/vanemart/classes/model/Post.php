@@ -2,16 +2,9 @@
 
 class Post extends BaseModel {
   static $table = 'posts';
-  static $typeModels = array('goods' => 'Product', 'orders' => 'Order');
 
   function object() {
-    $class = array_get(static::$typeModels, $this->type);
-
-    if ($class) {
-      return $this->belongs_to(NS.$class, 'object');
-    } else {
-      Log::error_Post("Unknown object type [{$this->type}].");
-    }
+    return $this->belongs_to(NS.ucfirst($this->type), 'object');
   }
 
   function author() {
@@ -73,7 +66,7 @@ class Post extends BaseModel {
           ));
 
           $list[] = array(
-            'type'          => 'posts',
+            'type'          => 'post',
             'file'          => $model->id,
             'object'        => $this->id,
           );
