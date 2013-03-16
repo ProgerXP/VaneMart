@@ -30,7 +30,7 @@ class Block extends DoubleEdge {
   // Executes block controller and converts its result to Response. See exec()
   // for the description of arguments.
   //= Laravel\Response
-  static function execResponse($block, $args = array(), array $input = array()) {
+  static function execResponse($block, $args = array(), $input = array()) {
     return static::execCustom($block, compact('args', 'input') + array(
       'response'          => true,
       'return'            => 'response',
@@ -50,7 +50,7 @@ class Block extends DoubleEdge {
   //
   //? exec('vanemart::cart@add', array(33, 2.5), array('clear' => 1))
   //      // rough equivalent of doing cart/add/33/2.5?clear=1
-  static function exec($block, $args = array(), array $input = array()) {
+  static function exec($block, $args = array(), $input = array()) {
     return static::execCustom($block, compact('args', 'input') + array(
       'return'            => 'exec',
     ));
@@ -61,6 +61,7 @@ class Block extends DoubleEdge {
     $options += array(
       'args'              => array(),
       'verb'              => null,
+      'ajax'              => null,
       'input'             => null,
       'layout'            => null,
       'prepare'           => null,
@@ -91,14 +92,23 @@ class Block extends DoubleEdge {
       Request::foundation()->setMethod($verb);
     }
 
+    if (isset($options['ajax'])) {
+      $oldAJAX = Request::ajax();
+      Request::ajax($options['ajax']);
+    }
+
     try {
       $exec = $obj->execute(static::actionFrom($block), arrizeAny($options['args']));
-
-      // Reverting old (current) request method.
-      isset($oldVerb) and Request::foundation()->setMethod($oldVerb);
     } catch (\Exception $e) {
-      isset($oldVerb) and Request::foundation()->setMethod($oldVerb);
-      throw $e;
+      $exception = $e;
+    }
+
+    // Reverting old (current) request state.
+    isset($oldAJAX) and Request::ajax($oldAJAX);
+    isset($oldVerb) and Request::foundation()->setMethod($oldVerb);
+
+    if (isset($exception)) {
+      throw $exception;
     }
 
     if ($options['response']) {
