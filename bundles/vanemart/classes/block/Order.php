@@ -34,6 +34,9 @@ class Block_Order extends BaseBlock {
   | GET order/index
   |
   | Ouputs list of orders current user (buyer or manager) has access to.
+  |----------------------------------------------------------------------
+  | * by=USER_ID    - optional; if given filters orders by this user
+  |   (for managers only, who might be able to see multiple users' orders).
   |--------------------------------------------------------------------*/
   function get_index() {
     $orders = Order::order_by('updated_at', 'desc')->order_by('created_at', 'desc');
@@ -41,6 +44,10 @@ class Block_Order extends BaseBlock {
     if (!$this->can('order.list.all')) {
       $field = $this->can('manager') ? 'manager' : 'user';
       $orders->where($field, '=', $this->user()->id);
+    }
+
+    if ($user = (int) $this->in('by', 0)) {
+      $orders->where('user', '=', $user);
     }
 
     $orders = $orders->get();
@@ -64,7 +71,8 @@ class Block_Order extends BaseBlock {
       );
     });
 
-    return compact('rows');
+    $isManager = $this->can('manager');
+    return compact('rows', 'isManager');
   }
 
   /*---------------------------------------------------------------------

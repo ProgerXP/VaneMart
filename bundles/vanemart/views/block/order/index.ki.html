@@ -14,7 +14,9 @@
 
     <div "details">
       <p "from">
+        <if $isManager> <a "vanemart::orders?by=$user"> </if>
         {= htmlLang('order.index.from', compact('name', 'surname')) }
+        <if $isManager> </a> </if>
       </p>
 
       <p "contents">
