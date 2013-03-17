@@ -55,11 +55,8 @@ class File extends BaseModel {
         $bytes = array(mt_rand(), mt_rand(), mt_rand(), mt_rand());
       }
 
-      $id = (float) 0;
-
-      foreach ($bytes as $pos => $octet) {
-        $id += ($octet & 0xFF) << ($pos * 8);
-      }
+      $bytes[0] %= 4;
+      $id = join($bytes);
     } while (static::find($id));
 
     return $id;
