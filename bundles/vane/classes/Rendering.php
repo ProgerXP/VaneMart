@@ -54,7 +54,7 @@ class Rendering {
   // Renders given layout recursively, adding opening/closing tags and matching
   // blocks against $onlyBlocks.
   function render(LayoutItem $block, $parent = null, $includeChildren = false) {
-    if ($parent === null or ($includeChildren or $this->includes($block))) {
+    if ($parent === null or $includeChildren or $this->includes($block)) {
       $includeChildren |= (isset($parent) and $this->onlyBlocks);
       $key = $this->keyOf($block, $parent);
 

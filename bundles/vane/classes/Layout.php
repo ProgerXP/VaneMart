@@ -368,7 +368,13 @@ class Layout extends LayoutItem implements \IteratorAggregate, \Countable {
 
     Request::ajax(null);
 
-    if (!$response) {
+    if ($response) {
+      // do nothing.
+    } elseif ($onlyBlocks and !$rendering->result) {
+      $paths = join(', ', (array) $onlyBlocks);
+      Log::warn_Layout("No blocks to render have matched given path(s): $paths.");
+      $response = $this->servedResponse(E_INPUT);
+    } else {
       $naked and $rendering->unwrap();
 
       $response = $rendering->served ?: Response::adapt('');

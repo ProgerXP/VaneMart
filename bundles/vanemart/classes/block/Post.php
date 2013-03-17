@@ -41,7 +41,7 @@ class Block_Post extends BaseBlock {
   |   3. Number - shows posts that are replies directly to this parent post.
   |--------------------------------------------------------------------*/
   function get_index($type = null, $object = null) {
-    $object or $object = 0;
+    $object = (int) $object;
     $parent = $this->in('parent', null);
 
     if (!$this->accessible('list', $object, $parent)) {
@@ -119,7 +119,7 @@ class Block_Post extends BaseBlock {
   }
 
   function ajax_post_add($type = null, $object = null) {
-    $object or $object = 0;
+    $object = (int) $object;
     $parent = $this->in('parent', 0) ?: null;
     $canAttach = !$this->can('post.attach.deny');
 

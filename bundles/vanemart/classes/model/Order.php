@@ -27,6 +27,7 @@ class Order extends BaseModel {
       ->fill_raw(array(
         'password'        => static::generatePassword(),
         'user'            => $user->id,
+        'manager'         => Current::config('general.new_order_manager'),
         'sum'             => Cart::subtotal(),
         'ip'              => Request::ip(),
       ));
