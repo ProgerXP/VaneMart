@@ -2,6 +2,7 @@
 use Vane\Route as VRoute;
 
 VRoute::on('(:bundle)')
+  ->as('vanemart::main')
   ->layout(array(
     '+#content'           => array(
       'VaneMart::group@by_list main-slide slides',
@@ -23,7 +24,14 @@ VRoute::on('(:bundle)/goods/(\d+-?[^/]*)')
   ->layout(array(
     '=nav #group title'   => array('VaneMart::group@title_by_product (:1)'),
     '=nav #group list'    => array('VaneMart::group@by_product (:1)'),
-    '+#content'           => array('!'),
+    '+#content'           => array(
+      '|order goldw'      => '!',
+      '|posts goldn'      => array(
+        'Vane::title vanemart::product.posts',
+        'VaneMart::post@add product (:1)',
+        'VaneMart::post product (:1)',
+      ),
+    ),
   ));
 
 VRoute::on('(:bundle)/cart/(:any?)/(:num?)')
@@ -73,7 +81,7 @@ VRoute::on('GET (:bundle)/thumb')
   ->as('vanemart::thumb')
   ->naked('VaneMart::thumb');
 
-VRoute::on('POST (:bundle)/(:any)/post/(:num)')
+VRoute::on('POST (:bundle)/(:any)/post/(\d+-?[^/]*)')
   ->as('vanemart::post')
   ->naked('VaneMart::(:1)@post');
 

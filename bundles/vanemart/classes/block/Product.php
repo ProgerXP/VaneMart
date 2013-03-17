@@ -23,4 +23,10 @@ class Block_Product extends ModelBlock {
       return compact('image') + $model->withHTML()->to_array();
     }
   }
+
+  function post_post($id = null) {
+    if ($id = static::idFrom($id)) {
+      return  \Vane\Block::execResponse('VaneMart::post@add', array('product', $id), null);
+    }
+  }
 }
