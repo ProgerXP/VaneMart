@@ -41,6 +41,7 @@ class Block_Checkout extends BaseBlock {
     if ($response = $this->prereq()) {
       return $response;
     } else {
+      \Session::flash(Input::old_input, $this->user()->attributes);
       return Cart::has() ? true : static::back();
     }
   }
