@@ -1,4 +1,4 @@
-@import 'normalize.css';
+@import 'normalize';
 
 @import 'grid';
 @gutter-width: 0;
@@ -9,12 +9,12 @@
 |----------------------------------------------------------------------*/
 
 html { height: 100%; }
-body { .relative; font-size: 14px; min-height: 100%; }
-textarea { font-family: @Courier; font-size: 95%; }
-h1, h2, h3, h4, h5, h6 { .regular; margin: 0; }
+body { position: relative; font-size: 14px; min-height: 100%; }
+textarea { font-family: monospace; font-size: 95%; }
+h1, h2, h3, h4, h5, h6 { font-weight: normal; margin: 0; }
 p, ol, ul, fieldset { margin: 0; padding: 0; }
-a { .noline; color: blue; }
-a:hover, { .underline; }
+a { text-decoration: none; color: blue; }
+a:hover { text-decoration: underline; }
 pre, code { overflow: auto; }
 pre { width: auto; }
 img { border: 0; }
@@ -23,8 +23,11 @@ img { border: 0; }
 | GENERAL LAYOUT
 |----------------------------------------------------------------------*/
 
-.row { .row(); }
+/* It's necessary to pass an argument to .row() explicitly or Node.js' lessc
+   will fail with recursive call and tell that .row() is undefined. */
+.row { .row(@columns); }
 .col (@columns) { .column(@columns); min-height: 1px; }
+
 .span1, [class*=size-gold] { .col(1); }
 .span2 { .col(2); }
 .span3 { .col(3); }
