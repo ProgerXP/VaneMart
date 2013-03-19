@@ -172,7 +172,7 @@ class MiMeil {
   protected $body = array();
 
   //= array of hashes with keys: name, mime (attachment Content-Type), data,
-  // headers (array), isRelated (puts attachment in multipart/related group)
+  //  headers (array), isRelated (puts attachment in multipart/related group)
   protected $attachments = array();
 
   // Value for X-Priority and Importance headers: 0 (low), 1 (normal), 2 (high).

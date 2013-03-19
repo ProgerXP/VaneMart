@@ -27,7 +27,7 @@ class Order extends BaseModel {
       ->fill_raw(array(
         'password'        => static::generatePassword(),
         'user'            => $user->id,
-        'manager'         => Current::config('general.new_order_manager'),
+        'manager'         => \Vane\Current::config('general.new_order_manager'),
         'sum'             => Cart::subtotal(),
         'ip'              => Request::ip(),
       ));
@@ -53,11 +53,11 @@ class Order extends BaseModel {
   }
 
   function user() {
-    return $this->has_one(NS.'User', 'user');
+    return $this->belongs_to(NS.'User', 'user');
   }
 
   function manager() {
-    return $this->has_one(NS.'User', 'manager');
+    return $this->belongs_to(NS.'User', 'manager');
   }
 
   function posts() {

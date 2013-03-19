@@ -126,9 +126,7 @@ class BaseModel extends Eloquent {
   function url() {
     if (!static::$hasURL) {
       throw new Error("Model ".get_class($this)." has no URL-generating method.");
-    } elseif (!$this->id) {
-      throw new Error("Cannot generate URL for non-existent Model ".get_class($this).".");
-    } else {
+    } elseif ($this->id) {
       $url = $this->id;
 
       if (isset($this->slug) and "{$this->slug}" !== '') {

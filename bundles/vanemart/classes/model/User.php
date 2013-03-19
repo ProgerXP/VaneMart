@@ -89,7 +89,7 @@ class User extends BaseModel implements \Vane\UserInterface {
         return fnmatch($perm, $feature, FNM_NOESCAPE | FNM_PATHNAME | FNM_CASEFOLD);
       });
 
-      return (bool) ($allBut ^ $matched);
+      return (bool) ($allBut ^ !!$matched);
     }
   }
 

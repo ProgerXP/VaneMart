@@ -78,7 +78,7 @@ class Route {
 
   static function references(&$url, &$params) {
     // 1st param is often used to refer to controller's method like 'ctl@(:1)'.
-    $params = ((array) $params) + array('');
+    $params = ((array) $params) + array('', '', '');
     OpenController::references($url, $params);
     return $url;
   }

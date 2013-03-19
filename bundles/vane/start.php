@@ -36,7 +36,8 @@ overrideHTMLki('vane::', __NAMESPACE__);
            " This is not so - returned 403 for user {$user->id}.";
     $deny = Log::error_Auth($msg);
   } elseif (!$user) {
-    $deny = Log::info_Auth("Block needs authorized user, denying access for guest.");
+    $name = $block ? ' '.$block->name : '';
+    $deny = Log::info_Auth("Block$name needs authorized user, denying access for guest.");
   } elseif ($features) {
     list($toMiss, $toHave) = S::divide($features, '?[0] === "!"');
 
@@ -48,7 +49,8 @@ overrideHTMLki('vane::', __NAMESPACE__);
     $missing and $reasons[] = "missing permission(s): ".join(', ', $missing);
 
     if ($reasons) {
-      $msg = "Denied access via vane::auth for user {$user->id} due to ".
+      $name = $block ? ' '.$block->name : '';
+      $msg = "Denied access to block$name via vane::auth for user {$user->id} due to ".
              join(' and ', $reasons).'.';
       $deny = Log::info_Auth($msg);
     }
