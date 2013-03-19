@@ -15,7 +15,7 @@ class Group extends BaseModel {
   }
 
   function pretty() {
-    return $this->fill_raw( static::prettyOther($this->to_array()) );
+    return $this->fill_raw( static::prettyOther($this->attributes) );
   }
 
   function parent() {
