@@ -14,14 +14,14 @@ $=today             with(new \DateTime)->setTime(0, 0)->getTimestamp()
         </endp>
       </if>
 
-      {= HLEx::time(date('d.m.y', $created_at), $created_at, true) }
+      {= HLEx::time(date('d.m.y', $created_at), $created_at, array('pubdate' => true, 'title' => date('d.m.y H:i', $created_at))) }
     </div>
 
     <article>
       {= $html }
     </article>
 
-    <ul $attachments "vmart-attachments">
+    <ul $attachments "vmart-attachments right">
       <li "b-attach b-file-{ strtolower($ext) } b-r">
         <a "$url" title="$name, { S::sizeStr($size) }">{ S::newExt($name) }</a>
       </li>
