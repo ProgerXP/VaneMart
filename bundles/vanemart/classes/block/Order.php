@@ -51,7 +51,7 @@ class Block_Order extends BaseBlock {
     }
 
     $orders = $orders->get();
-    if (!$orders) { return; }
+    if (!$orders) { return array('rows' => array()); }
 
     $counts = OrderProduct
       ::where_in('order', prop('id', $orders))
@@ -171,12 +171,11 @@ class Block_Order extends BaseBlock {
     });
 
     if ($order->user != $this->user()->id) {
-      $user = $this->user();
-      $to = $user->emailRecipient();
+      $to = $order->user()->first()->emailRecipient();
 
       \Vane\Mail::sendTo($to, 'vanemart::mail.order.post', array(
         'order'         => $order->to_array(),
-        'user'          => $user->to_array(),
+        'user'          => $this->user()->to_array(),
         'post'          => $post->to_array(),
       ));
     }

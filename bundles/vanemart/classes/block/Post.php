@@ -59,17 +59,7 @@ class Block_Post extends BaseBlock {
     $rows = $rows->get();
 
     if ($rows and !$this->can('post.hidefiles')) {
-      $fileRows = FileListItem
-        ::where('type', '=', 'post')
-        ->where_in('object', prop('id', $rows))
-        ->join(File::$table.' AS f', 'f.id', '=', 'file')
-        ->get();
-
-      $files = array();
-
-      foreach ($fileRows as $file) {
-        $files[$file->object][] = with(new File)->fill_raw($file->attributes)->to_array();
-      }
+      $files = File::fromLists('post', prop('id', $rows));
 
       $rows = S($rows, function ($model) use ($files) {
         $attachments = (array) array_get($files, $model->id);
@@ -179,12 +169,11 @@ class Block_Post extends BaseBlock {
 
       if ($type === 'order' and $order = Order::find($object) and
           $order->user != $this->user()->id) {
-        $user = $this->user();
-        $to = $user->emailRecipient();
+        $to = $order->user()->first()->emailRecipient();
 
         \Vane\Mail::sendTo($to, 'vanemart::mail.order.post', array(
           'order'         => $order->to_array(),
-          'user'          => $user->to_array(),
+          'user'          => $this->user()->to_array(),
           'post'          => $model->to_array(),
         ));
       }

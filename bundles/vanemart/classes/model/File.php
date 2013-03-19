@@ -159,6 +159,23 @@ class File extends BaseModel {
     return $bytes;
   }
 
+  static function fromLists($type, array $objects) {
+    $fileRows = FileListItem
+      ::where('type', '=', $type)
+      ->where_in('object', $objects)
+      ->join(static::$table.' AS f', 'f.id', '=', 'file')
+      ->get();
+
+    $files = array();
+
+    foreach ($fileRows as $file) {
+      $files[$file->object][] = with(new static)
+        ->fill_raw($file->attributes)->to_array();
+    }
+
+    return $files;
+  }
+
   function uploader() {
     return $this->has_many(NS.'User', 'uploader');
   }
