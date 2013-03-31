@@ -8,6 +8,10 @@ return array(
 
   'status'                => array(
     'new'                 => 'Новый',
+    'received'            => 'Получен, обрабатывается',
+    'invoice'             => 'Счёт на согласовании',
+    'paid'                => 'Оплата получена',
+    'sent'                => 'Отгружен',
   ),
 
   'ctlstatus'             => array(
@@ -19,6 +23,7 @@ return array(
       'subject'           => 'Обновление заказа №:id — :short',
       'legend'            => ':l0Заказ №:id:l1 был обновлён:',
       'signature'         => ':name :surname',
+      'to_reply'          => 'Вы можете продолжить диалог или задать любой интересующий вас вопрос на странице заказа.',
     ),
   ),
 
@@ -47,7 +52,6 @@ return array(
 
     // used by order@show in 'edit mode' (e.g. for managers)
     'submit'              => 'Сохранить изменения',
-    'change_to'           => '— изменить на:',
     'relink'              => 'Создать новую',
   ),
 

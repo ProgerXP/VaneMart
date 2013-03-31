@@ -22,8 +22,8 @@ class MiMeilError extends Exception {
 // The main class. Each instance represents a complete message with headers,
 // attachments, body and so on. Static fields provide general customizations.
 class MiMeil {
-  //= float number for MIME header used in multipart messages
-  static $mimeVersion = 1.0;
+  //= string number for MIME header used in multipart messages
+  static $mimeVersion = '1.0';
 
   //= hash maps MIME identifiers to short friendly names
   static $bodyTypes = array('text/plain' => 'text', 'text/html' => 'html');

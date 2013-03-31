@@ -144,7 +144,7 @@ class Block_Post extends BaseBlock {
         ->fill_raw(compact('type') + array(
           'object'        => $object,
           'parent'        => $parent,
-          'flags'         => '',
+          'flags'         => $this->can('manager') ? 'manager' : '',
           'html'          => nl2br(HLEx::q( $this->in('body') )),
           'author'        => $this->user()->id,
           'ip'            => Request::ip(),

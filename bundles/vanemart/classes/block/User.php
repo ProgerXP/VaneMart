@@ -11,7 +11,7 @@ class Block_User extends BaseBlock {
   | Shows login form.
   |--------------------------------------------------------------------*/
   function get_login() {
-    return true;
+    return Auth::check() ? Redirect::to_route('vanemart::orders') : true;
   }
 
   /*---------------------------------------------------------------------

@@ -295,7 +295,6 @@ class Route {
       // if server is not a traditional controller but a Vane block - set it up.
       if ($block instanceof Block) {
         $block->top = $this->lastLayout;
-        $block->title === true and $block->title = array();
         $block->isServer = true;
       }
 

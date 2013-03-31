@@ -93,7 +93,7 @@ VRoute::on('(:bundle)/help/(:all?)')
   ->as('vanemart::help')
   ->servers('Vane::textpub help')
   ->layout(array(
-    '+#content'           => array('!'),
+    '=#content'           => array('Vane::status', '!'),
   ));
 
 VRoute::assign('vanemart::contacts', '(:bundle)/help/contacts');

@@ -156,7 +156,7 @@ class Block_Order extends BaseBlock {
       'type'              => 'order',
       'object'            => $order->id,
       'author'            => $this->user()->id,
-      'flags'             => 'field-change',
+      'flags'             => 'field-change '.($this->can('manager') ? 'manager' : ''),
       'body'              => $msg,
       'html'              => nl2br(HLEx::q($msg)),
       'ip'                => Request::ip(),

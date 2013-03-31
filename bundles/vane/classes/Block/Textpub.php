@@ -13,7 +13,9 @@ class Block_Textpub extends Block {
 
     foreach (TextPub::$paths as $key => $info) {
       if ($info['path'] === $root) {
-        return TextPub::serve_by($key, $page);
+        $view = TextPub::serve_by($key, $page);
+        $this->title = array($view['title']);
+        return $view;
       }
     }
 

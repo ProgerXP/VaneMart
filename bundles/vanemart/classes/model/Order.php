@@ -74,6 +74,11 @@ class Order extends BaseModel {
         'new'         => $value,
       );
 
+      if ($field === 'status') {
+        $vars['old'] = __("vanemart::order.status.$vars[old]")->get();
+        $vars['new'] = __("vanemart::order.status.$vars[new]")->get();
+      }
+
       $type = $vars['old'] === '' ? 'add' : ($value === '' ? 'delete' : 'set');
       $result[] = __("vanemart::order.set.line.$type", $vars);
     }

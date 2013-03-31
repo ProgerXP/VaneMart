@@ -21,8 +21,7 @@ class Block extends DoubleEdge {
   //= Lang instance - same as string
   //= array set to language variable $this->name + '.' + action + '.title' passing
   //  it replacements in this array; if it's array() the language string is used as is
-  //= true act as array() if this block is a server, otherwise do nothing
-  public $title = true;
+  public $title = array();
 
   // Is set if this block is a Route server (aka '!' block).
   public $isServer = false;
@@ -252,7 +251,9 @@ class Block extends DoubleEdge {
   protected function afterAction($action, array $params, &$response) {
     $title = $this->title;
 
-    if (is_array($title)) {
+    if (!$this->isServer) {
+      // only route server is allowed to set global page data like title.
+    } elseif (is_array($title)) {
       $vars = $this->titleVars($this->title, $action);
       $this->viewData('title', $vars['page']);
 
