@@ -5,15 +5,13 @@
     <tr "status">
       <th>"vanemart::field.status"</th>
       <td>
-        <b>{ __("vanemart::order.status.$status") }</b>
-        "vanemart::order.set.change_to"
+        <?php
+          $statuses = S::keys(Order::statuses(), function ($status) {
+            return array($status, __("vanemart::order.status.$status")->get());
+          });
+        ?>
 
-        <select ${ Order::statuses() } "status">
-          <if $item !== $status>
-            <option "$item">{ __("vanemart::order.status.$item") }</option>
-          </if>
-        </endselect>
-
+        {= HLEx::select('status', $statuses, $status) }
         <errors "status">
       </td>
     </tr>
