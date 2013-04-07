@@ -14,7 +14,11 @@ class Block_Textpub extends Block {
     foreach (TextPub::$paths as $key => $info) {
       if ($info['path'] === $root) {
         $view = TextPub::serve_by($key, $page);
-        $this->title = array($view['title']);
+
+        if ($view instanceof \Laravel\View) {
+          $this->title = array($view['title']);
+        }
+
         return $view;
       }
     }

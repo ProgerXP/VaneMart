@@ -49,7 +49,7 @@ class Menu implements \IteratorAggregate, \Countable {
     $this->add($items);
   }
 
-  function add($items) {
+  function add($items, MenuItem $after = null) {
     foreach (arrize($items) as $key => $value) {
       if (!is_int($key)) {
         $this->addLink(is_scalar($value) ? trim($value) : $value, trim($key));
@@ -57,6 +57,17 @@ class Menu implements \IteratorAggregate, \Countable {
         $this->addLink($value);
       } elseif ($value instanceof MenuItem) {
         $value->menu = $this;
+
+        if ($after) {
+          $i = array_search($after, $this->items, true);
+
+          if ($i !== false) {
+            array_splice($this->items, $i + 1, 0, array($value));
+            $after = $value;
+            continue;
+          }
+        }
+
         $this->items[] = $value;
       } elseif (is_scalar($value)) {
         @list($custom, $args) = explode(' ', trim($value), 2);

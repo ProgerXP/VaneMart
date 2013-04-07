@@ -26,8 +26,8 @@ class Block_MenuHandlers extends BaseBlock {
     }
   }
 
-  static function menu_categories(MenuItem $item) {
-    $type = array_get($item->argArray(), 0, 'product');
+  static function menu_categories(MenuItem $self) {
+    $type = array_get($self->argArray(), 0, 'product');
 
     $groups = Group
       ::where('type', '=', $type)
@@ -37,14 +37,16 @@ class Block_MenuHandlers extends BaseBlock {
 
     $current = static::detectCurrentGroup($groups);
 
-    foreach ($groups as $group) {
-      $item->menu->add(new $item(array(
+    foreach ($groups as &$group) {
+      $group = new $self(array(
         'caption'         => $group->title,
         'classes'         => array('id-'.$group->id),
         'url'             => $group->url(),
         'current'         => ($current and $current->id === $group->id) ? true : null,
-      )));
+      ));
     }
+
+    $self->menu->add($groups, $self);
   }
 
   static function detectCurrentGroup(array $topLevel) {
