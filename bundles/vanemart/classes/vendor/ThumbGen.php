@@ -71,7 +71,11 @@ class ThumbGen {
     list($width, $height) = getimagesize($file);
     $func = $contain ? 'min' : 'max';
     $ratio = $func($maxWidth / $width, $maxHeight / $height);
-    return array($width * $ratio, $height * $ratio);
+
+    // Rounding avoids problems with x.9999999... floats converted to int as
+    // (x - 1). For example, if it's removed imagecreatetruecolor() will make image
+    // 1 pixel less than specified on both dimensions.
+    return array((int) round($width * $ratio), (int) round($height * $ratio));
   }
 
   // Resizes the image using given settings.
@@ -88,8 +92,8 @@ class ThumbGen {
 
     list($thumbWidth, $thumbHeight) =
       static::calcDimensionsFor($file, $maxWidth, $maxHeight);
-    $thumb = imagecreatetruecolor($thumbWidth, $thumbHeight);
 
+    $thumb = imagecreatetruecolor($thumbWidth, $thumbHeight);
     if (!$thumb) {
       static::wrongArg(__FUNCTION__, 'imagecreatetruecolor() has failed.');
     }
@@ -108,11 +112,12 @@ class ThumbGen {
     $width = imagesx($original);
     $height = imagesy($original);
 
-      if (!imagecopyresampled($thumb, $original, 0, 0, 0, 0, $thumbWidth, $thumbHeight, $width, $height)) {
-        throw new RuntimeException(get_called_class().': imagecopyresampled() has failed.');
-      }
+    if (!imagecopyresampled($thumb, $original, 0, 0, 0, 0, $thumbWidth,
+                            $thumbHeight, $width, $height)) {
+      throw new RuntimeException(get_called_class().': imagecopyresampled() has failed.');
+    }
 
-      imagedestroy($original);
+    imagedestroy($original);
 
     if ($marks = $options['watermarks']) {
       $ratioX = $thumbWidth / $width;
@@ -147,7 +152,8 @@ class ThumbGen {
       'file'              => null,
       'format'            => substr(strrchr($options['file'], '.'), 1),
       'x'                 => 0.5,
-      'y'                 => 0.5,
+      'y'                 => 1,
+      'yIndex'            => 0,
       'ratioX'            => 1,
       'ratioY'            => 1,
     );
@@ -161,11 +167,12 @@ class ThumbGen {
 
     $width = imagesx($mark);
     $height = imagesy($mark);
-    $newWidth = $width * $options['ratioX'];
-    $newHeight = $height * $options['ratioY'];
+    $newWidth = round($width * $options['ratioX']);
+    $newHeight = round($height * $options['ratioY']);
 
     $x = round(imagesx($image) - $newWidth) * $options['x'];
-    $y = round(imagesy($image) - $newHeight) * $options['y'];
+    $cell = imagesy($image) * $options['y'];
+    $y = round( $options['yIndex'] * $cell + ($cell - $newHeight) / 2 );
 
     if (!imagecopyresampled($image, $mark, $x, $y, 0, 0, $newWidth, $newHeight,
                             $width, $height)) {
@@ -203,6 +210,8 @@ class ThumbGen {
       $this->tempPath = rtrim($path, '\\/').'/';
 
       if (strlen($this->tempPath) < 3) {
+        // protection against broken sys_get_temp_dir() or realpath() that
+        // return false, null or other strange value.
         static::wrongArg(__FUNCTION__, "new path [$path] is too short.");
       } else {
         return $this;
@@ -314,25 +323,42 @@ class ThumbGen {
   //* $x float - location on X axis of the watermark relative to image width (0...1).
   function watermarks($count, $file, $x = 0.5) {
     // $y is set to mean distribution for multiple watermarks.
-    $this->watermark($file, 0.5, $x);
+    $this->watermark($file, 1, $x);
     $this->watermark['count'] = $count;
     return $this;
   }
 
   // Assigns a watermark that's put over the scaled thumbnail.
   //* $file str - path to watermark image in any format recognized by GD.
-  //* $y float - location on Y axis of the watermark relative to image height (0...1).
+  //* $y float - how far the watermark is offset on the Y axis; 0 means 'leftmost',
+  //  1 means 'center', 2 means 'rightmost'.
   //* $x float - location on X axis of the watermark relative to image width (0...1).
-  function watermark($file, $y = 0.5, $x = 0.5) {
+  function watermark($file, $y = 1, $x = 0.5) {
     @list($file, $format) = (array) $file;
     if (!$format) { unset($format); }
-    $this->watermark = compact('file', 'x', 'y');
+    $this->watermark = compact('file', 'format', 'x', 'y');
     return $this;
   }
 
   /*-----------------------------------------------------------------------
   | ACTIONS
   |----------------------------------------------------------------------*/
+
+  // Saves scaled thumbnail to $file.
+  //* $file str - output file name.
+  //* $regenerate bool - if not set and $file exists will check its modification
+  //  time and if it's up to date with the source image won't do anything.
+  //= $this
+  function scaleTo($file, $regenerate = true) {
+    return $this->cacheFile($file)->scale($regenerate);
+  }
+
+  // Scales source image. Uses caching unless $regenerate is set.
+  //* $regenerate bool - if set cache is ignored and new thumb is always generated.
+  function scale($regenerate = false) {
+    $this->scaled($regenerate);
+    return $this;
+  }
 
   // Scales source image and caches it unless cache exists and is upToDate().
   //* $regenerate bool - if set cache is ignored and new thumb is always generated.
@@ -356,14 +382,12 @@ class ThumbGen {
     $cacheFile or $cacheFile = $this->cacheFile();
 
     if (is_file($cacheFile) and $cacheTime = filemtime($cacheFile)) {
-      $this->isLocal() and $time = filemtime($this->source);
-
-      if (empty($time)) {
-        if ($this->remoteCacheTTL) {
-          $time = time() - $this->remoteCacheTTL;
-        } else {
-          return true;
-        }
+      if ($this->isLocal()) {
+        $time = filemtime($this->source);
+      } elseif ($this->remoteCacheTTL) {
+        $time = time() - $this->remoteCacheTTL;
+      } else {
+        return true;
       }
 
       return $cacheTime >= $time;
@@ -425,7 +449,7 @@ class ThumbGen {
       throw new RuntimeException(get_class($this).": cannot create temp file [$temp].");
     }
 
-    $from = fopen($this->source, 'rb');
+    $from = fopen($this->source, 'rb', false, $this->remoteFetchContext());
     if (!$from) {
       throw new RuntimeException(get_class($this).": cannot read remote file [{$this->source}].");
     }
@@ -437,6 +461,10 @@ class ThumbGen {
     fclose($from);
     fclose($to);
     return $temp;
+  }
+
+  protected function remoteFetchContext() {
+    return stream_context_get_default();
   }
 
   // Generates and saves new thumbnail. Overlays watermarks if assigned.
@@ -476,7 +504,11 @@ class ThumbGen {
         return array($mark);
       } elseif ($count > 0) {
         $result = array_fill(0, $count, $mark);
-        foreach ($result as $i => &$mark) { $mark['y'] = 0.3 * $i + 0.3; }
+
+        foreach ($result as $i => &$mark) {
+          $mark = array('y' => 1 / $count, 'yIndex' => $i) + $mark;
+        }
+
         return $result;
       }
     }
