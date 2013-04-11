@@ -37,42 +37,71 @@ class Block_Order extends BaseBlock {
   |----------------------------------------------------------------------
   | * by=USER_ID    - optional; if given filters orders by this user
   |   (for managers only, who might be able to see multiple users' orders).
+  | * for=USER_ID   - optional; if given shows orders assigned to this manager.
+  | * for_all=1     - optional; if set lists orders assigned to any manager,
+  |   not just the current user (useful for super-managers able to see others).
   |--------------------------------------------------------------------*/
   function get_index() {
-    $orders = Order::order_by('updated_at', 'desc')->order_by('created_at', 'desc');
+    $canFilterByManager = ($this->can('manager') and $this->can('order.list.all'));
+
+    $orders = Order
+      ::order_by('updated_at', 'desc')
+      ->order_by('created_at', 'desc');
 
     if (!$this->can('order.list.all')) {
-      $field = $this->can('manager') ? 'manager' : 'user';
-      $orders->where($field, '=', $this->user()->id);
+      $self = $this;
+
+      $orders->where(function ($query) use ($self) {
+        $query->where('user', '=', $user = $self->user()->id);
+        $self->can('manager') and $query->or_where('manager', '=', $user);
+      });
     }
 
-    if ($user = (int) $this->in('by', 0)) {
+    if ($user = (int) $this->in('by', 0) and $this->can('manager')) {
       $orders->where('user', '=', $user);
     }
 
-    $orders = $orders->get();
-    if (!$orders) { return array('rows' => array()); }
+    $shownForAllManagers = ($canFilterByManager and $this->in('for_all', 0));
 
-    $counts = OrderProduct
-      ::where_in('order', prop('id', $orders))
-      ->group_by('order')
-      ->select(array('*', \DB::raw('COUNT(1) AS count')))
-      ->get();
-    $counts = S::keys($counts, '?->order');
+    if ($canFilterByManager) {
+      $manager = (int) $this->in('for', 0);
+      !$manager and !$shownForAllManagers and $manager = $this->user()->id;
+      $manager and $orders->where('manager', '=', $manager);
+    }
 
-    $recentTime = time() - 3*24*3600;
-    $current = static::detectCurrentOrder();
+    if ($orders = $orders->get()) {
+      $counts = OrderProduct
+        ::where_in('order', prop('id', $orders))
+        ->group_by('order')
+        ->select(array('*', \DB::raw('COUNT(1) AS count')))
+        ->get();
+      $counts = S::keys($counts, '?->order');
 
-    $rows = S($orders, function ($model) use (&$counts, $recentTime, $current) {
-      return $model->to_array() + array(
-        'count'           => $counts[$model->id]->count,
-        'recent'          => $model->updated_at >= $recentTime,
-        'current'         => $current and $model->id === $current->id,
-      );
-    });
+      $recentTime = time() - 3*24*3600;
+      $current = static::detectCurrentOrder();
+      $user = $this->user();
+
+      $rows = S($orders, function ($model) use (&$counts, $recentTime, $current,
+                                                $canFilterByManager, $user) {
+        if ($canFilterByManager and $model->manager != $user->id) {
+          $manager = User::find($model->manager)->to_array();
+        } else {
+          $manager = null;
+        }
+
+        return $model->to_array() + array(
+          'count'           => $counts[$model->id]->count,
+          'recent'          => $model->updated_at >= $recentTime,
+          'current'         => $current and $model->id === $current->id,
+          'forManager'      => $manager,
+        );
+      });
+    } else {
+      $rows = array();
+    }
 
     $isManager = $this->can('manager');
-    return compact('rows', 'isManager');
+    return compact('rows', 'isManager', 'canFilterByManager', 'shownForAllManagers');
   }
 
   /*---------------------------------------------------------------------
@@ -90,8 +119,22 @@ class Block_Order extends BaseBlock {
       if (!$this->accessible($order)) {
         return false;
       } else {
-        $this->editable($order) and $this->layout = '.set';
-        return $order->to_array();
+        $setManagers = array();
+
+        if ($this->editable($order)) {
+          $this->layout = '.set';
+
+          if ($this->can('order.edit.manager')) {
+            $managers = User::where('perms', 'LIKE', '%manager%')->get();
+
+            $setManagers = S::keys($managers, function ($user) {
+              $name = __('vanemart::order.set.manager', $user->to_array());
+              return array($user->id, $name);
+            });
+          }
+        }
+
+        return compact('setManagers') + $order->to_array();
       }
     }
   }
@@ -105,15 +148,29 @@ class Block_Order extends BaseBlock {
   | * back=URL      - optional; page to return to after successful update.
   | * relink=0      - optional; if set only regenerates order password
   |   (used in permalink URL). Changes no other fields.
+  | * set_manager=0 - optional; if set only assigns new manager to the order.
+  | * manager=USER_ID - required if set_manager is given.
   |--------------------------------------------------------------------*/
   function post_show($id = null) {
     if (!($order = Order::find($id))) {
       return;
+    } elseif (!$this->editable($order)) {
+      return false;
     } elseif ($this->in('relink', false)) {
       if ($order->regeneratePassword()->save()) {
         return Redirect::to($order->url());
       } else {
         throw new Error("Cannot save order {$order->id} with regenerated password.");
+      }
+    } elseif ($this->in('set_manager', false)) {
+      $order->manager = $this->in('manager');
+
+      if (!$this->can('order.edit.manager')) {
+        return false;
+      } elseif ($order->save()) {
+        return Redirect::to($order->url());
+      } else {
+        throw new Error("Cannot save order {$order->id} with new manager.");
       }
     }
 

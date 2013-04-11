@@ -30,8 +30,11 @@ return array(
   // order@index
   'index'                 => array(
     'title'               => 'Ваши заказы',
+    'show_for_all'        => 'Показать заказы менеджеров',
     'item_title'          => 'Заказ №:id от :created',
     'from'                => ':surname :name',
+    'for'                 => 'мен.',
+    'for_manager'         => ':n0. :surname',
     'count_sum'           => ':counts на сумму :sums',
     'info'                => ':status, обновлён :updated',
   ),
@@ -53,6 +56,8 @@ return array(
     // used by order@show in 'edit mode' (e.g. for managers)
     'submit'              => 'Сохранить изменения',
     'relink'              => 'Создать новую',
+    'manager'             => ':surname :name',
+    'set_manager'         => 'Назначить',
   ),
 
   // order@goods

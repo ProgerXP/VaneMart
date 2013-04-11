@@ -15,6 +15,13 @@
         <errors "status">
       </td>
     </tr>
+    <tr ${ !!$setManagers } "manager">
+      <th>"vanemart::field.manager"</th>
+      <td>
+        {= HLEx::select('manager', $setManagers, $manager) }
+        <submit "set_manager" "flat">"vanemart::order.set.set_manager"</submit>
+      </td>
+    </endtr>
     <tr "sum">
       <th>"vanemart::order.total"</th>
       <td>{= langNum('general.price', $sum) }</td>

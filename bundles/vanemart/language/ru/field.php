@@ -14,6 +14,7 @@ return array(
   'address'               => 'Адрес для доставки:',
   'notes'                 => 'Примечание:',
   'status'                => 'Статус:',
+  'manager'               => 'Менеджер:',
 
   // Product
   'price'                 => 'Цена:',

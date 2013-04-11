@@ -1,3 +1,7 @@
+<p ${ !$shownForAllManagers and $canFilterByManager } "vmart-orders-all-mgr">
+  <a "vanemart::orders?for_all=1">"vanemart::order.index.show_for_all"</a>
+</endp>
+
 <ul $rows "v-rows vmart-orders">
   <li "status-$status { $current ? 'current' : '' } { $recent ? 'recent' : '' }" data-id=$id>
     $=created       HLEx::time(date('d.m.Y', $created_at), $created_at, true)
@@ -18,6 +22,14 @@
         {= htmlLang('order.index.from', compact('name', 'surname')) }
         <if $isManager> </a> </if>
       </p>
+
+      <p ${ !!$forManager } "manager">
+        <b>{= htmlLang('order.index.for') }</b>
+
+        <a "vanemart::orders?for={ $forManager['id'] }">
+          {= htmlLang('order.index.for_manager', $forManager + array('n0' => S::first($forManager['name']))) }
+        </a>
+      </endp>
 
       <p "contents">
         {= htmlLang('order.index.count_sum', compact('counts', 'sums')) }
