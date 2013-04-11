@@ -17,6 +17,7 @@ class Block_Textpub extends Block {
 
         if ($view instanceof \Laravel\View) {
           $this->title = array($view['title']);
+          $view['root'] = $root;
         }
 
         return $view;
