@@ -5,7 +5,7 @@ class User extends BaseModel implements \Vane\UserInterface {
   static $hasURL = true;
 
   static function findOrCreate(array $info) {
-    static $fields = array('name', 'surname', 'phone', 'email');
+    static $fields = array('name', 'surname', 'city', 'phone', 'email');
 
     $model = User::where('email', '=', $info['email'])->first();
 

@@ -83,6 +83,7 @@ class Block_User extends BaseBlock {
     $rules = array(
       'name'              => 'required',
       'surname'           => 'required',
+      'city'              => 'required|min:2',
       'phone'             => 'required|min:7',
       'email'             => 'required|email',
       'password'          => static::PASSWORD_RULE,

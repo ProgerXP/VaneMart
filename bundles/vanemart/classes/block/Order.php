@@ -199,7 +199,7 @@ class Block_Order extends BaseBlock {
       return false;
     }
 
-    $fields = array('status', 'name', 'surname', 'phone', 'address', 'notes');
+    $fields = array('status', 'name', 'surname', 'phone', 'city', 'address', 'notes');
     $order->fill_raw(S::trim(Input::only($fields)));
 
     if (!$order->dirty()) {

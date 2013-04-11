@@ -13,7 +13,7 @@
       {= __('vanemart::order.link_text', array(HLEx::tag('a', $url), '</a>')) }
     </td>
   </tr>
-  <each ${ array('name', 'surname', 'phone', 'address', 'notes') }>
+  <each ${ array('name', 'surname', 'phone', 'city', 'address', 'notes') }>
     <tr "$item">
       <th>{ __("vanemart::field.$item") }</th>
       <td>{ @$$item }</td>

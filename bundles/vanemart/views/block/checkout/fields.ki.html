@@ -1,7 +1,11 @@
-<each ${ array('name', 'surname', 'phone') }>
+<each ${ array('name', 'surname', 'city', 'phone') }>
   <tr "$item">
     <th>{ __("vanemart::field.$item") }</th>
     <td>
+      <if $item === 'city' and empty($$item)>
+        <?$$item = \Config::get('vanemart::general.default_city')?>
+      </if>
+
       <input "$item" default={ @$$item }>
       <errors>
     </td>

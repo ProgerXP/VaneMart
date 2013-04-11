@@ -20,7 +20,7 @@ class Order extends BaseModel {
   }
 
   static function createBy(User $user, array $info) {
-    static $fields = array('name', 'surname', 'address', 'phone', 'notes');
+    static $fields = array('name', 'surname', 'city', 'address', 'phone', 'notes');
 
     $order = with(new static)
       ->fill_raw(array_intersect_key($info, array_flip($fields)))
