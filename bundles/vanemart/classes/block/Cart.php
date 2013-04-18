@@ -74,7 +74,7 @@ class Block_Cart extends BaseBlock {
     if ($this->in('checkout', null)) {
       return Redirect::to_route('vanemart::checkout');
     } else {
-      return static::back();
+      return $this->back();
     }
   }
 
@@ -160,6 +160,6 @@ class Block_Cart extends BaseBlock {
     }
 
     $this->status($ids ? 'remove' : 'clear', array('title' => ''));
-    return static::back( Cart::has() ? route('vanemart::cart') : '/' );
+    return $this->back( Cart::has() ? route('vanemart::cart') : '/' );
   }
 }

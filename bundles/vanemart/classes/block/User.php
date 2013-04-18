@@ -29,7 +29,7 @@ class Block_User extends BaseBlock {
     if ($this->in('to_reg', false)) {
       return Redirect::to_route('vanemart::register')->with_input();
     } elseif ($this->ajax()) {
-      return static::back(route('vanemart::orders'));
+      return $this->back(route('vanemart::orders'));
     } else {
       return $this->layout->with('ok', false);
     }
@@ -72,7 +72,7 @@ class Block_User extends BaseBlock {
       if ($result instanceof Eloquent) {
         Auth::logout();
         Auth::login($result->id);
-        return static::back(route('vanemart::orders'));
+        return $this->back(route('vanemart::orders'));
       } else {
         return $result;
       }

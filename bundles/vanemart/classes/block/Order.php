@@ -61,7 +61,7 @@ class Block_Order extends BaseBlock {
       $orders->where('user', '=', $user);
     }
 
-    $shownForAllManagers = ($canFilterByManager and $this->in('for_all', 0));
+    $shownForAllManagers = ($canFilterByManager and ($user or $this->in('for_all', 0)));
 
     if ($canFilterByManager) {
       $manager = (int) $this->in('for', 0);
@@ -178,9 +178,9 @@ class Block_Order extends BaseBlock {
 
     if ($result instanceof Order) {
       $this->status('set');
-      return static::back($order->url());
+      return $this->back($order->url());
     } elseif ($result === E_UNCHANGED) {
-      return static::back($order->url());
+      return $this->back($order->url());
     } else {
       return $result;
     }

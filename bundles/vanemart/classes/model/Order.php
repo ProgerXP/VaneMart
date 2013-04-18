@@ -68,6 +68,8 @@ class Order extends BaseModel {
     $result = array();
 
     foreach ($this->get_dirty() as $field => $value) {
+      if ($field === 'manager') { continue; }
+
       $vars = array(
         'field'       => __("vanemart::field.$field")->get(),
         'old'         => trim($this->original[$field]),

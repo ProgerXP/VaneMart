@@ -19,7 +19,7 @@ class Block_Checkout extends BaseBlock {
 
   function prereq() {
     if (!Cart::has()) {
-      return static::back();
+      return $this->back();
     } elseif ($this->can('checkout.deny')) {
       return false;
     } elseif ($min = Cart::isTooSmall()) {
@@ -28,7 +28,7 @@ class Block_Checkout extends BaseBlock {
         'total'   => Str::langNum('general.price', Cart::subtotal()),
       ));
 
-      return static::back();
+      return $this->back();
     }
   }
 
@@ -45,7 +45,7 @@ class Block_Checkout extends BaseBlock {
         \Session::flash(Input::old_input, $user->attributes);
       }
 
-      return Cart::has() ? true : static::back();
+      return Cart::has() ? true : $this->back();
     }
   }
 

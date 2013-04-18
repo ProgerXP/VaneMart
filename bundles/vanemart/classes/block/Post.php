@@ -105,7 +105,7 @@ class Block_Post extends BaseBlock {
   |--------------------------------------------------------------------*/
   function post_add($type = null, $object = null) {
     $result = $this->ajax(func_get_args());
-    return $result === false ? false : static::back();
+    return $result === false ? false : $this->back();
   }
 
   function ajax_post_add($type = null, $object = null) {

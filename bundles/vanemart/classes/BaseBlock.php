@@ -3,9 +3,8 @@
 class BaseBlock extends \Vane\Block {
   public $bundle = 'vanemart';
 
-  static function back($default = '/') {
-    $input = Input::get('back');
-    return $input ? Redirect::to($input) : Redirect::back($default);
+  function back($default = '/') {
+    return parent::back($default, 'back');
   }
 
   protected function makeResponse($response, $internal = true) {
