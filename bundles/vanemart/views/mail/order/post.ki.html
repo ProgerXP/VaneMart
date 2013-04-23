@@ -6,7 +6,13 @@ $=content
   <blockquote "post">{= $post['html'] }</blockquote>
   <p "sign">{= htmlLang('order.mail.post.signature', $user) }</p>
 
-  <p>"vanemart::order.mail.post.to_reply"</p>
+  <ul $files "files">
+    <li>
+      <a "$url">$name</a>
+    </li>
+  </endul>
+
+  <p>{= htmlLang('order.mail.post.to_reply', array('l0' => HLEx::tag('a', $order['url']), 'l1' => '</a>'), false) }</p>
 $^content
 
 <include vanemart::mail.full>

@@ -154,6 +154,8 @@ class Block_Post extends BaseBlock {
         return E_SERVER;
       }
 
+      $attachments = null;
+
       try {
         if ($this->can('post.attach.limitless')) {
           $max = -1;
@@ -161,7 +163,7 @@ class Block_Post extends BaseBlock {
           $max = \Config::get('vanemart::post.add.max_attaching_files', 10);
         }
 
-        $canAttach and $model->attach('attach', $max, $this->user());
+        $canAttach and $attachments = $model->attach('attach', $max, $this->user());
       } catch (\Exception $e) {
         $model->delete();
         throw $e;
@@ -175,6 +177,7 @@ class Block_Post extends BaseBlock {
           'order'         => $order->to_array(),
           'user'          => $this->user()->to_array(),
           'post'          => $model->to_array(),
+          'files'         => func('to_array', $attachments),
         ));
       }
 

@@ -19,7 +19,7 @@ hr {
 }
 
 .clearer { clear: both; margin: 0; padding: 0; height: 0; overflow: hidden; }
-#header a, #footer a { color: #6D8754; }
+#header a, #footer a, ul.files li { color: #6D8754; }
 
 #header {
   margin: -1em -1em 1.25em;
@@ -70,3 +70,5 @@ blockquote.post + p.sign {
   margin: -1em 0 1em 1em;
   padding: 0.25em 1em 1em;
 }
+
+ul.files li + li { margin-top: 0.25em; }
