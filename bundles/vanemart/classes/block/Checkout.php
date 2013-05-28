@@ -4,7 +4,7 @@ class Block_Checkout extends BaseBlock {
   static function orderInfo($block, Order $order) {
     $response = \Vane\Block::execCustom($block, array(
       'args'              => $order->id,
-      'input'             => array('code' => $order->password),
+      'input'             => array('code' => $order->password, 'grouped' => 0),
       'prepare'           => function ($block) { $block->user = false; },
       'response'          => true,
       'return'            => 'response',

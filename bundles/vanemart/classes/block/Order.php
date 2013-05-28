@@ -248,6 +248,8 @@ class Block_Order extends BaseBlock {
   | GET order/goods
   |
   | Ouputs list of products in the order.
+  |----------------------------------------------------------------------
+  | * grouped=1     - optional; if set product groups will be displayed.
   |--------------------------------------------------------------------*/
   function get_goods($id = null) {
     if ($result = $this->ajax($id)) {
@@ -257,14 +259,18 @@ class Block_Order extends BaseBlock {
       // cache connected images all at once.
       File::all(prop('image', $goods));
 
-      $groups = Group
-        ::where_in('id', prop('group', $goods))
-        ->lists('title', 'id');
+      if ($this->in('grouped', 1)) {
+        $groups = Group
+          ::where_in('id', prop('group', $goods))
+          ->lists('title', 'id');
+      } else {
+        $groups = array();
+      }
 
       $rows = S($goods, function ($product) use ($groups) {
         return array(
           'image'         => $product->image(200),
-          'group'         => $groups[$product->group],
+          'group'         => array_get($groups, $product->group),
         ) + $product->to_array();
       });
 
