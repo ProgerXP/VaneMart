@@ -1,10 +1,18 @@
 $=editCart          !empty($editCart)
+$=showGroups        !empty($showGroups)
+$=prevGroup         null
 $=colCount          5
 $=thumbless         !S::keep($rows, '?["image"]')
 $=total             0
 
 <table "vmart-cart { $thumbless ? 'thumbless' : '' }">
   <each $rows>
+    <tr ${ $showGroups and $prevGroup != $group } "group">
+      $=prevGroup   $group
+      <th colspan=$colCount>
+        $group
+      </th>
+    </endtr>
     <tr "title { !$image ? 'thumbless' : '' }">
       <td "thumb" rowspan=2>
         <a $_{ $image } "$url"><img "$image" alt=$title></enda>
@@ -42,6 +50,7 @@ $=total             0
       </td>
     </tr>
   </each>
+
   <tr "total">
     <td colspan=$colCount>
       {= langNum('general.price', $total) }

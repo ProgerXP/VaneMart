@@ -253,15 +253,22 @@ class Block_Order extends BaseBlock {
     if ($result = $this->ajax($id)) {
       $this->layout = 'vanemart::block.cart.goods';
 
-      $goods = $result->get();
+      $goods = $result->order_by('group')->get();
       // cache connected images all at once.
       File::all(prop('image', $goods));
 
-      $rows = S($goods, function ($product) {
-        return array('image' => $product->image(200)) + $product->to_array();
+      $groups = Group
+        ::where_in('id', prop('group', $goods))
+        ->lists('title', 'id');
+
+      $rows = S($goods, function ($product) use ($groups) {
+        return array(
+          'image'         => $product->image(200),
+          'group'         => $groups[$product->group],
+        ) + $product->to_array();
       });
 
-      return compact('rows');
+      return compact('rows') + array('showGroups' => true);
     } else {
       return $result;
     }
