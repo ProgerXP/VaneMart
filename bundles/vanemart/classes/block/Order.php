@@ -19,15 +19,11 @@ class Block_Order extends BaseBlock {
   }
 
   function accessible(Order $order) {
-    return $this->can('order.show.all') or
-           $order->isOf($this->user(false)) or
-           $order->password === $this->in('code', '');
+    return Event::until('order.accessible', array($order, $this)) !== false;
   }
 
   function editable(Order $order) {
-    return $this->can('order.edit.all') or
-           (($this->can('manager') or $this->can('order.edit.self'))
-             and $order->isOf($this->user(false)));
+    return Event::until('order.editable', array($order, $this)) !== false;
   }
 
   /*---------------------------------------------------------------------
@@ -215,7 +211,7 @@ class Block_Order extends BaseBlock {
       'author'            => $this->user()->id,
       'flags'             => 'field-change '.($this->can('manager') ? 'manager' : ''),
       'body'              => $msg,
-      'html'              => nl2br(HLEx::q($msg)),
+      'html'              => Post::format($msg),
       'ip'                => Request::ip(),
     ));
 

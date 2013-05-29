@@ -4,19 +4,6 @@ class File extends BaseModel {
   static $table = 'files';
   static $hasURL = true;
 
-  //* $path null, str - if given returns path to file with that name; can only
-  //  contain a limited number of symbols including '/' - see safeName().
-  //= str local path to directory where files are stored
-  static function storage($path = null) {
-    $path and $path = static::safeName($path);
-
-    if ("$path" === '' or strpbrk($path[0], '\\/') === false) {
-      return \Bundle::path('vanemart').'storage/files/'.$path;
-    } else {
-      return $path;
-    }
-  }
-
   static function safeName($name) {
     if (strpos($name, '..') !== false) {
       throw new Error("Unsafe File name [$name].");
@@ -25,41 +12,26 @@ class File extends BaseModel {
     }
   }
 
+  //* $path null, str - if given returns path to file with that name; can only
+  //  contain a limited number of symbols including '/' - see safeName().
+  //= str local path to directory where files are stored
+  static function storage($path = null) {
+    $path and $path = static::safeName($path);
+    return Event::until('file.path', "$path");
+  }
+
   // Generates unique base name and returns path to that non-existing file.
   //= str absolute local path
   static function generatePath($name) {
-    list($name, $ext) = S::chopTo('.', $name);
-
-    $name = substr(Str::slug($name), 0, 50);
-    "$ext" === '' or $ext = '.'.Str::slug($ext);
-    static::safeName($name.$ext);
-
-    $base = static::storage();
-    $result = "$base$name[0]/$name$ext";
-
-    if (is_file($result)) {
-      $i = 1;
-      do {
-        $result = "$base$name[0]/$name-".++$i.$ext;
-      } while (is_file($result));
-    }
-
-    return $result;
+    return Event::result('file.new.path', $name, function ($path) {
+      return file_exists($path) ? 'a non-unique file path' : true;
+    });
   }
 
   static function generateID() {
-    do {
-      if (function_exists('openssl_random_pseudo_bytes')) {
-        $bytes = S( str_split(openssl_random_pseudo_bytes(4)), 'ord' );
-      } else {
-        $bytes = array(mt_rand(), mt_rand(), mt_rand(), mt_rand());
-      }
-
-      $bytes[0] %= 4;
-      $id = join($bytes);
-    } while (static::find($id));
-
-    return $id;
+    return (int) Event::result('file.new.id', function ($id) {
+      return (is_numeric($id) and $id) ? true : 'a non-integer or zero';
+    });
   }
 
   // Checks if a file with that exact data is already registered in the database.
@@ -122,17 +94,15 @@ class File extends BaseModel {
     }
 
     try {
-      // explicit ID so it's harder to guess new file's ID and they're not sequental.
+      // explicit ID so it's harder to guess new file's ID (e.g. to access it directly
+      // from web) since they're not sequental.
       $attributes['id'] = static::generateID();
+
       $model = with(new static)->fill_raw($attributes);
       $model->md5 = md5_file($dest);
       $model->mime = $attributes['mime'] ?: \File::mime($model->ext, '');
 
-      if ($model->save()) {
-        return $model;
-      } else {
-        throw new Error("place() cannot insert new File row for [$attributes[name]].");
-      }
+      return Event::insertModel($model, 'file');
     } catch (\Exception $e) {
       unlink($dest);
       throw $e;
@@ -186,9 +156,7 @@ class File extends BaseModel {
   }
 
   function used() {
-    $this->uses += 1;
-
-    if ($this->save()) {
+    if (Event::until('file.used', $this)) {
       return $this;
     } else {
       throw new Error("Cannot update usage counter of File [{$model->id}].");
@@ -206,6 +174,7 @@ class File extends BaseModel {
     } else {
       $this->delete();
       is_file($file = $this->file()) and unlink($file);
+      Event::fire('file.deleted', $this);
     }
 
     return $this;

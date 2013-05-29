@@ -1,17 +1,6 @@
 <?php namespace VaneMart;
 
 class Block_Post extends BaseBlock {
-  static function uploadedFileNames() {
-    $result = array();
-    $files = S(Input::file('attach'), '(array) ?');
-
-    foreach ($files['error'] as $i => $error) {
-      $error or $result[] = $files['name'][$i];
-    }
-
-    return $result;
-  }
-
   protected function init() {
     $this->filter('before', 'csrf')->only('add')->on('post');
     $this->filter('before', 'vane::auth:!post.add.deny')->only('add');
@@ -20,6 +9,21 @@ class Block_Post extends BaseBlock {
   function accessible($action, $object, $parent = 1) {
     return ($object or $this->can("post.$action.objless")) and
            ($parent or !$this->can("post.$action.noroot"));
+  }
+
+  function userCanAttach() {
+    return !$this->can('post.attach.deny');
+  }
+
+  function uploadedFileNames() {
+    $result = array();
+    $files = S(Input::file('attach'), '(array) ?');
+
+    foreach ($files['error'] as $i => $error) {
+      $error or $result[] = $files['name'][$i];
+    }
+
+    return $result;
   }
 
   /*---------------------------------------------------------------------
@@ -111,13 +115,10 @@ class Block_Post extends BaseBlock {
   function ajax_post_add($type = null, $object = null) {
     $object = (int) $object;
     $parent = $this->in('parent', 0) ?: null;
-    $canAttach = !$this->can('post.attach.deny');
+    $eventOptions = compact('type', 'object') + array('block' => $this);
 
-    if (!$this->in('body', '') and $canAttach and $names = static::uploadedFileNames()) {
-      $body = __('vanemart::post.add.bodyless_fmsg', array(
-        'text'            => Str::langNum('post.add.bodyless_ftext', count($names)),
-        'files'           => join(', ', $names),
-      ))->get();
+    if (!$this->in('body', '')) {
+      $body = Event::until('post.bodyless', array($eventOptions));
 
       if (isset($this->input)) {
         $this->input['body'] = $body;
@@ -145,43 +146,30 @@ class Block_Post extends BaseBlock {
           'object'        => $object,
           'parent'        => $parent,
           'flags'         => $this->can('manager') ? 'manager' : '',
-          'html'          => nl2br(HLEx::q( $this->in('body') )),
+          'html'          => Post::format( $this->in('body') ),
           'author'        => $this->user()->id,
           'ip'            => Request::ip(),
         ));
 
-      if (!$model->save()) {
-        return E_SERVER;
-      }
-
-      $attachments = null;
+      $eventOptions['post'] = $model = Event::insertModel($model, 'post');
+      if (!$model) { return E_SERVER; }
 
       try {
-        if ($this->can('post.attach.limitless')) {
-          $max = -1;
-        } else {
-          $max = \Config::get('vanemart::post.add.max_attaching_files', 10);
-        }
-
-        $canAttach and $attachments = $model->attach('attach', $max, $this->user());
+        $attachments = array();
+        Event::fire('post.attach', array(&$attachments, $eventOptions));
       } catch (\Exception $e) {
         $model->delete();
         throw $e;
       }
 
-      if ($type === 'order' and $order = Order::find($object) and
-          $order->user != $this->user()->id) {
-        $to = $order->user()->first()->emailRecipient();
+      $eventOptions += compact('attachments');
+      Event::fire('post.added', array($eventOptions));
 
-        \Vane\Mail::sendTo($to, 'vanemart::mail.order.post', array(
-          'order'         => $order->to_array(),
-          'user'          => $this->user()->to_array(),
-          'post'          => $model->to_array(),
-          'files'         => func('to_array', $attachments),
-        ));
+      if ($type and $object and $object = $model->object()) {
+        Event::fire('post.object_ref', array(&$object, $eventOptions));
+        ($object instanceof \Eloquent) and $object->save();
       }
 
-      $object and $model->object()->update(array('updated_at' => new \DateTime));
       return $model;
     }
   }

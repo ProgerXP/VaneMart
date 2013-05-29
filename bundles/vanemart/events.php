@@ -302,7 +302,10 @@ Event::listen(VANE_NS.'checkout.done', function (User $user, array &$options) {
 //
 //* $path str - absolute local file system path to stored File data.
 Event::listen(VANE_NS.'file.dl.before', function (&$path, File &$file, Block_File $block) {
-  if (filesize($path) != $file->size) {
+  if (!is_file($path)) {
+    Log::error_File("Missing stored data file [$path] of $file.");
+    return E_NONE;
+  } elseif (filesize($path) != $file->size) {
     $msg = "Size of local file [$path] is ".filesize($path)." bytes - this".
            " doesn't match the value stored in database ({$file->size} bytes).".
            " The file might have been corrupted or changed directly on disk.";
@@ -347,6 +350,7 @@ Event::listen(VANE_NS.'order.editable', function (Order $order, Block_Order $blo
 |----------------------------------------------------------------------*/
 
 // Fired to return a default (automatic) post text when submitting a form without one.
+// If doesn't return a non-empty string post form is returned with "Empty body" error.
 //
 //* $options hash - 'block' Block_Post, 'type' str, 'object' int/mixed.
 //
@@ -374,7 +378,7 @@ Event::listen(VANE_NS.'post.inserted', function (Post $post) {
 // Fired at the point when attachments, if any, should be added to the created Post.
 // Any produced exception will cause the Post to be deleted to maintain integrity.
 //
-//* $options hash - the same as in post.bodyless.
+//* $options hash - the same as in post.bodyless plus 'post' Post.
 Event::listen(VANE_NS.'post.attach', function (array &$models, array $options) {
   $block = $options['block'];
 
@@ -393,7 +397,7 @@ Event::listen(VANE_NS.'post.attach', function (array &$models, array $options) {
 // Fired after successfully adding a post with attachments and all required database
 // and other changes.
 //
-//* $options hash - the same as in post.bodyless plus 'attachments' hash of File.
+//* $options hash - the same as in post.attach plus 'attachments' hash of File.
 Event::listen(VANE_NS.'post.added', function (array $options) {
   extract($options, EXTR_SKIP);
 
@@ -404,7 +408,7 @@ Event::listen(VANE_NS.'post.added', function (array $options) {
     \Vane\Mail::sendTo($to, 'vanemart::mail.order.post', array(
       'order'         => $order->to_array(),
       'user'          => $block->user()->to_array(),
-      'post'          => $model->to_array(),
+      'post'          => $post->to_array(),
       'files'         => func('to_array', $attachments),
     ));
   }
@@ -412,8 +416,9 @@ Event::listen(VANE_NS.'post.added', function (array $options) {
 
 // Fired after post.added if post is attached to an object.
 //
+//* $object Eloquent
 //* $options hash - the same as in post.added.
-Event::listen(VANE_NS.'post.object_ref', function (\Eloquent $object, array &$options) {
+Event::listen(VANE_NS.'post.object_ref', function (&$object, array $options) {
   $object->updated_at = new \DateTime;
 });
 

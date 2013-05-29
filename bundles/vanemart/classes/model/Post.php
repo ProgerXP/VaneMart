@@ -3,6 +3,10 @@
 class Post extends BaseModel {
   static $table = 'posts';
 
+  static function format($text) {
+    return (string) Event::until('format.post', array(&$text));
+  }
+
   function object() {
     return $this->belongs_to(NS.ucfirst($this->type), 'object');
   }
@@ -23,7 +27,7 @@ class Post extends BaseModel {
   // If it isn't formats it and saves.
   function withHTML() {
     if (!$this->html) {
-      $this->html = nl2br(HLEx::q($this->body));
+      $this->html = static::format($this->body);
       $this->save();
     }
 
@@ -32,6 +36,7 @@ class Post extends BaseModel {
 
   // Ignores files that have been uploaded with error (any but 0 = UPLOAD_ERR_OK).
   //* $max int - if < 0 no limit is imposed.
+  //
   //= array of File that were attached
   function attach($inputName, $max, $uploader = null) {
     $models = $list = array();
@@ -69,7 +74,7 @@ class Post extends BaseModel {
           if (empty($models[$model->md5])) {
             $models[$model->md5] = $model;
 
-            $list[] = array(
+            $list[$model->id] = array(
               'type'          => 'post',
               'file'          => $model->id,
               'object'        => $this->id,
@@ -89,6 +94,10 @@ class Post extends BaseModel {
       }
 
       throw $e;
+    }
+
+    foreach ($models as $file) {
+      Event::fire('post.attached', array($this, $file));
     }
 
     return $models;
