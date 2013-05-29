@@ -9,6 +9,8 @@ use Vane\Current;
 
 // Fires to get HTML representation of user message $text (can be used to attach
 // BB-code processor, Markdown, wiki, etc.).
+//
+//= str HTML
 Event::listen(VANE_NS.'format.post', function (&$text) {
   return nl2br(HLEx::q($text));
 });
@@ -57,6 +59,8 @@ Event::listen(VANE_NS.'file.new.path', function ($name) {
 
 // Fired when a new unique File ID (UNSIGNED INT) needs to be generated.
 // Make it as random as possible.
+//
+//= int non-zero
 Event::listen(VANE_NS.'file.new.id', function () {
   do {
     if (function_exists('openssl_random_pseudo_bytes')) {
@@ -73,6 +77,8 @@ Event::listen(VANE_NS.'file.new.id', function () {
 });
 
 // Fired when a new (prepared) File model needs to be inserted into the database.
+//
+//= bool
 Event::listen(VANE_NS.'file.insert', function (File &$file) {
   return $file->save();
 });
@@ -83,6 +89,8 @@ Event::listen(VANE_NS.'file.inserted', function (File $file) {
 
 // Fired when a File instance has been used in another context thus its reference
 // counter should be updated.
+//
+//= bool
 Event::listen(VANE_NS.'file.used', function (File $file) {
   $file->uses += 1;
   return $file->save();
@@ -98,6 +106,8 @@ Event::listen(VANE_NS.'file.deleted', function (File $file) {
 |----------------------------------------------------------------------*/
 
 // Fired when a new Order code (for anonymous read-only review) needs to be generated.
+//
+//= str
 Event::listen(VANE_NS.'order.new.password', function () {
   return Str::password(array(
     'length'              => 10,
@@ -132,6 +142,10 @@ Event::listen(VANE_NS.'order.change_lines', function (array &$lines, Order $orde
 });
 
 // Fired when a new (prepared) Order model needs to be inserted into the database.
+// As with all Event::insertModel()'s '*.insert' hook make sure to push your own in
+// front of this one as it will return non-null result and skip the rest of callbacks.
+//
+//= bool
 Event::listen(VANE_NS.'order.insert', function (Order &$order) {
   return $order->save();
 });
@@ -141,10 +155,15 @@ Event::listen(VANE_NS.'order.inserted', function (Order $order) {
 });
 
 // Fired to determine if given Order can be viewed by given User (or guest if null).
+//
+//= bool
 Event::listen(VANE_NS.'order.viewable', function (Order $order, User $user = null) {
   if ($user) {
     $field = $user->can('manager') ? 'manager' : 'user';
-    return $order->{"get_$field"}() == $user->id;
+
+    if ($order->{"get_$field"}() != $user->id) {
+      return false;
+    }
   }
 });
 
@@ -162,11 +181,15 @@ Event::listen(VANE_NS.'post.attached', function (Post $post, File $file) {
 |----------------------------------------------------------------------*/
 
 // Fired when a new User password needs to be generated.
+//
+//= str
 Event::listen(VANE_NS.'user.new.password', function () {
   return Str::password(\Config::get('vanemart::password'));
 });
 
 // Fired when a new (prepared) User model needs to be inserted into the database.
+//
+//= bool
 Event::listen(VANE_NS.'user.insert', function (User &$user) {
   return $user->save();
 });
@@ -176,6 +199,8 @@ Event::listen(VANE_NS.'user.inserted', function (User $user) {
 });
 
 // Fired to generate e-mail's recipient string, usually in "name<e@ma.il>" form.
+//
+//= str like 'Name Surname<e@ma.il>' or just 'e@ma.il'
 Event::listen(VANE_NS.'user.recipient', function (User $user) {
   return $user->name.' '.$user->surname.'<'.$user->email.'>';
 });
@@ -235,6 +260,8 @@ Event::listen(VANE_NS.'cart.from_skus', function (array &$models, &$skus) {
 
 // Fired to determine if the visitor can perform checkout with his current cart.
 // If it returns exactly false checking out is prohibited.
+//
+//= bool
 Event::listen(VANE_NS.'checkout.can', function (Block_Checkout $block) {
   if ($min = Cart::isTooSmall()) {
     $block->status('small', array(
@@ -301,6 +328,8 @@ Event::listen(VANE_NS.'checkout.done', function (User $user, array &$options) {
 // and returned without initiating the download by firing file.dl.response.
 //
 //* $path str - absolute local file system path to stored File data.
+//
+//= null, mixed override normal file serving (passed through to DoubleEdge)
 Event::listen(VANE_NS.'file.dl.before', function (&$path, File &$file, Block_File $block) {
   if (!is_file($path)) {
     Log::error_File("Missing stored data file [$path] of $file.");
@@ -317,6 +346,8 @@ Event::listen(VANE_NS.'file.dl.before', function (&$path, File &$file, Block_Fil
 // int code) to serve the actual file download. If $file model requires changes
 // it's recommended to do so in file.dl.before since it's saved once after calling
 // all event listeners that might also change it.
+//
+//= mixed passed through to DoubleEdge
 Event::listen(VANE_NS.'file.dl.response', function (&$path, File $file, Block_File $block) {
   return Response::download($path, $file->name, array(
     'Etag'            => $file->md5,
@@ -331,18 +362,27 @@ Event::listen(VANE_NS.'file.dl.response', function (&$path, File $file, Block_Fi
 
 // Fired to determine if given Order is accessible in given Block's environment (user,
 // input, etc.). If returns exactly false access is denied.
+//
+//= bool
 Event::listen(VANE_NS.'order.accessible', function (Order $order, Block_Order $block) {
-  return $block->can('order.show.all') or
-         $order->isOf($block->user(false)) or
-         $order->password === $block->in('code', '');
+  if (!$block->can('order.show.all') and
+      !$order->isOf($block->user(false)) and
+      $order->password !== $block->in('code', '')) {
+    return false;
+  }
 });
 
 // Fired to determine if given Order is editable in given Block's environment (user,
 // input, etc.). If returns exactly false access is denied.
+//
+//= bool
 Event::listen(VANE_NS.'order.editable', function (Order $order, Block_Order $block) {
-  return $block->can('order.edit.all') or
-         (($block->can('manager') or $block->can('order.edit.self'))
-           and $order->isOf($block->user(false)));
+  if (!$block->can('order.edit.all')) {
+    if ((!$block->can('manager') and !$block->can('order.edit.self')) or
+        !$order->isOf($block->user(false))) {
+      return false;
+    }
+  }
 });
 
 /*-----------------------------------------------------------------------
@@ -367,6 +407,8 @@ Event::listen(VANE_NS.'post.bodyless', function (array $options) {
 });
 
 // Fired when a new (prepared) Post model needs to be inserted into the database.
+//
+//= bool
 Event::listen(VANE_NS.'post.insert', function (Post &$post) {
   return $post->save();
 });
@@ -437,6 +479,8 @@ Event::listen(VANE_NS.'thumb.configure', function (\ThumbGen $thumb, array $opti
 |----------------------------------------------------------------------*/
 
 // Fired when a new (prepared) User model needs to be inserted into the database.
+//
+//= bool
 Event::listen(VANE_NS.'user.insert', function (User &$user) {
   return $user->save();
 });
