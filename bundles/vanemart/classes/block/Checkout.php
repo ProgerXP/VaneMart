@@ -1,18 +1,6 @@
 <?php namespace VaneMart;
 
 class Block_Checkout extends BaseBlock {
-  static function orderInfo($block, Order $order) {
-    $response = \Vane\Block::execCustom($block, array(
-      'args'              => $order->id,
-      'input'             => array('code' => $order->password, 'grouped' => 0),
-      'prepare'           => function ($block) { $block->user = false; },
-      'response'          => true,
-      'return'            => 'response',
-    ));
-
-    return $response->render();
-  }
-
   protected function init() {
     $this->filter('before', 'csrf')->on('post');
   }
@@ -22,12 +10,7 @@ class Block_Checkout extends BaseBlock {
       return $this->back();
     } elseif ($this->can('checkout.deny')) {
       return false;
-    } elseif ($min = Cart::isTooSmall()) {
-      $this->status('small', array(
-        'min'     => Str::langNum('general.price', $min),
-        'total'   => Str::langNum('general.price', Cart::subtotal()),
-      ));
-
+    } elseif (Event::until('checkout.can', $this) === false) {
       return $this->back();
     }
   }
@@ -88,20 +71,9 @@ class Block_Checkout extends BaseBlock {
     } elseif ($valid->fails()) {
       return $valid;
     } else {
-      $user = User::findOrCreate($input);
-      $recipient = head(arrize($user))->emailRecipient();
-
-      if (is_array($user)) {
-        list($user, $password) = $user;
-
-        \Vane\Mail::sendTo($recipient, 'vanemart::mail.user.reg_on_order',
-                           compact('password') + $user->to_array());
-      }
-
-      $order = null;
-
-      \DB::transaction(function () use (&$input, $user, &$order) {
-        $order = Order::createBy($user, $input);
+      \DB::transaction(function () use (&$input, &$user, &$order) {
+        $user = User::findOrCreate($input);
+        $order = Order::createBy(head(arrize($user)), $input);
 
         $goods = S(Cart::all(), function ($qty, $product) use ($order) {
           return compact('qty', 'product') + array('order' => $order->id);
@@ -110,14 +82,20 @@ class Block_Checkout extends BaseBlock {
         OrderProduct::insert($goods);
       });
 
-      \Vane\Mail::sendTo($recipient, 'vanemart::mail.checkout.user', array(
-        'user'        => $user->to_array(),
-        'order'       => $order->to_array(),
-        'orderHTML'   => static::orderInfo('VaneMart::order@show', $order),
-        'goodsHTML'   => static::orderInfo('VaneMart::order@goods', $order),
-      ));
+      $newUser = is_array($user);
+      if ($newUser) { list($user, $password) = $user; }
+      $options = compact('user', 'order') + array('block' => $this);
 
-      Cart::clear();
+      if ($newUser) {
+        $options += compact('password');
+        $event = 'checkout.reg_user';
+      } else {
+        $event = 'checkout.old_user';
+      }
+
+      Event::fire($event, array($user, &$options));
+      Event::fire('checkout.done', array($user, &$options));
+
       return $order;
     }
   }

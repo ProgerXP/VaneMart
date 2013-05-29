@@ -250,11 +250,10 @@ Event::listen(VANE_NS.'checkout.can', function (Block_Checkout $block) {
 //
 //* $options hash - 'password' str, 'order' Order, 'block' Block_Checkout.
 Event::listen(VANE_NS.'checkout.reg_user', function (User $user, array &$options) {
-  $recipient = head(arrize($user))->emailRecipient();
   $view = Current::expand('mail.user.reg_on_order');
   $vars = array_only($options, 'password') + $user->to_array();
 
-  Mail::sendTo($recipient, $view, $vars);
+  Mail::sendTo($user->emailRecipient(), $view, $vars);
 });
 
 // Fired when an existing user has successfully placed a new order.
@@ -280,11 +279,11 @@ Event::listen(VANE_NS.'checkout.done', function (User $user, array &$options) {
 
   $view = Current::expand('mail.checkout.user');
 
-  Mail::sendTo($recipient, $view, array(
+  Mail::sendTo($user->emailRecipient(), $view, array(
     'user'        => $user->to_array(),
     'order'       => $options['order']->to_array(),
-    'orderHTML'   => $orderInfo('VaneMart::order@show', $order),
-    'goodsHTML'   => $orderInfo('VaneMart::order@goods', $order),
+    'orderHTML'   => $orderInfo('VaneMart::order@show', $options['order']),
+    'goodsHTML'   => $orderInfo('VaneMart::order@goods', $options['order']),
   ));
 });
 
@@ -337,7 +336,7 @@ Event::listen(VANE_NS.'order.accessible', function (Order $order, Block_Order $b
 
 // Fired to determine if given Order is editable in given Block's environment (user,
 // input, etc.). If returns exactly false access is denied.
-Event::listen(VANE_NS.'order.accessible', function (Order $order, Block_Order $block) {
+Event::listen(VANE_NS.'order.editable', function (Order $order, Block_Order $block) {
   return $block->can('order.edit.all') or
          (($block->can('manager') or $block->can('order.edit.self'))
            and $order->isOf($block->user(false)));
