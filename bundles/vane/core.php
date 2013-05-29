@@ -24,15 +24,13 @@ function overrideHTMLki($path, $overrides) {
 }
 
 function aliasIn($ns) {
-  static $overridenPlarx = array('Str', 'HLEx');
-
+  $overridenPlarx = \Bundle::option('vane', 'ignorePlarx');
   $ns = trim($ns, '\\');
 
   foreach ($overridenPlarx as $class) {
     \Autoloader::alias("Vane\\$class", "$ns\\$class");
   }
 
-  \Autoloader::alias('Vane\\Log', "$ns\\Log");
   Plarx::supersede($ns, $overridenPlarx);
 }
 

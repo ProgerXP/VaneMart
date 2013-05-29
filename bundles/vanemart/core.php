@@ -1,6 +1,7 @@
 <?php namespace VaneMart;
 
 define(__NAMESPACE__.'\\NS', __NAMESPACE__.'\\');
+define(NS.'VANE_NS', 'vanemart::');
 
 class Error extends \Vane\Error { }
 

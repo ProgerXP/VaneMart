@@ -4,7 +4,6 @@ if (!Bundle::exists('vane')) {
   throw new Error('VaneMart requires Vane bundle installed.');
 } else {
   Bundle::start('vane');
-  Vane\Current::set('vanemart::');
   Vane\aliasIn('VaneMart');
 }
 
@@ -16,6 +15,9 @@ Vane\overrideHTMLki('vanemart::', array(
 ));
 
 require_once __DIR__.DS.'core.php';
+require_once __DIR__.DS.'events.php';
+
+Vane\Current::set(VaneMart\VANE_NS);
 
 // More flexible autoloader for VaneMart flat class structure.
 spl_autoload_register(function ($class) {

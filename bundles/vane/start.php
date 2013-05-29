@@ -1,10 +1,12 @@
 <?php namespace Vane;
 
+\Bundle::$bundles['vane']['ignorePlarx'] = array('Str', 'HLEx', 'Log', 'Event');
+
 if (!\Bundle::exists('plarx')) {
   throw new Error('Vane requires Plarx bundle installed.');
 } else {
   \Bundle::start('plarx');
-  \Px\Plarx::supersede(__NAMESPACE__, array('Str', 'HLEx'));
+  \Px\Plarx::supersede(__NAMESPACE__, \Bundle::option('vane', 'ignorePlarx'));
 }
 
 if (!\Bundle::exists('squall')) {
@@ -15,7 +17,6 @@ if (!\Bundle::exists('squall')) {
 }
 
 \Autoloader::namespaces(array(__NAMESPACE__ => __DIR__.DS.'classes'));
-\Autoloader::map(array('MiMeil' => __DIR__.DS.'classes'.DS.'MiMeil.php'));
 
 require_once __DIR__.DS.'core.php';
 overrideHTMLki('vane::', __NAMESPACE__);
