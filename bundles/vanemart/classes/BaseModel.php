@@ -1,6 +1,6 @@
 <?php namespace VaneMart;
 
-class BaseModel extends Eloquent {
+abstract class BaseModel extends Eloquent {
   //= hash of class => hash of id => Model
   static $cachedModels = array();
   //= bool enables automatic url() generation

@@ -1,6 +1,6 @@
 <?php namespace VaneMart;
 
-class ModelBlock extends BaseBlock {
+abstract class ModelBlock extends BaseBlock {
   static $model;
 
   static function idFrom($id) {

@@ -1,6 +1,6 @@
 <?php namespace VaneMart;
 
-class BaseBlock extends \Vane\Block {
+abstract class BaseBlock extends \Vane\Block {
   public $bundle = 'vanemart';
 
   // $inputVar default value is changed from '_back' to 'back'.
