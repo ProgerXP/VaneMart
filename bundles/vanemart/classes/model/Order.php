@@ -36,6 +36,16 @@ class Order extends BaseModel {
     return Event::insertModel($order, 'order');
   }
 
+  //= Order, null if $user hasn't placed any orders yet
+  static function latestOfUser($user) {
+    is_object($user) and $user = $user->id;
+
+    return static
+      ::where('user', '=', $user)
+      ->order_by('created_at', 'desc')
+      ->first();
+  }
+
   function regeneratePassword() {
     $this->password = static::generatePassword();
     return $this;
@@ -69,6 +79,15 @@ class Order extends BaseModel {
 
   function isOf(User $user = null) {
     return Event::until('order.belongs', array($this, $user));
+  }
+
+  //= null  order has no assigned $user
+  //= bool
+  function isLatest() {
+    if ($this->user) {
+      $latest = static::latestOfUser($this->user);
+      return $latest and $latest->id == $this->id;
+    }
   }
 }
 Order::$table = \Config::get('vanemart::general.table_prefix').Order::$table;

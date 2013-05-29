@@ -79,7 +79,7 @@ class Block_Order extends BaseBlock {
 
       $rows = S($orders, function ($model) use (&$counts, $recentTime, $current,
                                                 $canFilterByManager, $user) {
-        if ($canFilterByManager and $model->manager != $user->id) {
+        if ($canFilterByManager and $model->manager and $model->manager != $user->id) {
           $manager = User::find($model->manager)->to_array();
         } else {
           $manager = null;
