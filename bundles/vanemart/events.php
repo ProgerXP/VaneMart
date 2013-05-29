@@ -234,12 +234,15 @@ Event::listen(VANE_NS.'cart.from_skus', function (array &$models, &$skus) {
 |----------------------------------------------------------------------*/
 
 // Fired to determine if the visitor can perform checkout with his current cart.
+// If it returns exactly false checking out is prohibited.
 Event::listen(VANE_NS.'checkout.can', function (Block_Checkout $block) {
   if ($min = Cart::isTooSmall()) {
     $block->status('small', array(
       'min'     => Str::langNum('general.price', $min),
       'total'   => Str::langNum('general.price', Cart::subtotal()),
     ));
+
+    return false;
   }
 });
 

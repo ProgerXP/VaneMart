@@ -4,20 +4,9 @@ class Block_Cart extends BaseBlock {
   //* $skus hash 'sku' => qty, str list of SKUs to add as 1 qty
   //= hash id => Product with 'qty' attribute set
   static function fromSKU($skus) {
-    if (!is_array($skus)) {
-      $skus = array_filter(preg_split('/\s+/', trim($skus)));
-      $skus = array_count_values($skus);
-    }
-
-    $goods = $skus ? Product::where_in('sku', array_keys($skus))->get() : array();
     $result = array();
-
-    foreach ($goods as $model) {
-      $model->qty = $skus[$model->sku];
-      $result[$model->id] = $model;
-    }
-
-    return $result;
+    $skus and Event::fire('cart.from_skus', array(&$result, &$skus));
+    return array_combine(prop('id', $result), $result);
   }
 
   protected function init() {

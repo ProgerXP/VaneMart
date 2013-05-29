@@ -60,7 +60,9 @@ class Cart {
   //? put($model, 0);     // removes $model->id from cart
   //? put($model, -2);    // the same
   static function put($product, $qty = 1) {
-    $product instanceof Product or $product = Product::find(static::idFrom($product));
+    if (! $product instanceof Product) {
+      $product = Product::find(static::idFrom($product));
+    }
 
     if (!$product) {
       $product = func_get_arg(0);
@@ -68,15 +70,23 @@ class Cart {
     } elseif (!$product->available) {
       Log::warn_Cart("Attempting to place unavailable product [{$product->title}].");
     } else {
+      $oldQty = static::qty($product) ?: null;
       $qty = max(0, round(S::toFloat($qty), 2));
       $key = 'cart_goods.'.$product->id;
 
       if ($qty == 0) {
-        Session::forget($key);
+        if ($oldQty) {
+          Session::forget($key);
+          Event::fire('cart.removed', array($product, &$oldQty));
+        }
       } else {
         $qty = max($product->min, $qty);
         $product->fractable or $qty = ceil($qty);
-        Session::put($key, $qty);
+
+        if ($qty != $oldQty) {
+          Session::put($key, $qty);
+          Event::fire('cart.added', array($product, &$oldQty));
+        }
       }
 
       return $product;
@@ -86,8 +96,9 @@ class Cart {
   // If $product is not falsy removes it from cart (if it exists), if it's == false
   // (null, 0, '', etc.) clears cart of all goods.
   static function clear($product = null) {
-    $product and $product = '.'.static::idFrom($product);
+    $product and $product = '.'.($product = static::idFrom($product));
     Session::forget('cart_goods'.$product);
+    Event::fire('cart.cleared', $product ?: null);
   }
 
   //= int number of goods in cart (not their quantities)
@@ -112,8 +123,11 @@ class Cart {
   //= float no - minimum required sum according to site config
   static function isTooSmall($subtotal = null) {
     isset($subtotal) or $subtotal = static::subtotal();
-    $min = \Config::get('vanemart::general.min_subtotal');
-    if ($subtotal < $min) { return $min; }
+    $min = Event::until('cart.is_small', array(&$subtotal));
+
+    if (is_int($min) or is_float($min)) {
+      return $min;
+    }
   }
 
   static function summary($html = false) {
