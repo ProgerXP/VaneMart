@@ -46,7 +46,7 @@ class Product extends BaseModel {
   // If it isn't formats it and saves.
   function withHTML() {
     if (!$this->desc_html) {
-      $this->desc_html = nl2br(HLEx::q($this->desc));
+      $this->desc_html = Post::format($this->desc);
       $this->save();
     }
 

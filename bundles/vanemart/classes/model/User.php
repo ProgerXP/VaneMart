@@ -4,6 +4,15 @@ class User extends BaseModel implements \Vane\UserInterface {
   static $table = 'users';
   static $hasURL = true;
 
+  //= str
+  static function generatePassword() {
+    return (string) Event::result('user.new.password', function ($password) {
+      return strlen($password) < 1 ? 'a blank string' : true;
+    });
+  }
+
+  //= User    if user making the order is already registered
+  //= hash    of 'model' (User), 'password' (str) if new account was registered
   static function findOrCreate(array $info) {
     static $fields = array('name', 'surname', 'city', 'phone', 'email');
 
@@ -12,22 +21,17 @@ class User extends BaseModel implements \Vane\UserInterface {
     if ($model) {
       return $model;
     } else {
-      $password = Str::password(\Config::get('vanemart::password'));
+      $password = static::generatePassword();
 
       $model = with(new User)
-        ->fill_raw(array_intersect_key($info, array_flip($fields)))
-        ->fill_raw(array(
-          'reg_ip'        => Request::ip(),
-        ));
+        ->fill_raw(array_intersect_key($info, array_flip($fields)));
 
       // it won't be hashed if set via fill_raw().
       $model->password = $password;
+      $model->reg_ip = Request::ip();
 
-      if ($model->save()) {
-        return S::listable(compact('model', 'password'));
-      } else {
-        throw new Error('Cannot register new user on checkout.');
-      }
+      $model = Event::insertModel($model, 'user');
+      return S::listable(compact('model', 'password'));
     }
   }
 
@@ -94,7 +98,11 @@ class User extends BaseModel implements \Vane\UserInterface {
   }
 
   function emailRecipient() {
-    return $this->name.' '.$this->surname.'<'.$this->email.'>';
+    return (string) Event::result('user.recipient', $this, function ($result) {
+      if (strpos($result, $this->email) === false) {
+        return 'a string without the actual e-mail address';
+      }
+    });
   }
 }
 User::$table = \Config::get('vanemart::general.table_prefix').User::$table;

@@ -46,6 +46,7 @@ class Block_Thumb extends BaseBlock {
       }
     }
 
+    Event::fire('thumb.configure', array($thumb, compact('input', 'options')));
     return $thumb;
   }
 

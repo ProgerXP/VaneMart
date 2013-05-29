@@ -4,6 +4,10 @@ class Order extends BaseModel {
   static $table = 'orders';
   static $hasURL = true;
 
+  // Used by 'order.change_lines' event. 'manager' is present to avoid showing
+  // internal company operations in the public.
+  static $ignoreLogFields = array('manager', 'created_at', 'updated_at');
+
   //= array of str 'new', 'paid', etc.
   static function statuses() {
     return array_keys((array) __('vanemart::order.status')->get());
@@ -11,12 +15,9 @@ class Order extends BaseModel {
 
   //= str
   static function generatePassword() {
-    return Str::password(array(
-      'length'            => 10,
-      'symbols'           => 0,
-      'capitals'          => 3,
-      'digits'            => 3,
-    ));
+    return (string) Event::result('order.new.password', function ($password) {
+      return strlen($password) < 1 ? 'a blank string' : true;
+    });
   }
 
   static function createBy(User $user, array $info) {
@@ -32,11 +33,7 @@ class Order extends BaseModel {
         'ip'              => Request::ip(),
       ));
 
-    if (!$order->save()) {
-      throw new Error('Cannot insert new order record.');
-    }
-
-    return $order;
+    return Event::insertModel($order, 'order');
   }
 
   function regeneratePassword() {
@@ -66,33 +63,12 @@ class Order extends BaseModel {
 
   function changeMessages() {
     $result = array();
-
-    foreach ($this->get_dirty() as $field => $value) {
-      if ($field === 'manager') { continue; }
-
-      $vars = array(
-        'field'       => __("vanemart::field.$field")->get(),
-        'old'         => trim($this->original[$field]),
-        'new'         => $value,
-      );
-
-      if ($field === 'status') {
-        $vars['old'] = __("vanemart::order.status.$vars[old]")->get();
-        $vars['new'] = __("vanemart::order.status.$vars[new]")->get();
-      }
-
-      $type = $vars['old'] === '' ? 'add' : ($value === '' ? 'delete' : 'set');
-      $result[] = __("vanemart::order.set.line.$type", $vars);
-    }
-
+    Event::fire('order.change_lines', array(&$result, $this));
     return $result;
   }
 
   function isOf(User $user = null) {
-    if ($user) {
-      $field = $user->can('manager') ? 'manager' : 'user';
-      return $this->{"get_$field"}() == $user->id;
-    }
+    return Event::until('order.belongs', array($this, $user));
   }
 }
 Order::$table = \Config::get('vanemart::general.table_prefix').Order::$table;

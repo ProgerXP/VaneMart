@@ -29,7 +29,13 @@ class Block_User extends BaseBlock {
     if ($this->in('to_reg', false)) {
       return Redirect::to_route('vanemart::register')->with_input();
     } elseif ($this->ajax()) {
-      return $this->back(route('vanemart::orders'));
+      $response = $this->back(route('vanemart::orders'));
+
+      if ($user = Auth::user()) {
+        Event::fire('user.login', array(&$response, $user, $this));
+      }
+
+      return $response;
     } else {
       return $this->layout->with('ok', false);
     }
@@ -94,7 +100,7 @@ class Block_User extends BaseBlock {
     $email = $this->in('email', null);
 
     if ($email and User::where('email', '=', $email)->count()) {
-      return Validator::withError('login', 'taken');
+      return Validator::withError('email', 'vanemart::taken');
     } elseif ($valid->fails()) {
       return $valid;
     } else {
@@ -111,12 +117,7 @@ class Block_User extends BaseBlock {
         $referee and $user->referee = $referee->id;
       }
 
-      if ($user->save()) {
-        return $user;
-      } else {
-        Log::error_UserReg('Cannot save new user\'s entry.');
-        return E_SERVER;
-      }
+      return Event::insertModel($user, 'user');
     }
   }
 
@@ -128,12 +129,18 @@ class Block_User extends BaseBlock {
   | * back=URL      - optional; URL to redirect to.
   |--------------------------------------------------------------------*/
   function get_logout() {
+    $user = Auth::user();
+
     $this->ajax();
     $this->status('logout');
-    // not redirecting back() because the user might have been on a protected
+
+    // Not redirecting back() because the user might have been on a protected
     // page (e.g. his orders); returning him there will cause the login form
     // to appear again which may be confusing.
-    return Redirect::to(\Vane\Current::bundleURL());
+    $response = Redirect::to(\Vane\Current::bundleURL());
+
+    $user and Event::fire('user.logout', array(&$response, $user, $this));
+    return $response;
   }
 
   function ajax_get_logout() {
