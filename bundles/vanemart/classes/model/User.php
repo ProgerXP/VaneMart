@@ -98,8 +98,9 @@ class User extends BaseModel implements \Vane\UserInterface {
   }
 
   function emailRecipient() {
-    return (string) Event::result('user.recipient', $this, function ($result) {
-      if (strpos($result, $this->email) === false) {
+    $self = $this;
+    return (string) Event::result('user.recipient', $this, function ($result) use ($self) {
+      if (strpos($result, $self->email) === false) {
         return 'a string without the actual e-mail address';
       }
     });

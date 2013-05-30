@@ -78,7 +78,7 @@ class Order extends BaseModel {
   }
 
   function isOf(User $user = null) {
-    return Event::until('order.belongs', array($this, $user));
+    return Event::until('order.belongs', array($this, $user)) !== false;
   }
 
   //= null  order has no assigned $user

@@ -17,10 +17,12 @@ class Block_Post extends BaseBlock {
 
   function uploadedFileNames() {
     $result = array();
-    $files = S(Input::file('attach'), '(array) ?');
+    $files = S((array) Input::file('attach'), '(array) ?');
 
-    foreach ($files['error'] as $i => $error) {
-      $error or $result[] = $files['name'][$i];
+    if (isset($files['error'])) {
+      foreach ($files['error'] as $i => $error) {
+        $error or $result[] = $files['name'][$i];
+      }
     }
 
     return $result;

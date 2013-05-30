@@ -6,7 +6,7 @@ class Block_Cart extends BaseBlock {
   static function fromSKU($skus) {
     $result = array();
     $skus and Event::fire('cart.from_skus', array(&$result, &$skus));
-    return array_combine(prop('id', $result), $result);
+    return $result ? array_combine(prop('id', $result), $result) : array();
   }
 
   protected function init() {
