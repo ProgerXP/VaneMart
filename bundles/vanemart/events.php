@@ -141,6 +141,24 @@ Event::listen(VANE_NS.'order.change_lines', function (array &$lines, Order $orde
   }
 });
 
+// Fired to determine if Order "belongs" to given User - i.e. should be visible
+// in his order list with default filter settings. For managers this includes all
+// orders they manage, for regular users - orders that they have placed earlier.
+//
+// If it returns exactly false (but not null or other) Order doesn't belong to User.
+//
+//* $user User, null for guest
+Event::listen(VANE_NS.'order.belongs', function (Order $order, User $user = null) {
+  if (!$user) {
+    return false;
+  }
+
+  if ($order->get_user() != $user->id and
+      (!$user->can('manager') or $order->get_manager() != $user->id)) {
+    return false;
+  }
+});
+
 // Fired when a new (prepared) Order model needs to be inserted into the database.
 // As with all Event::insertModel()'s '*.insert' hook make sure to push your own in
 // front of this one as it will return non-null result and skip the rest of callbacks.
@@ -443,16 +461,24 @@ Event::listen(VANE_NS.'post.attach', function (array &$models, array $options) {
 Event::listen(VANE_NS.'post.added', function (array $options) {
   extract($options, EXTR_SKIP);
 
-  if ($type === 'order' and $order = Order::find($object) and
-      $order->user != $block->user()->id) {
-    $to = $order->user()->first()->emailRecipient();
+  if ($type === 'order' and $order = Order::find($object)) {
+    $to = array();
 
-    \Vane\Mail::sendTo($to, 'vanemart::mail.order.post', array(
-      'order'         => $order->to_array(),
-      'user'          => $block->user()->to_array(),
-      'post'          => $post->to_array(),
-      'files'         => func('to_array', $attachments),
-    ));
+    foreach (array('user', 'manager') as $field) {
+      if ($order->$field != $block->user()->id) {
+        $to[] = $order->$field()->first();
+      }
+    }
+
+    foreach ($to as $user) {
+      \Vane\Mail::sendTo($user->emailRecipient(), 'vanemart::mail.order.post', array(
+        'order'         => $order->to_array(),
+        'user'          => $block->user()->to_array(),
+        'recipient'     => $user->to_array(),
+        'post'          => $post->to_array(),
+        'files'         => func('to_array', $attachments),
+      ));
+    }
   }
 });
 
