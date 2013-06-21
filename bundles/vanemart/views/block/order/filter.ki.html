@@ -1,0 +1,100 @@
+<form "vanemart::order" "vmart-filter" get>
+  <?foreach (array('manager' => 'ofMgr', 'user' => 'ofUser', 'status' => 'ofStatus') as $key => $item) {?>
+    <?foreach ((array) $can[$item] as $value) {?>
+      <hidden "$key[]" value=$value>
+    <?}?>
+  <?}?>
+
+  <hidden "desc" value={ $can['desc'] }>
+
+  <if empty($expand)>
+    <button class="js remove">"vanemart::order.filter.toggle"</button>
+  </if>
+
+  <div class="controls">
+    <p>"vanemart::order.filter.toggle"</p>
+
+    <ul class="options">
+      <li ${ $can['ofMgr'] !== false }>
+        <label>
+          <radio "manager" value="" checked={ !!$can['ofMgr'] }>
+          "vanemart::order.filter.mgr_mine"
+        </label>
+
+        <label>
+          <radio "manager" value="0" checked={ $can['ofMgr'] === '0' }>
+          "vanemart::order.filter.mgr_all"
+        </label>
+      </endli>
+
+      <li ${ !!$can['ofUser'] }>
+        <b/label>
+          <checkbox "user" value="">
+          "vanemart::order.filter.user_reset"
+        </label/b>
+      </endli>
+
+      <li ${ $can['ofStatus'] !== false }>
+        <b>"vanemart::order.filter.status"</b>
+
+        <select "status">
+          <optgroup "{ __('vanemart::order.filter.status_is') }">
+            <each ${ Order::statuses() }>
+              <option "$item" selected={ $can['ofStatus'] === $item }>
+                <lang "vanemart::order.status.$item">
+              </option>
+            </each>
+          </optgroup>
+
+          <optgroup "{ __('vanemart::order.filter.status_not') }">
+            <each ${ Order::statuses() }>
+              <option "!$item" selected={ $can['ofStatus'] === "!$item" }>
+                <lang "vanemart::order.status.$item">
+              </option>
+            </each>
+          </optgroup>
+
+          <option "" selected={ $can['ofStatus'] === '' }>
+            "vanemart::order.filter.status_any"
+          </option>
+
+          <option "{ head((array) $can['ofStatus']) }">"vanemart::order.filter.status_keep"</option>
+        </select>
+      </endli>
+
+      <li ${ $can['sort'] !== false }>
+        <b>"vanemart::order.filter.sort"</b>
+
+        <select "sort">
+          <each ${ Order::$fields }>
+            <option "$item" selected={ $can['sort'] == $item }>
+              { rtrim(__("vanemart::field.$item")->get(), ':') }
+            </option>
+          </each>
+
+          <option "" selected={ $can['sort'] === true }>
+            "vanemart::order.filter.sort_default"
+          </option>
+        </select>
+
+        <label>
+          <checkbox "desc" value=1 checked={ $can['desc'] === '1' }>
+          "vanemart::order.filter.sort_desc"
+        </label>
+      </endli>
+    </ul>
+
+    <p>"vanemart::order.filter.filters"</p>
+
+    <ul ${ array('id', 'sum', 'names' => 'name', 'date' => 'updated_at') }>
+      $=key           is_int($key) ? $item : $key
+
+      <li $_{ array_key_exists($key, $can['filter']) }>
+        <b><lang "vanemart::field.$item"></b>
+        <input "{ $key == $item ? 'filter['.$key.']' : $key }" value={ $can['filter'][$key] } placeholder={ __('vanemart::order.filter.'.$key.'_ex')->get() } class="gen shade">
+      </endli>
+    </endul>
+
+    <submit class="default big">"vanemart::order.filter.apply"</submit>
+  </div>
+</form>

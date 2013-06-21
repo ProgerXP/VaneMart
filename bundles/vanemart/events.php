@@ -1,5 +1,6 @@
 <?php namespace VaneMart;
 
+use Px\Query;
 use Vane\Mail;
 use Vane\Current;
 
@@ -183,6 +184,118 @@ Event::listen(VANE_NS.'order.viewable', function (Order $order, User $user = nul
       return false;
     }
   }
+});
+
+// Fired to constrain/tweak an Order-model query based on user input.
+Event::listen(VANE_NS.'order.list.query', function (Query $query, Block_Order $block, array &$can) {
+  // '' - of self, '0' - of everyone, array of 'id'
+  $ofMgr = $block->arrayInput('manager');
+  // '' - don't filter, '0' - invalid (404), array of 'id'
+  $ofUser = $block->arrayInput('user');
+
+  $globalMgr = ($block->can('manager') and $block->can('order.list.all'));
+  $globalMgr or $ofMgr = '';
+  $ofMgr === '' and $ofMgr = $block->user()->id;
+
+  $ofMgr and $query->where(function ($query) use ($ofMgr) {
+    $query->where_in('user', (array) $ofMgr)
+          ->or_where_in('manager', (array) $ofMgr);
+  });
+
+  $ofUser and $query->where_in('user', (array) $ofUser);
+
+  $can['ofMgr'] = !$globalMgr ? false : $ofMgr;
+  $can['ofUser'] = !$block->can('manager') ? false : $ofUser;
+});
+
+Event::listen(VANE_NS.'order.list.query', function (Query $query, Block_Order $block, array &$can) {
+  // '' or '!' - don't filter, '!xxx' - all but 'xxx', array of 'xxx'
+  $ofStatus = $block->arrayInput('status', '!sent');
+
+  if ($ofStatus === '!' or !$ofStatus) {
+    // Don't filter.
+  } elseif (is_string($ofStatus) and $ofStatus[0] === '!') {
+    $query->where('status', '!=', substr($ofStatus, 1));
+  } else {
+    $query->where_in('status', $ofStatus);
+  }
+
+  $can['ofStatus'] = $ofStatus;
+});
+
+Event::listen(VANE_NS.'order.list.query', function (Query $query, Block_Order $block, array &$can) {
+  $sorted = $block->in('sort', '');
+  $sorted or $query
+    ->order_by('updated_at', 'desc')
+    ->order_by('created_at', 'desc');
+
+  $filter = (array) $block->in('filter', '');
+  $query->commonList(array('paginate' => false, 'filter' => $filter));
+
+  $can['sort'] = ($sorted ?: true);
+  $can['desc'] = (string) $block->in('desc', '0') ?: '0';
+
+  $fields = array('id', 'sum', 'city', 'address', 'phone', 'notes');
+  $defaults = S::combine($fields, null);
+  $can['filter'] = array_intersect_key($block->in(), $defaults) + $defaults;
+});
+
+Event::listen(VANE_NS.'order.list.query', function (Query $query, Block_Order $block, array &$can) {
+  if ($date = $block->in('date', '')) {
+    $query->where(function ($query) use ($date) {
+      if (strpbrk($date[0], '<>')) {
+        $op = $date[0];
+        $date = substr($date, 1);
+      } else {
+        $op = '=';
+      }
+
+      is_numeric($date) or $date = strtotime($date);
+      $date = with(new \DateTime)->setTimestamp((int) $date);
+      $date = strtok($date->format($query->grammar->datetime), ' ');
+
+      $query->where(\DB::raw('DATE(created_at)'), $op, $date)
+            ->or_where(\DB::raw('DATE(updated_at)'), $op, $date);
+    });
+  }
+
+  if ($names = $block->in('names', '')) {
+    $query->where(function ($query) use ($names) {
+      $query->raw_where('LOCATE(?, name) = 1', array($names))
+            ->raw_or_where('LOCATE(?, surname) = 1', array($names));
+    });
+  }
+
+  $can['filter'] += compact('date', 'names');
+});
+
+// Fired to add extra attributes to Orders retrieved with order.list.query.
+//
+//* $orders array of Order
+Event::listen(VANE_NS.'order.list.populate', function (array &$orders, Block_Order $block, array &$vars) {
+  $counts = OrderProduct
+    ::where_in('order', prop('id', $orders))
+    ->group_by('order')
+    ->select(array('*', \DB::raw('COUNT(1) AS count')))
+    ->get();
+
+  $counts = S::keys($counts, '?->order');
+
+  foreach ($orders as $order) {
+    $order->count = $counts[$order->id]->count;
+  }
+});
+
+Event::listen(VANE_NS.'order.list.populate', function (array &$orders, Block_Order $block, array &$vars) {
+  $recentTime = time() - 3*24*3600;
+
+  foreach ($orders as $order) {
+    $order->recent = $order->updated_at >= $recentTime;
+  }
+});
+
+// Fired to do final preparations of variables returned to client/given to template.
+Event::listen(VANE_NS.'order.list.populate', function (array &$vars, Block_Order $block) {
 });
 
 /*-----------------------------------------------------------------------

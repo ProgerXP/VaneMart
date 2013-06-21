@@ -1,6 +1,12 @@
-<p ${ !$shownForAllManagers and $canFilterByManager } "vmart-orders-all-mgr">
-  <a "vanemart::orders?for_all=1">"vanemart::order.index.show_for_all"</a>
-</endp>
+<?/*
+  - $rows             array of hash of mixed Order attributes and extra vars
+  - $isManager        bool
+  - $self             User, null
+  - $can              hash of mixed
+*/?>
+
+$=expand  empty($rows)
+<include vanemart::block.order.filter>
 
 <ul $rows "v-rows vmart-orders">
   <li "status-$status { $current ? 'current' : '' } { $recent ? 'recent' : '' }" data-id=$id>
@@ -8,7 +14,15 @@
     $=updated       $updated_at ? HLEx::time(date('d.m', $updated_at), $updated_at) : ''
     $=counts        Str::langNum('general.goods', $count)
     $=sums          Str::langNum('general.price', $sum)
-    $=status        __("vanemart::order.status.$status")
+    $=statusText    __("vanemart::order.status.$status")
+
+    <if $can['ofStatus'] !== false>
+      $=statusText  HLEx::a($statusText, action('vanemart::orders@')."?status=$status")
+    </if>
+
+    <if $updated and array_key_exists('date', $can['filter'])>
+      $=updated     HLEx::a($updated, action('vanemart::orders@')."?date=$updated_at")
+    </if>
 
     <p "title">
       <a "$url">
@@ -18,30 +32,38 @@
 
     <div "details">
       <p "from">
-        <if $isManager> <a "vanemart::orders?by=$user"> </if>
+        <if $can['ofUser'] !== false> <a "vanemart::orders?user=$user"> </if>
         {= htmlLang('order.index.from', compact('name', 'surname')) }
-        <if $isManager> </a> </if>
+        <if $can['ofUser'] !== false> </a> </if>
       </p>
 
-      <p ${ !!$forManager } "manager">
+      <p ${ $isManager and $manager } "manager">
         <b>{= htmlLang('order.index.for') }</b>
 
-        <a "vanemart::orders?for={ $forManager['id'] }">
-          {= htmlLang('order.index.for_manager', $forManager + array('n0' => S::first($forManager['name']))) }
+        <a "vanemart::orders?manager={ $manager['id'] }">
+          {= htmlLang('order.index.for_manager', $manager + array('n0' => S::first($manager['name']))) }
         </a>
       </endp>
 
       <p "contents">
         {= htmlLang('order.index.count_sum', compact('counts', 'sums')) }
+
+        <if array_key_exists('sum', $can['filter'])>
+          (<a "vanemart::orders?sum=%3C{ $sum + 1 }">↓</a>
+          <a "vanemart::orders?sum=%3E{ $sum - 1 }">↑</a>)
+        </if>
       </p>
 
       <p "status">
         <if $updated_at>
+          $=status $statusText
           {= htmlLang('order.index.info', compact('status', 'updated'), false) }
         <else>
-          {= $status }
+          {= $statusText }
         </if>
       </p>
     </div>
   </li>
+<else>
+  <p "empty">"vanemart::order.index.empty"</p>
 </endul>

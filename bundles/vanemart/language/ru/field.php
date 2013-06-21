@@ -1,13 +1,18 @@
 <?php
 return array(
   // Various
+  'id'                    => 'Номер (ID):',
   'ip'                    => 'IP-адрес:',
+  'created_at'            => 'Дата создания:',
+  'updated_at'            => 'Дата изменения:',
 
   // User
   'email'                 => 'E-mail:',
   'password'              => 'Пароль:',
 
   // Order
+  'user'                  => 'Пользователь:',
+  'sum'                   => 'Сумма заказа:',
   'name'                  => 'Имя:',
   'surname'               => 'Фамилия (юрлицо):',
   'phone'                 => 'Телефон:',

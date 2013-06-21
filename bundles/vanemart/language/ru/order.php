@@ -30,6 +30,7 @@ return array(
   // order@index
   'index'                 => array(
     'title'               => 'Ваши заказы',
+    'empty'               => 'Заказов нет.',
     'show_for_all'        => 'Показать заказы менеджеров',
     'item_title'          => 'Заказ №:id от :created',
     'from'                => ':surname :name',
@@ -37,6 +38,29 @@ return array(
     'for_manager'         => ':n0. :surname',
     'count_sum'           => ':counts на сумму :sums',
     'info'                => ':status, обновлён :updated',
+  ),
+
+  'filter'                => array(
+    'toggle'              => 'Фильтр',
+    'mgr_mine'            => 'Мои заказы',
+    'mgr_all'             => 'Всех менеджеров',
+    'user_reset'          => 'Всех пользователей',
+    'status'              => 'Статус:',
+    'status_any'          => 'Любой',
+    'status_keep'         => 'Не менять фильтр',
+    'status_is'           => 'Равен',
+    'status_not'          => 'Не равен',
+    'sort'                => 'Сортировать:',
+    'sort_default'        => 'По датам',
+    'sort_desc'           => 'Наоборот',
+
+    'filters'             => 'Критерии',
+    'id_ex'               => '144, >144 или <144',
+    'sum_ex'              => '>5000 или <5000',
+    'names_ex'            => 'начинается с...',
+    'date_ex'             => '21.02.2013, <21.02.2013 или >21.02.2013',
+
+    'apply'               => 'Применить',
   ),
 
   // order@show

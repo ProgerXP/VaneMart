@@ -26,78 +26,40 @@ class Block_Order extends BaseBlock {
     return Event::until('order.editable', array($order, $this)) !== false;
   }
 
+  function arrayInput($var, $default = '') {
+    $value = array_map('strval', (array) $this->in($var, $default));
+    return count($value) == 1 ? reset($value) : $value;
+  }
+
   /*---------------------------------------------------------------------
   | GET order/index
   |
   | Ouputs list of orders current user (buyer or manager) has access to.
-  |----------------------------------------------------------------------
-  | * by=USER_ID    - optional; if given filters orders by this user
-  |   (for managers only, who might be able to see multiple users' orders).
-  | * for=USER_ID   - optional; if given shows orders assigned to this manager.
-  | * for_all=1     - optional; if set lists orders assigned to any manager,
-  |   not just the current user (useful for super-managers able to see others).
   |--------------------------------------------------------------------*/
   function get_index() {
-    $canFilterByManager = ($this->can('manager') and $this->can('order.list.all'));
+    $vars = array(
+      'isManager'         => $this->can('manager'),
+      'can'               => array(),
+      'user'              => $this->user(false),
+    );
 
-    $orders = Order
-      ::order_by('updated_at', 'desc')
-      ->order_by('created_at', 'desc');
+    $query = Order::with('manager')->name('o');
+    Event::fire('order.list.query', array($query, $this, &$vars['can']));
 
-    if (!$this->can('order.list.all')) {
-      $self = $this;
+    $rows = S::keys($query->get(), '?->id');
 
-      $orders->where(function ($query) use ($self) {
-        $query->where('user', '=', $user = $self->user()->id);
-        $self->can('manager') and $query->or_where('manager', '=', $user);
-      });
-    }
-
-    if ($user = (int) $this->in('by', 0) and $this->can('manager')) {
-      $orders->where('user', '=', $user);
-    }
-
-    $shownForAllManagers = ($canFilterByManager and ($user or $this->in('for_all', 0)));
-
-    if ($canFilterByManager) {
-      $manager = (int) $this->in('for', 0);
-      !$manager and !$shownForAllManagers and $manager = $this->user()->id;
-      $manager and $orders->where('manager', '=', $manager);
-    }
-
-    if ($orders = $orders->get()) {
-      $counts = OrderProduct
-        ::where_in('order', prop('id', $orders))
-        ->group_by('order')
-        ->select(array('*', \DB::raw('COUNT(1) AS count')))
-        ->get();
-      $counts = S::keys($counts, '?->order');
-
-      $recentTime = time() - 3*24*3600;
+    if ($rows) {
+      foreach ($rows as &$order) { $order->current = false; }
       $current = static::detectCurrentOrder();
-      $user = $this->user();
+      $current and $rows[$rows->id]->current = true;
 
-      $rows = S($orders, function ($model) use (&$counts, $recentTime, $current,
-                                                $canFilterByManager, $user) {
-        if ($canFilterByManager and $model->manager and $model->manager != $user->id) {
-          $manager = User::find($model->manager)->to_array();
-        } else {
-          $manager = null;
-        }
-
-        return $model->to_array() + array(
-          'count'           => $counts[$model->id]->count,
-          'recent'          => $model->updated_at >= $recentTime,
-          'current'         => $current and $model->id === $current->id,
-          'forManager'      => $manager,
-        );
-      });
-    } else {
-      $rows = array();
+      Event::fire('order.list.populate', array(&$rows, $this, &$vars));
     }
 
-    $isManager = $this->can('manager');
-    return compact('rows', 'isManager', 'canFilterByManager', 'shownForAllManagers');
+    $vars['rows'] = func('to_array', $rows);
+    Event::fire('order.list.vars', array(&$vars, $this));
+
+    return $vars;
   }
 
   /*---------------------------------------------------------------------

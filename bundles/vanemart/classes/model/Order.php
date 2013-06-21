@@ -1,6 +1,9 @@
 <?php namespace VaneMart;
 
 class Order extends BaseModel {
+  static $fields = array('id', 'user', 'manager', 'status', 'sum', 'name', 'surname',
+                         'city', 'address', 'phone', 'notes', 'created_at', 'updated_at');
+
   static $table = 'orders';
   static $hasURL = true;
 
@@ -69,6 +72,46 @@ class Order extends BaseModel {
 
   function posts() {
     return $this->has_many(NS.'Post', 'post')->where('type', '=', 'order');
+  }
+
+  function filter_sum($prefix, $query, $value) {
+    return $query->filterInt($prefix.'sum', $value);
+  }
+
+  function filter_name($prefix, $query, $value) {
+    return $query->filterStr($prefix.'name', $value);
+  }
+
+  function filter_surname($prefix, $query, $value) {
+    return $query->filterStr($prefix.'surname', $value);
+  }
+
+  function filter_city($prefix, $query, $value) {
+    return $query->filterStr($prefix.'city', $value);
+  }
+
+  function filter_address($prefix, $query, $value) {
+    return $query->filterStr($prefix.'address', $value);
+  }
+
+  function filter_phone($prefix, $query, $value) {
+    return $query->filterStr($prefix.'phone', $value);
+  }
+
+  function filter_notes($prefix, $query, $value) {
+    return $query->filterStr($prefix.'notes', $value);
+  }
+
+  function filter_ip($prefix, $query, $value) {
+    return $query->filterStr($prefix.'ip', $value);
+  }
+
+  function filter_created_at($prefix, $query, $value) {
+    return $query->filterDate($prefix.'created_at', $value);
+  }
+
+  function filter_updated_at($prefix, $query, $value) {
+    return $query->filterDate($prefix.'updated_at', $value);
   }
 
   function changeMessages() {
