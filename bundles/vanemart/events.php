@@ -460,21 +460,22 @@ Event::listen(VANE_NS.'post.attach', function (array &$models, array $options) {
 //* $options hash - the same as in post.attach plus 'attachments' hash of File.
 Event::listen(VANE_NS.'post.added', function (array $options) {
   extract($options, EXTR_SKIP);
+  $poster = $block->user(false);
+
+  $to = User::all(arrize( \Vane\Current::config('general.post_notify_users') ));
 
   if ($type === 'order' and $order = Order::find($object)) {
-    $to = array();
-
     foreach (array('user', 'manager') as $field) {
-      if ($order->$field != $block->user()->id) {
-        $to[] = $order->$field()->first();
-      }
+      $to[] = $order->$field()->first();
     }
+  }
 
-    foreach ($to as $user) {
-      \Vane\Mail::sendTo($user->emailRecipient(), 'vanemart::mail.order.post', array(
+  foreach ($to as $recipient) {
+    if (!$poster or $poster->email != $recipient->email) {
+      \Vane\Mail::sendTo($recipient->emailRecipient(), 'vanemart::mail.order.post', array(
         'order'         => $order->to_array(),
         'user'          => $block->user()->to_array(),
-        'recipient'     => $user->to_array(),
+        'recipient'     => $recipient->to_array(),
         'post'          => $post->to_array(),
         'files'         => func('to_array', $attachments),
       ));

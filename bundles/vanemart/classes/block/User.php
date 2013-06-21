@@ -1,6 +1,7 @@
 <?php namespace VaneMart;
 
 use Auth;
+use Laravel\Database\Eloquent\Model as LaravelModel;
 
 class Block_User extends BaseBlock {
   const PASSWORD_RULE = 'required|min:6|max:50';
@@ -75,7 +76,7 @@ class Block_User extends BaseBlock {
     } else {
       $result = Auth::guest() ? $this->ajax() : Auth::user();
 
-      if ($result instanceof Eloquent) {
+      if ($result instanceof LaravelModel) {
         Auth::logout();
         Auth::login($result->id);
         return $this->back(route('vanemart::orders'));

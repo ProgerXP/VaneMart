@@ -1,6 +1,7 @@
 <?php namespace VaneMart;
 
 use Session;
+use Laravel\Database\Eloquent\Model as LaravelModel;
 
 class Cart {
   //* $id str, int, Eloquent model like Product
@@ -8,7 +9,7 @@ class Cart {
   static function idFrom($id) {
     if (is_numeric($id) and $id > 0) {
       return (int) $id;
-    } elseif ($id instanceof Eloquent) {
+    } elseif ($id instanceof LaravelModel) {
       return $id->id;
     }
   }

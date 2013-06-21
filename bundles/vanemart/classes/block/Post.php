@@ -1,5 +1,7 @@
 <?php namespace VaneMart;
 
+use Laravel\Database\Eloquent\Model as LaravelModel;
+
 class Block_Post extends BaseBlock {
   protected function init() {
     $this->filter('before', 'csrf')->only('add')->on('post');
@@ -167,9 +169,9 @@ class Block_Post extends BaseBlock {
       $eventOptions += compact('attachments');
       Event::fire('post.added', array($eventOptions));
 
-      if ($type and $object and $object = $model->object()) {
+      if ($type and $object and $object = $model->object()->first()) {
         Event::fire('post.object_ref', array(&$object, $eventOptions));
-        ($object instanceof \Eloquent) and $object->save();
+        ($object instanceof LaravelModel) and $object->save();
       }
 
       return $model;

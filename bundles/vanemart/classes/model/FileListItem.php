@@ -1,9 +1,11 @@
 <?php namespace VaneMart;
 
+use Laravel\Database\Eloquent\Model as LaravelModel;
+
 class FileListItem extends BaseModel {
   static $table = 'file_lists';
 
-  static function relationTo(Eloquent $model) {
+  static function relationTo(LaravelModel $model) {
     $type = lcfirst(class_basename($model));
     return static::where('type', '=', $type)->where('object', '=', $model->id);
   }
