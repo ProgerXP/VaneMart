@@ -51,7 +51,7 @@ class Block_Order extends BaseBlock {
     if ($rows) {
       foreach ($rows as &$order) { $order->current = false; }
       $current = static::detectCurrentOrder();
-      $current and $rows[$rows->id]->current = true;
+      $current and $rows[$current->id]->current = true;
 
       Event::fire('order.list.populate', array(&$rows, $this, &$vars));
     }
@@ -186,12 +186,14 @@ class Block_Order extends BaseBlock {
     });
 
     if ($order->user != $this->user()->id) {
-      $to = $order->user()->first()->emailRecipient();
+      $to = $order->user()->first();
 
-      \Vane\Mail::sendTo($to, 'vanemart::mail.order.post', array(
+      \Vane\Mail::sendTo($to->emailRecipient(), 'vanemart::mail.order.post', array(
         'order'         => $order->to_array(),
         'user'          => $this->user()->to_array(),
+        'recipient'     => $to->to_array(),
         'post'          => $post->to_array(),
+        'files'         => array(),
       ));
     }
 

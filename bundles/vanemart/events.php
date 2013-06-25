@@ -189,7 +189,7 @@ Event::listen(VANE_NS.'order.viewable', function (Order $order, User $user = nul
 // Fired to constrain/tweak an Order-model query based on user input.
 Event::listen(VANE_NS.'order.list.query', function (Query $query, Block_Order $block, array &$can) {
   // '' - of self, '0' - of everyone, array of 'id'
-  $ofMgr = $block->arrayInput('manager');
+  $ofMgr = $block->arrayInput('manager', '0');
   // '' - don't filter, '0' - invalid (404), array of 'id'
   $ofUser = $block->arrayInput('user');
 
@@ -210,7 +210,7 @@ Event::listen(VANE_NS.'order.list.query', function (Query $query, Block_Order $b
 
 Event::listen(VANE_NS.'order.list.query', function (Query $query, Block_Order $block, array &$can) {
   // '' or '!' - don't filter, '!xxx' - all but 'xxx', array of 'xxx'
-  $ofStatus = $block->arrayInput('status', '!sent');
+  $ofStatus = $block->arrayInput('status', '');
 
   if ($ofStatus === '!' or !$ofStatus) {
     // Don't filter.

@@ -17,16 +17,21 @@ class Current {
   }
 
   static function expand($name) {
-    $ns = &static::$expanded[static::$ns];
+    if (strpos($name, '::') === false) {
+      $ns = &static::$expanded[static::$ns];
 
-    if (!isset($ns)) {
-      @list($bundle, $prefix) = explode('::', static::$ns, 2);
+      if (!isset($ns)) {
+        @list($bundle, $prefix) = explode('::', static::$ns, 2);
 
-      $prefix === '' or $ns = "$prefix-$ns";
-      $bundle === '' or $ns = "$bundle::$ns";
+        $prefix === '' or $ns = "$prefix-$ns";
+        $bundle === '' or $ns = "$bundle::$ns";
+      }
+
+      return $ns.$name;
+    } else {
+      starts_with($name, '::') and $name = substr($name, 2);
+      return $name;
     }
-
-    return $ns.$name;
   }
 
   static function config($name) {
