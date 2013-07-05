@@ -15,7 +15,7 @@ return array(
   'headerEOLN'            => "\n",
   'sortHeaders'           => true,
   // sendmail CLI parameters.
-  'params'                => true,
+  'params'                => '',
   'eoln'                  => "\r\n",
   'skipRelatedAttIfNoHtmlBody'  => true,
   // 0 (low), 1 (normal), 2 (high).
