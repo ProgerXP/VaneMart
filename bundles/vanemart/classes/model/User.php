@@ -14,7 +14,7 @@ class User extends BaseModel implements \Vane\UserInterface {
   //= User    if user making the order is already registered
   //= hash    of 'model' (User), 'password' (str) if new account was registered
   static function findOrCreate(array $info) {
-    static $fields = array('name', 'surname', 'city', 'phone', 'email');
+    static $fields = array('name', 'surname', 'patronym' , 'city', 'phone', 'email');
 
     $model = User::where('email', '=', $info['email'])->first();
 

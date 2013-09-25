@@ -1,7 +1,7 @@
 <?php namespace VaneMart;
 
 class Order extends BaseModel {
-  static $fields = array('id', 'user', 'manager', 'status', 'sum', 'name', 'surname',
+  static $fields = array('id', 'user', 'manager', 'status', 'sum', 'name', 'surname', 'patronym',
                          'city', 'address', 'phone', 'notes', 'created_at', 'updated_at');
 
   static $table = 'orders';
@@ -24,7 +24,7 @@ class Order extends BaseModel {
   }
 
   static function createBy(User $user, array $info) {
-    static $fields = array('name', 'surname', 'city', 'address', 'phone', 'notes');
+    static $fields = array('name', 'surname', 'patronym', 'city', 'address', 'phone', 'notes');
 
     $order = with(new static)
       ->fill_raw(array_intersect_key($info, array_flip($fields)))

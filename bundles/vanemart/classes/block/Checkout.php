@@ -55,14 +55,21 @@ class Block_Checkout extends BaseBlock {
 
   function ajax_post_index() {
     $input = $this->in();
-    $valid = Validator::make($input, array(
+
+    $rules = array(
       'email'           => 'required|email',
       'name'            => 'required',
       'surname'         => 'required',
       'city'            => 'required|min:2',
       'address'         => 'min:5',
       'phone'           => 'required|min:7',
-    ));
+    );
+    $user_fields = \Vane\Current::config('general.user_fields');
+    if ( is_array($user_fields) ) {
+      $rules = $rules + $user_fields;
+    }
+
+    $valid = Validator::make($input, $rules);
 
     if ($this->can('checkout.deny')) {
       return false;

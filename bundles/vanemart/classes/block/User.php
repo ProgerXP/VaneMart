@@ -96,6 +96,10 @@ class Block_User extends BaseBlock {
       'password'          => static::PASSWORD_RULE,
       'referee'           => 'integer',
     );
+    $user_fields = \Vane\Current::config('general.user_fields');
+    if ( is_array($user_fields) ) {
+      $rules = $rules + $user_fields;
+    }
 
     $valid = Validator::make($this->in(), $rules);
     $email = $this->in('email', null);
