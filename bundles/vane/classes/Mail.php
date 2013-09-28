@@ -20,7 +20,12 @@ class Mail extends \LaMeil {
       $info['logo'] = "cid:$name";
     }
 
-    $data['header']['logo'] = Block::execResponse('Vane::logo', null, $info)->render();
+    $data['header']['logo'] = Block::execCustom('Vane::logo', array(
+      'input'             => $info,
+      'ajax'              => false,
+      'response'          => true,
+      'return'            => 'response',
+    ))->render();
 
     $info = array_filter($info, 'is_scalar') + array(
       'l0'                => HLEx::tag('a', \URL::to(Current::bundleURL())),
