@@ -235,7 +235,8 @@ Event::listen(VANE_NS.'order.list.query', function (Query $query, Block_Order $b
   $can['sort'] = ($sorted ?: true);
   $can['desc'] = (string) $block->in('desc', '0') ?: '0';
 
-  $fields = array('id', 'sum', 'city', 'address', 'phone', 'notes');
+  $fields = array('id', 'sum', 'address', 'phone', 'notes');
+  $fields = array_merge($fields, array_keys((array) \Vane\Current::config('general.user_fields.order')));
   $defaults = S::combine($fields, null);
   $can['filter'] = array_intersect_key($block->in(), $defaults) + $defaults;
 });

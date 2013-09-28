@@ -14,7 +14,7 @@ class User extends BaseModel implements \Vane\UserInterface {
   //= User    if user making the order is already registered
   //= hash    of 'model' (User), 'password' (str) if new account was registered
   static function findOrCreate(array $info) {
-    static $fields = array('name', 'surname', 'patronym' , 'city', 'phone', 'email');
+    static $fields = array('name', 'surname', 'phone', 'email');
 
     $model = User::where('email', '=', $info['email'])->first();
 
@@ -107,3 +107,4 @@ class User extends BaseModel implements \Vane\UserInterface {
   }
 }
 User::$table = \Config::get('vanemart::general.table_prefix').User::$table;
+User::$fields = array_merge(User::$fields, array_keys((array) \Vane\Current::config('general.user_fields.user')));

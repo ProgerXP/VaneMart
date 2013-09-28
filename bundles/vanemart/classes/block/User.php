@@ -90,16 +90,12 @@ class Block_User extends BaseBlock {
     $rules = array(
       'name'              => 'required',
       'surname'           => 'required',
-      'city'              => 'required|min:2',
       'phone'             => 'required|min:7',
       'email'             => 'required|email',
       'password'          => static::PASSWORD_RULE,
       'referee'           => 'integer',
     );
-    $user_fields = \Vane\Current::config('general.user_fields');
-    if ( is_array($user_fields) ) {
-      $rules = $rules + $user_fields;
-    }
+    $rules += (array) \Vane\Current::config('general.user_fields.user');
 
     $valid = Validator::make($this->in(), $rules);
     $email = $this->in('email', null);

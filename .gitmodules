@@ -1,0 +1,15 @@
+[submodule "bundles/textpub"]
+	path = bundles/textpub
+	url = https://github.com/ProgerXP/TextPub.git
+[submodule "bundles/mimeil"]
+	path = bundles/mimeil
+	url = https://github.com/ProgerXP/MiMeil.git
+[submodule "bundles/htmlki"]
+	path = bundles/htmlki
+	url = https://github.com/ProgerXP/HTMLki.git
+[submodule "bundles/plarx"]
+	path = bundles/plarx
+	url = https://github.com/ProgerXP/Plarx.git
+[submodule "bundles/squall"]
+	path = bundles/squall
+	url = https://github.com/ProgerXP/Squall.git

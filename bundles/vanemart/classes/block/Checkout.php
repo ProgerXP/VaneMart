@@ -64,10 +64,7 @@ class Block_Checkout extends BaseBlock {
       'address'         => 'min:5',
       'phone'           => 'required|min:7',
     );
-    $user_fields = \Vane\Current::config('general.user_fields');
-    if ( is_array($user_fields) ) {
-      $rules = $rules + $user_fields;
-    }
+    $rules += (array) \Vane\Current::config('general.user_fields.order');
 
     $valid = Validator::make($input, $rules);
 

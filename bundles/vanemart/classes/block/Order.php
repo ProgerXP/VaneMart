@@ -157,7 +157,8 @@ class Block_Order extends BaseBlock {
       return false;
     }
 
-    $fields = array('status', 'name', 'surname', 'patronym', 'phone', 'city', 'address', 'notes');
+    $fields = array('status', 'name', 'surname', 'phone', 'address', 'notes');
+    $fields = array_merge($fields, array_keys((array) \Vane\Current::config('general.user_fields.order')));
     $order->fill_raw(S::trim(Input::only($fields)));
 
     if (!$order->dirty()) {
