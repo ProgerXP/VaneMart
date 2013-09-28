@@ -61,7 +61,7 @@ class Block_Checkout extends BaseBlock {
       'name'            => 'required',
       'surname'         => 'required',
       'address'         => 'min:5',
-      'phone'           => 'required|min:7',
+      'phone'           => 'required|min:7|vanemart_phone',
     );
     $rules += (array) \Vane\Current::config('general.user_fields.order');
 
