@@ -73,3 +73,8 @@ View::composer('vanemart::mail.full', function ($view) {
     $view->data['styles'] = $view->mail->view->data['styles'];
   }
 });
+
+Validator::register('vanemart_phone', function($attribute, $value, $parameters)
+{
+    return ltrim($value, '0..9()- ') === '';
+});

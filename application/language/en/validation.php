@@ -69,6 +69,8 @@ return array(
 	"unique"         => "The :attribute has already been taken.",
 	"url"            => "The :attribute format is invalid.",
 
+	'vanemart_phone' => 'The :attribute may only contain numbers, ()- and spaces.',
+
 	/*
 	|--------------------------------------------------------------------------
 	| Custom Validation Language Lines
