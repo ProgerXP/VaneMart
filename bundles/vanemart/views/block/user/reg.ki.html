@@ -4,7 +4,7 @@
   </p>
 
   <table "col-2 color">
-    <each ${ array_merge( array('name', 'surname', 'phone', 'email'), array_keys( (array) \Vane\Current::config('general.user_fields.user')) ) }>
+    <each $regFields>
       <tr>
         <th>{ __("vanemart::field.$item") }</th>
         <td>

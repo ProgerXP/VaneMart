@@ -107,4 +107,4 @@ class User extends BaseModel implements \Vane\UserInterface {
   }
 }
 User::$table = \Config::get('vanemart::general.table_prefix').User::$table;
-User::$fields = array_merge(User::$fields, array_keys((array) \Vane\Current::config('general.user_fields.user')));
+User::$fields = userFields(User::$fields, 'user');

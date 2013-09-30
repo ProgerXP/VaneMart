@@ -74,7 +74,18 @@ View::composer('vanemart::mail.full', function ($view) {
   }
 });
 
-Validator::register('vanemart_phone', function($attribute, $value, $parameters)
-{
-    return ltrim($value, '0..9()- ') === '';
+View::composer('vanemart::block.user.reg', function ($view) {
+  $view->data['regFields'] = VaneMart\userFields(array('name', 'surname', 'phone', 'email'), 'user');
+});
+
+View::composer('vanemart::block.checkout.fields', function ($view) {
+  $view->data['checkoutFields'] = VaneMart\userFields(array('name', 'surname', 'phone'), 'order');
+});
+
+View::composer('vanemart::block.order.show', function ($view) {
+  $view->data['orderFields'] = VaneMart\userFields(array('name', 'surname', 'phone', 'address', 'notes'), 'order');
+});
+
+Validator::register('vanemart_phone', function ($attribute, $value, $parameters) {
+  return ltrim($value, '0..9()- ') === '';
 });
