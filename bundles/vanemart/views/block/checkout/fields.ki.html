@@ -1,4 +1,4 @@
-<each ${ array_merge( array('name', 'surname', 'phone'), array_keys( (array) \Vane\Current::config('general.user_fields.order') )) }>
+<each $checkoutFields>
   <tr "$item">
     <th>{ __("vanemart::field.$item") }</th>
     <td>

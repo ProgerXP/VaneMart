@@ -1,7 +1,8 @@
 <?php namespace VaneMart;
 
 class Order extends BaseModel {
-  static $fields = array('id', 'user', 'manager', 'status', 'sum', 'name', 'surname', 'address', 'phone', 'notes', 'created_at', 'updated_at');
+  static $fields = array('id', 'user', 'manager', 'status', 'sum', 'name', 'surname',
+                         'address', 'phone', 'notes', 'created_at', 'updated_at');
 
   static $table = 'orders';
   static $hasURL = true;
@@ -24,7 +25,7 @@ class Order extends BaseModel {
 
   static function createBy(User $user, array $info) {
     $fields = array('name', 'surname', 'address', 'phone', 'notes');
-    $fields = array_merge($fields, array_keys((array) \Vane\Current::config('general.user_fields.order')));
+    $fields = userFields($fields, 'order');
 
     $order = with(new static)
       ->fill_raw(array_intersect_key($info, array_flip($fields)))
@@ -134,4 +135,4 @@ class Order extends BaseModel {
   }
 }
 Order::$table = \Config::get('vanemart::general.table_prefix').Order::$table;
-Order::$fields = array_merge(Order::$fields, array_keys((array) \Vane\Current::config('general.user_fields.order')));
+Order::$fields = userFields(Order::$fields, 'order');
