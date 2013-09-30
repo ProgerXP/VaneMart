@@ -47,7 +47,7 @@ function prettyText($str, $typography = true) {
   return $str;
 }
 
-function userFields($fields, $namespace = 'user') {
+function userFields($fields, $namespace) {
   return array_merge($fields, 
                      array_keys((array) \Vane\Current::config('general.user_fields.'.$namespace)));
 }
