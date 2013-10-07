@@ -23,7 +23,7 @@ class Group extends BaseModel {
       ->get(array($table.'.id', \DB::raw('COUNT('.$goodsTable.'.id) as count')));
 
     $result = array();
-    foreach($counts as $count) {
+    foreach ($counts as $count) {
       $result[$count->id] = $count->count;
     }
 

@@ -30,6 +30,17 @@ class Product extends BaseModel {
     }
   }
 
+  function deleteImage() {
+    if ($this->image) {
+      $file = File::find($this->image);
+      if ($file) {
+        $file->unused();
+      }
+      $this->image = null;
+      $this->save();
+    }
+  }
+
   function variation() {
     return $this->has_one(__CLASS__, 'variation');
   }
