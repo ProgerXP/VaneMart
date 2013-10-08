@@ -31,13 +31,10 @@ class Product extends BaseModel {
   }
 
   function deleteImage() {
-    if ($this->image) {
-      $file = File::find($this->image);
-      if ($file) {
-        $file->unused();
-      }
+    if ($image = $this->image()) {
       $this->image = null;
       $this->save();
+      $image->unused();
     }
   }
 
