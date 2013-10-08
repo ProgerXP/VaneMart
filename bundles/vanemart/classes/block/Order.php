@@ -174,7 +174,7 @@ class Block_Order extends BaseBlock {
       'author'            => $this->user()->id,
       'flags'             => 'field-change '.($this->can('manager') ? 'manager' : ''),
       'body'              => $msg,
-      'html'              => Post::format($msg),
+      'html'              => format('post', $msg),
       'ip'                => Request::ip(),
     ));
 

@@ -150,7 +150,7 @@ class Block_Post extends BaseBlock {
           'object'        => $object,
           'parent'        => $parent,
           'flags'         => $this->can('manager') ? 'manager' : '',
-          'html'          => Post::format( $this->in('body') ),
+          'html'          => format( 'post', $this->in('body') ),
           'author'        => $this->user()->id,
           'ip'            => Request::ip(),
         ));

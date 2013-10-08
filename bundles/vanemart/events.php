@@ -12,8 +12,14 @@ use Vane\Current;
 // BB-code processor, Markdown, wiki, etc.).
 //
 //= str HTML
-Event::listen(VANE_NS.'format.post', function (&$text) {
+Event::listen(VANE_NS.'format.generic', function (&$text) {
   return nl2br(HLEx::q($text));
+});
+Event::listen(VANE_NS.'format.post', function (&$text) {
+  return format('generic', $text);
+});
+Event::listen(VANE_NS.'format.product', function (&$text) {
+  return format('generic', $text);
 });
 
 /*-----------------------------------------------------------------------

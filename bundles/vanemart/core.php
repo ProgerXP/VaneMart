@@ -52,6 +52,10 @@ function userFields($fields, $namespace) {
                      array_keys((array) \Vane\Current::config('general.user_fields.'.$namespace)));
 }
 
+function format($type, $text) {
+  return (string) Event::until('format.'.$type, array(&$text));
+}
+
 /*-----------------------------------------------------------------------
 | SHORTCUTS FOR CALLING HTML FUNCTIONS FROM VIEWS
 |----------------------------------------------------------------------*/

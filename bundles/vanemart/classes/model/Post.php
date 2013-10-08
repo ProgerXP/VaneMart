@@ -3,10 +3,6 @@
 class Post extends BaseModel {
   static $table = 'posts';
 
-  static function format($text) {
-    return (string) Event::until('format.post', array(&$text));
-  }
-
   function object() {
     return $this->belongs_to(NS.ucfirst($this->type), 'object');
   }
@@ -27,7 +23,7 @@ class Post extends BaseModel {
   // If it isn't formats it and saves.
   function withHTML() {
     if (!$this->html) {
-      $this->html = static::format($this->body);
+      $this->html = format($this->body);
       $this->save();
     }
 
