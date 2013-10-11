@@ -12,7 +12,18 @@
         <input "email" id=email class={ $ok === false ? 'invalid' : '' }>
 
         <ul ${ $ok === false } "errors">
-          <li>"vanemart::user.login.wrong"</li>
+          <if \Session::get('reset_unknown_email')>
+            <li>
+              "vanemart::user.reset.unknown_email"
+              <a src="{ route('vanemart::register') }" class="to_reg">"vanemart::user.login.reg"</a> »
+            </li>
+          <elseif \Session::get('reset_other_error')>
+            <li>
+              "vanemart::user.reset.other_error"
+            </li>
+          <else>
+            <li>"vanemart::user.login.wrong"</li>
+          </if>
         </endul>
 
         <script>
@@ -38,6 +49,7 @@
       <td colspan=2>
         <submit class=default>"vanemart::user.login.submit"</submit>
         <submit "to_reg">"vanemart::user.login.reg"</submit>
+        <submit "to_reset">"vanemart::user.login.reset"</submit>
       </td>
     </tr>
   </table>

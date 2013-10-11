@@ -76,6 +76,8 @@ VRoute::map('(:bundle)/users/(:num)', 'VaneMart::user@show', true);
 VRoute::map('(:bundle)/users/reg', 'VaneMart::user@reg', 'vanemart::register');
 VRoute::map('(:bundle)/users/login', 'VaneMart::user@login', 'vanemart::login');
 VRoute::map('(:bundle)/users/logout', 'VaneMart::user@logout', 'vanemart::logout');
+VRoute::map('(:bundle)/users/reset', 'VaneMart::user@reset', 'vanemart::reset');
+VRoute::map('(:bundle)/users/reset_password/(:all)/(:all)', 'VaneMart::user@reset_password (:1) (:2)', 'vanemart::reset_password');
 
 VRoute::on('GET (:bundle)/thumb')
   ->as('vanemart::thumb')

@@ -1,0 +1,20 @@
+<form "vanemart::reset" "col-2 vmart-reset">
+  <p "b-info">"vanemart::user.reset.legend"</p>
+  <table "col-2 color">
+    <tr>
+      <th>"vanemart::field.email"</th>
+      <td>
+        <input "email" id=email class={ $ok === false ? 'invalid' : '' }>
+        <errors>
+        <script>
+          try {{ document.getElementById('email').focus() } catch (e) {}
+        </script>
+      </td>
+    </tr>
+    <tr "btn">
+      <td colspan=2>
+        <submit class=default>"vanemart::user.reset.submit"</submit>
+      </td>
+    </tr>
+  </table>
+</form>

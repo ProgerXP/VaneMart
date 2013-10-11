@@ -105,6 +105,21 @@ class User extends BaseModel implements \Vane\UserInterface {
       }
     });
   }
+
+  function resetHash($days = null, $hash = null) {
+    if ($days != null) {
+      $date = date('d', strtotime('+'.$days.' day'));
+    } else {
+      $date = date('d');
+    }
+    $value = $this->id.'-'.\Config::get('application.key').'-'.$date;
+    if ($hash) {
+      $result = \Hash::check($value, $hash);
+    } else {
+      $result = \Hash::make($value);
+    }
+    return $result;
+  }
 }
 User::$table = \Config::get('vanemart::general.table_prefix').User::$table;
 User::$fields = userFields(User::$fields, 'user');

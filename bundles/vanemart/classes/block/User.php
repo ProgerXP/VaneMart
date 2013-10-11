@@ -12,7 +12,12 @@ class Block_User extends BaseBlock {
   | Shows login form.
   |--------------------------------------------------------------------*/
   function get_login() {
-    return Auth::check() ? Redirect::to_route('vanemart::orders') : true;
+    if (Auth::check()) {
+      \Session::keep('status');
+      return Redirect::to_route('vanemart::orders');
+    } else {
+      return true;
+    }
   }
 
   /*---------------------------------------------------------------------
@@ -29,6 +34,8 @@ class Block_User extends BaseBlock {
   function post_login() {
     if ($this->in('to_reg', false)) {
       return Redirect::to_route('vanemart::register')->with_input();
+    } elseif ($this->in('to_reset', false)) {
+      return Redirect::to_route('vanemart::reset')->with_input();
     } elseif ($this->ajax()) {
       $response = $this->back(route('vanemart::orders'));
 
@@ -147,5 +154,83 @@ class Block_User extends BaseBlock {
   function ajax_get_logout() {
     Auth::logout();
     return true;
+  }
+
+  function get_reset() {
+    return true;
+  }
+
+  function post_reset() {
+    $email = $this->in('email', null);
+    $rules = array(
+      'email'             => 'required|email',
+    );
+    $valid = Validator::make($this->in(), $rules);
+
+    if ($valid->fails()) {
+      return $valid;
+    }
+
+    $user = User::where('email', '=', $email)->first();
+    if (!$user) {
+      \Session::flash('reset_unknown_email', true);
+      return Redirect::to(route('vanemart::login'))
+        ->with_input('only', array('email'))->with('ok', false);
+    }
+
+    $emailHash = \Crypter::encrypt($email);
+    $hash = $user->resetHash();
+
+    \Vane\Mail::sendTo($user->emailRecipient(), 'vanemart::mail.user.reset_instructions', array(
+      'emailHash'     => urlencode($emailHash),
+      'hash'          => urlencode($hash),
+    ));
+
+    $this->status('reset_instructions');
+    return $this->back(route('vanemart::login'));
+  }
+
+  function get_reset_password($email, $hash) {
+    $days = \Vane\Current::config('general.password.reset_days');
+
+    try {
+      $email = \Crypter::decrypt(urldecode($email));
+      $hash = urldecode($hash);
+
+      $user = User::where('email', '=', $email)->first();
+      if (!$user) {
+        throw new Error('User not found');
+      }
+
+      $valid = false;
+      for ($day = 0; $day < $days; $day++) {
+        if ($user->resetHash($day, $hash)) {
+          $valid = true;
+          break;
+        }
+      }
+
+      if (!$valid) {
+        throw new Error('Hash is invalid');
+      }
+
+      $newPassword = User::generatePassword();
+      \Vane\Mail::sendTo($user->emailRecipient(), 'vanemart::mail.user.new_password', array(
+        'password'      => $newPassword,
+      ));
+
+      $this->status('new_password');
+      Auth::login($user->id);
+    } catch (\Exception $e) {
+      Log::error($e->getMessage());
+      return $this->resetPasswordError();
+    }
+    return $this->back(route('vanemart::login'));
+  }
+
+  protected function resetPasswordError() {
+    \Session::flash('reset_other_error', true);
+    return Redirect::to(route('vanemart::login'))
+      ->with('ok', false);    
   }
 }
