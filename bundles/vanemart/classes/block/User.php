@@ -216,21 +216,23 @@ class Block_User extends BaseBlock {
 
       $newPassword = User::generatePassword();
       \Vane\Mail::sendTo($user->emailRecipient(), 'vanemart::mail.user.new_password', array(
+        'email'         => $email,
         'password'      => $newPassword,
       ));
 
       $this->status('new_password');
       Auth::login($user->id);
     } catch (\Exception $e) {
-      Log::error($e->getMessage());
+      Log::error_User('Error while resetting password: '.$e->getMessage());
       return $this->resetPasswordError();
     }
+
     return $this->back(route('vanemart::login'));
   }
 
   protected function resetPasswordError() {
     \Session::flash('reset_other_error', true);
     return Redirect::to(route('vanemart::login'))
-      ->with('ok', false);    
+      ->with('ok', false);
   }
 }
