@@ -21,7 +21,7 @@ return array(
   // 0 (low), 1 (normal), 2 (high).
   'priority'              => 1,
 
-  'simulateSending'       => Request::is_env('local'),
+  'simulate'              => Request::is_env('local'),
   'echoPath'              =>
     Request::is_env('local') ? Bundle::path('vanemart').'storage/mail/' : false,
 );
