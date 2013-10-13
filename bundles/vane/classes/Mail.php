@@ -1,14 +1,12 @@
 <?php namespace Vane;
 
 class Mail extends \LaMeil {
-  protected function init() {
-    foreach (Current::config('mail') as $prop => $value) {
-      $this->$prop = $value;
-    }
+  function config($key = null) {
+    return $key ? Current::config("mail.$key") : Current::config('mail');
   }
 
   protected function defaultViewDataTo(array &$data) {
-    $info = Current::config('company');
+    $info = $this->config('company');
 
     // Trying to reverse-map the logo URL to local path. Upon success attach that
     // file to the message as "related" file so it's not visible in the attachment
