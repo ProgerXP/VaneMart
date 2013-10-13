@@ -23,7 +23,7 @@ class Post extends BaseModel {
   // If it isn't formats it and saves.
   function withHTML() {
     if (!$this->html) {
-      $this->html = format($this->body);
+      $this->html = format('post', $this->body);
       $this->save();
     }
 

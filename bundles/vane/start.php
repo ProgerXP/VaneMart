@@ -1,6 +1,6 @@
 <?php namespace Vane;
 
-\Bundle::$bundles['vane']['ignorePlarx'] = array('Str', 'HLEx', 'Log', 'Event');
+\Bundle::$bundles['vane']['ignorePlarx'] = array('Str', 'HLEx', 'Log', 'Event', 'Validator');
 
 if (!\Bundle::exists('plarx')) {
   throw new Error('Vane requires Plarx bundle installed.');
