@@ -1,12 +1,8 @@
 <?$mail->subject('user.mail.reset_instructions.subject', \Vane\Current::config('company'))?>
 
-$=link
-  <a "vanemart::reset_password/$emailHash/$hash">
-$^link
-
 $=content
   <h3>{= htmlLang('user.mail.reset_instructions.intro') }</h3>
-  <p>{= htmlLang('user.mail.reset_instructions.link', array('l0' => trim($link), 'l1' => '</a>'), false) }</p>
+  <p>{= htmlLang('user.mail.reset_instructions.link', array('l0' => '<a href="'.trim($link).'">', 'l1' => '</a>'), false) }</p>
 $^content
 
 <include vanemart::mail.full>

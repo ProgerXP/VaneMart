@@ -157,15 +157,18 @@ class Block_User extends BaseBlock {
   }
 
   function get_reset() {
-    return true;
+    $this->layout = '.login';
+    return $this->post_reset();
   }
 
   function post_reset() {
-    $email = $this->in('email', null);
+    $this->layout = '.login';
+
+    $email = Input::old('email') or $this->in('email', null);
     $rules = array(
       'email'             => 'required|email',
     );
-    $valid = Validator::make($this->in(), $rules);
+    $valid = Validator::make(array('email' => $email), $rules);
 
     if ($valid->fails()) {
       return $valid;
@@ -173,17 +176,15 @@ class Block_User extends BaseBlock {
 
     $user = User::where('email', '=', $email)->first();
     if (!$user) {
-      \Session::flash('reset_unknown_email', true);
-      return Redirect::to(route('vanemart::login'))
-        ->with_input('only', array('email'))->with('ok', false);
+      return array('ok' => false, 'reset_error' => 'unknown_email');
     }
 
-    $emailHash = \Crypter::encrypt($email);
+    $emailHash = $this->encodeValue($email);
     $hash = $user->resetHash();
+    $link = route("vanemart::reset_password")."/$emailHash/$hash";
 
     \Vane\Mail::sendTo($user->emailRecipient(), 'vanemart::mail.user.reset_instructions', array(
-      'emailHash'     => urlencode($emailHash),
-      'hash'          => urlencode($hash),
+      'link'     => $link,
     ));
 
     $this->status('reset_instructions');
@@ -194,8 +195,7 @@ class Block_User extends BaseBlock {
     $days = \Vane\Current::config('general.password.reset_days');
 
     try {
-      $email = \Crypter::decrypt(urldecode($email));
-      $hash = urldecode($hash);
+      $email = $this->decodeValue($email);
 
       $user = User::where('email', '=', $email)->first();
       if (!$user) {
@@ -203,7 +203,7 @@ class Block_User extends BaseBlock {
       }
 
       $valid = false;
-      for ($day = 0; $day < $days; $day++) {
+      for ($day = 0; $day <= $days; $day++) {
         if ($user->resetHash($day, $hash)) {
           $valid = true;
           break;
@@ -231,8 +231,18 @@ class Block_User extends BaseBlock {
   }
 
   protected function resetPasswordError() {
-    \Session::flash('reset_other_error', true);
-    return Redirect::to(route('vanemart::login'))
-      ->with('ok', false);
+    return Redirect::to_route('vanemart::login')
+      ->with('ok', false)->with('reset_error', 'other');
+  }
+
+  protected function encodeValue($value) {
+    $value = \Crypter::encrypt($value);
+    $value = str_replace(array('/', '+', '='), array('_', '-', ''), $value);
+    return $value;
+  }
+
+  protected function decodeValue($value) {
+    $value = str_replace(array('_', '-'), array('/', '+'), $value);
+    return \Crypter::decrypt($value);
   }
 }

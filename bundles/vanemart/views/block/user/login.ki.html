@@ -10,14 +10,14 @@
       <th>"vanemart::field.email"</th>
       <td>
         <input "email" id=email class={ $ok === false ? 'invalid' : '' }>
-
+        <errors>
         <ul ${ $ok === false } "errors">
-          <if \Session::get('reset_unknown_email')>
+          <if $reset_error == 'unknown_email'>
             <li>
               "vanemart::user.reset.unknown_email"
               <a src="{ route('vanemart::register') }" class="to_reg">"vanemart::user.login.reg"</a> »
             </li>
-          <elseif \Session::get('reset_other_error')>
+          <elseif $reset_error>
             <li>
               "vanemart::user.reset.other_error"
             </li>
