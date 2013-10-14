@@ -15,7 +15,7 @@
           <if $reset_error == 'unknown_email'>
             <li>
               "vanemart::user.reset.unknown_email"
-              <a src="{ route('vanemart::register') }" class="to_reg">"vanemart::user.login.reg"</a> »
+              <a href="{ route('vanemart::register') }" class="to_reg">"vanemart::user.login.reg"</a> »
             </li>
           <elseif $reset_error>
             <li>
