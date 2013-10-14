@@ -3,8 +3,12 @@
 class Validator extends \Px\Validator {
   function validate_vanemart_req_if($attribute, $value, $parameters) {
     list($other, $operator, $rightValue) = preg_split('/\s+/', $parameters[0], 3);
-    $leftValue = array_get($this->attributes, $other);
-    $code = 'return !("'.addslashes($leftValue).'" '.$operator.' "'.addslashes($rightValue).'");';
+    $leftValue = (array) array_get($this->attributes, $other);
+    $rightValue = (array) $rightValue;
+    $leftValue = array_shift($leftValue);
+    $rightValue = array_shift($rightValue);
+
+    $code = 'return !($leftValue '.$operator.' $rightValue);';
     return eval($code);
   }
 
