@@ -89,6 +89,9 @@ class Group extends BaseModel {
   }
 
   static function buildTree($items, $root = null) {
+    if (count($items) < 2) {
+      return $root !== null ? array() : (array) $items;
+    }
     $childs = array();
 
     foreach ($items as $item) {
