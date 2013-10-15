@@ -86,6 +86,10 @@ View::composer('vanemart::block.order.show', function ($view) {
   $view->data['orderFields'] = VaneMart\userFields(array('name', 'surname', 'phone', 'address', 'notes'), 'order');
 });
 
+View::composer('vanemart::block.user.login', function ($view) {
+  $view->data['reset_error'] = !isset($view->data['reset_error']) ? \Session::get('reset_error') : $view->data['reset_error'];
+});
+
 Validator::register('vanemart_phone', function ($attribute, $value, $parameters) {
   return ltrim($value, '0..9()- ') === '';
 });

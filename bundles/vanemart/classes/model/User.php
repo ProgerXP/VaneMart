@@ -107,18 +107,15 @@ class User extends BaseModel implements \Vane\UserInterface {
   }
 
   function resetHash($days = null, $hash = null) {
-    if ($days != null) {
-      $date = date('d', strtotime('+'.$days.' day'));
-    } else {
+    $args = func_num_args();
+    if ($args === 0) {
       $date = date('d');
-    }
-    $value = $this->id.'-'.\Config::get('application.key').'-'.$date;
-    if ($hash) {
-      $result = \Hash::check($value, $hash);
+      return md5($this->id.'-'.\Config::get('application.key').'-'.$date);
     } else {
-      $result = \Hash::make($value);
+      $date = date('d', strtotime('+'.$days.' day'));
+      $value = md5($this->id.'-'.\Config::get('application.key').'-'.$date);
+      return $args === 1 ? $value : ($value === $hash);
     }
-    return $result;
   }
 }
 User::$table = \Config::get('vanemart::general.table_prefix').User::$table;
