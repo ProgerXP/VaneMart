@@ -164,7 +164,7 @@ class Block_User extends BaseBlock {
   function post_reset() {
     $this->layout = '.login';
 
-    $email = Input::old('email') or $this->in('email', null);
+    $email = Input::old('email') ?: $this->in('email', null);
     $rules = array(
       'email'             => 'required|email',
     );
