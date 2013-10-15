@@ -176,7 +176,11 @@ class Block_User extends BaseBlock {
 
     $user = User::where('email', '=', $email)->first();
     if (!$user) {
-      return array('ok' => false, 'reset_error' => 'unknown_email');
+      return array(
+        'ok' => false,
+        'reset_error' => 'unknown_email',
+        'reglink' => route('vanemart::register').'?email='.urlencode(strip_tags($email)),
+      );
     }
 
     $emailHash = $this->encodeValue($email);
