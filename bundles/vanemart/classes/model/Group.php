@@ -88,7 +88,7 @@ class Group extends BaseModel {
     return $sum;
   }
 
-  static function buildTree($items, $root = null) {
+  static function buildTree($items, $root = null, $depth = 0) {
     if (count($items) < 2) {
       return $root !== null ? array() : (array) $items;
     }
@@ -106,7 +106,23 @@ class Group extends BaseModel {
 
     $tree = $childs[$root];
 
+    if ($depth > 0) {
+      $tree = static::cutTree($tree, $depth);
+    }
     return $tree;
+  }
+
+  static function cutTree($tree, $depth) {
+    $count = count($tree);
+    $result = array();
+    --$depth;
+    foreach ($tree as $item) {
+      $result[] = $item;
+      if ($depth > 0 && !empty($item->childs)) {
+        $item->childs = array_merge($item->childs, static::cutTree($item->childs, $depth));
+      } 
+    }
+    return $result;
   }
 
   function pretty() {

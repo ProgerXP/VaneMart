@@ -152,9 +152,11 @@ class Block_Group extends ModelBlock {
 
   }
 
-  function get_toc($id = null) {
+  function get_toc($depth = 0) {
+    $id = $this->in('id', null);
     if ($group = static::find($id)) {
-      $subgroups = $group->subgroups(2);
+      $depth = $depth == 0 ? ($depth - 1) : ($depth + 1);
+      $subgroups = $group->subgroups($depth);
       $tree = $group->buildTree($subgroups, $group->id);
       return compact('tree');
     }
