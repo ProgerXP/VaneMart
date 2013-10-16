@@ -147,4 +147,18 @@ class Block_Group extends ModelBlock {
       return static::listResponse($slides ? 1000 : 320, $ordered);
     }
   }
+
+  function get_sectionized($id = null) {
+
+  }
+
+  function get_toc($depth = 0) {
+    $id = $this->in('id', null);
+    if ($group = static::find($id)) {
+      $depth = $depth == 0 ? ($depth - 1) : ($depth + 1);
+      $subgroups = $group->subgroups($depth);
+      $tree = $group->buildTree($subgroups, $group->id);
+      return compact('tree');
+    }
+  }
 }

@@ -219,6 +219,9 @@ class Block_User extends BaseBlock {
       }
 
       $newPassword = User::generatePassword();
+      $user->password = $newPassword;
+      $user->save();
+      
       \Vane\Mail::sendTo($user->emailRecipient(), 'vanemart::mail.user.new_password', array(
         'email'         => $email,
         'password'      => $newPassword,
