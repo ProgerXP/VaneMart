@@ -91,5 +91,5 @@ View::composer('vanemart::block.user.login', function ($view) {
 });
 
 Validator::register('vanemart_phone', function ($attribute, $value, $parameters) {
-  return ltrim($value, '0..9()- ') === '';
+  return ltrim($value, '0..9()-+ ') === '';
 });
