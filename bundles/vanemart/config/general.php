@@ -20,8 +20,4 @@ return array(
       //'city'              => 'required|min:2',
     ),
   ),
-
-  'password'              => array(
-    'reset_days'            => 3
-  ),
 );
