@@ -1,0 +1,5 @@
+<each $sections>
+  <h2 id="{ $groups[$key]->slug }">{ $groups[$key]->title }</h2>
+  $=rows  $sections[$key]
+  <include vanemart::block.group.index>
+</each>

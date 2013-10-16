@@ -149,7 +149,26 @@ class Block_Group extends ModelBlock {
   }
 
   function get_sectionized($id = null) {
-
+    if ($group = static::find($id)) {
+      $subgroups = array();
+      $rows = $group->sectionizedGoods($subgroups);
+      $groups = array();
+      foreach ($subgroups as $v) {
+        $groups[$v->id] = $v;
+      }
+      $this->layoutVars = array('groups' => $groups);
+      
+      if (Request::ajax()) {
+        return $rows;
+      } elseif ($rows) {
+        $result = array();
+        foreach ($rows as $gid => $goods) {
+          $tmp = static::listResponse(320, $goods);
+          $result[$gid] = $tmp['rows'];
+        }
+        return array('sections' => $result); 
+      }      
+    }
   }
 
   function get_toc($depth = 0) {

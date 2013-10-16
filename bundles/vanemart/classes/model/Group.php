@@ -141,6 +141,54 @@ class Group extends BaseModel {
     }
   }
 
+  function sectionizedGoods(&$subgroups) {
+    $subgroups = $this->subgroups();
+
+    // $result = [ gid1 => [product1, product2, ..], gid2 => [product3, ..] ]
+    // where gids are only top level child ids of this group
+    $result = array(); 
+    // $gidsTree = [ gid1 => [subId1, subId2], gid2 => [subId3, ...] ]
+    // where subIds are children of this group's childrens'
+    $gidsTree = array();
+
+    $result[$this->id] = array(); // top level goods
+    $tree = static::buildTree($subgroups, $this->id);
+    foreach ($tree as $subgroup) {
+      $gidsTree[$subgroup->id] = array();
+      $result[$subgroup->id] = array();
+      if (!empty($subgroup->childs)) {
+        $gidsTree[$subgroup->id] = static::findChildrenIds($subgroup->childs);
+      }
+    }
+
+    $products = Product::where_in('group', prop('id', $subgroups))
+      ->where_null('variation')
+      ->where('available', '=', 1)
+      ->order_by('sort')
+      ->get();
+
+    foreach ($products as $product) {
+      $key = null;
+      if (isset($result[$product->group])) {
+        $key = $product->group;
+      } else {
+        foreach ($gidsTree as $index => $gids) {
+          if (in_array($product->group, $gids)) {
+            $key = $index;
+            break;
+          }
+        }
+      }
+      $result[$key][] = $product;
+    }
+
+    if (empty($result[$this->id])) {
+      unset($result[$this->id]);
+    }
+
+    return $result;
+  }
+
   //* $depth int - if < 0 runs recursively, if 0 returns $this, if 1 - this'
   //  children, if 2 - them and their children, etc.
   //* $withSelf bool - if false omits $this from result.
