@@ -6,7 +6,7 @@ class Mail extends \LaMeil {
   }
 
   protected function defaultViewDataTo(array &$data) {
-    $info = $this->config('company');
+    $info = Current::config('company');
 
     // Trying to reverse-map the logo URL to local path. Upon success attach that
     // file to the message as "related" file so it's not visible in the attachment
