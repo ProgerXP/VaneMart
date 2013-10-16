@@ -1,7 +1,9 @@
 <ul $list>
-  <li>
-    <a href="#{ $item->slug }">{ $item->title }</a>
-    $=list $item->childs
-    <include vanemart::block.group.subgroups>
-  </li>
+  <if $item->goodsCount or !empty($item->childs)>
+    <li>
+      <a href="#{ $item->slug }">{ $item->title }</a>
+      $=list $item->childs
+      <include vanemart::block.group.subgroups>
+    </li>
+  </if>
 </endul>

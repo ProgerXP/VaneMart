@@ -14,13 +14,21 @@ class Group extends BaseModel {
     return $attrs;
   }
 
-  static function goodsCount() {
+  static function goodsCount($gids = null, $available = null) {
     $table = static::$table;
     $goodsTable = Product::$table;
    
     $counts = \DB::table($table)->join($goodsTable, $goodsTable.'.group', '=', $table.'.id')
-      ->group_by($table.'.id')
-      ->get(array($table.'.id', \DB::raw('COUNT('.$goodsTable.'.id) as count')));
+      ->group_by($table.'.id');
+
+    if ($gids !== null) {
+      $counts = $counts->where_in($table.'.id', $gids);
+    }
+
+    if ($available !== null) {
+      $counts = $counts->where($goodsTable.'.available', '=', $available);
+    }
+    $counts = $counts->get(array($table.'.id', \DB::raw('COUNT('.$goodsTable.'.id) as count')));
 
     $result = array();
     foreach ($counts as $count) {
@@ -30,8 +38,8 @@ class Group extends BaseModel {
     return $result;
   }
 
-  static function treeWithCounts($groups = null) {
-    $counts = static::goodsCount();
+  static function treeWithCounts($groups = null, $available = null) {
+    $counts = static::goodsCount(null, $available);
     if ($groups === null) {
       $groups = static::get();
     }
@@ -141,7 +149,7 @@ class Group extends BaseModel {
     }
   }
 
-  function sectionizedGoods(&$subgroups) {
+  function sectionizedGoods(&$subgroups, &$gidsTree = null) {
     $subgroups = $this->subgroups();
 
     // $result = [ gid1 => [product1, product2, ..], gid2 => [product3, ..] ]
