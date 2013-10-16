@@ -208,8 +208,14 @@ class Group extends BaseModel {
       $next = static::where_in('parent', prop('id', $next))->get();
       $all = array_merge($all, $next);
     }
-
-    return $withSelf ? $all : S::slice($all);
+    $result = $withSelf ? $all : S::slice($all);
+    // sorting
+    $sorts = array();
+    foreach ($result as $group) {
+      $sorts[] = $group->sort;
+    }
+    array_multisort($sorts, SORT_ASC, SORT_NUMERIC, $result);
+    return $result;
   }
 
   //= Group with null parent
