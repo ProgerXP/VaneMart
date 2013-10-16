@@ -157,9 +157,11 @@ class Block_Group extends ModelBlock {
       foreach ($subgroups as $v) {
         $groups[$v->id] = $v;
       }
+
+      $this->title = $group->title;
       $this->layoutVars = array(
         'groups' => $groups,
-        'gidsTree' => $gidsTree
+        'gidsTree' => $gidsTree,
       );
       
       if (Request::ajax()) {
@@ -181,8 +183,7 @@ class Block_Group extends ModelBlock {
       $depth = $depth == 0 ? ($depth - 1) : ($depth + 1);
       $subgroups = $group->subgroups($depth);
       $tree = $group->treeWithCounts($subgroups, 1);
-      $tree = $tree[0];
-      
+      $tree = array_shift($tree)->childs;
       return compact('tree');
     }
   }
