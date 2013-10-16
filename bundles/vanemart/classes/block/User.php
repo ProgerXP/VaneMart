@@ -196,7 +196,7 @@ class Block_User extends BaseBlock {
   }
 
   function get_reset_password($email, $hash) {
-    $days = \Vane\Current::config('general.password.reset_days');
+    $days = \Vane\Current::config('password.reset_days');
 
     try {
       $email = $this->decodeValue($email);
@@ -221,7 +221,7 @@ class Block_User extends BaseBlock {
       $newPassword = User::generatePassword();
       $user->password = $newPassword;
       $user->save();
-      
+
       \Vane\Mail::sendTo($user->emailRecipient(), 'vanemart::mail.user.new_password', array(
         'email'         => $email,
         'password'      => $newPassword,

@@ -34,7 +34,10 @@
     <tr>
       <th>"vanemart::field.password"</th>
       <td>
-        <password "password" class={ $ok === false ? 'invalid' : '' }>
+        <password "password" class={ $ok === false ? 'invalid' : '' } autocomplete=off>
+        <p class="b-info">
+          <submit "to_reset">"vanemart::user.login.reset"</submit>
+        </p>
     </tr>
     <tr>
       <th "no-bk" />
@@ -46,10 +49,10 @@
       </td>
     </tr>
     <tr "btn">
-      <td colspan=2>
+      <th "no-bk" />
+      <td>
         <submit class=default>"vanemart::user.login.submit"</submit>
         <submit "to_reg">"vanemart::user.login.reg"</submit>
-        <submit "to_reset">"vanemart::user.login.reset"</submit>
       </td>
     </tr>
   </table>

@@ -9,7 +9,7 @@ class Validator extends \Px\Validator {
     $rightValue = array_shift($rightValue);
 
     $code = 'return !($leftValue '.$operator.' $rightValue);';
-    return eval($code);
+    return eval($code) or $this->validate_required($attribute, $value);
   }
 
   protected function implicit($rule) {
