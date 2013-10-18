@@ -149,6 +149,17 @@ class Block_Group extends ModelBlock {
   }
 
   function get_sectionized($id = null) {
+    $rows = $this->ajax($id);
+
+    $result = array();
+    foreach ($rows as $gid => $goods) {
+      $tmp = static::listResponse(320, $goods);
+      $result[$gid] = $tmp['rows'];
+    }
+    return array('sections' => $result); 
+  }
+
+  function ajax_get_sectionized($id = null) {
     if ($group = static::find($id)) {
       $subgroups = array();
       $gidsTree = array();
@@ -157,23 +168,12 @@ class Block_Group extends ModelBlock {
       foreach ($subgroups as $v) {
         $groups[$v->id] = $v;
       }
-
       $this->title = $group->title;
       $this->layoutVars = array(
         'groups' => $groups,
         'gidsTree' => $gidsTree,
       );
-      
-      if (Request::ajax()) {
-        return $rows;
-      } elseif ($rows) {
-        $result = array();
-        foreach ($rows as $gid => $goods) {
-          $tmp = static::listResponse(320, $goods);
-          $result[$gid] = $tmp['rows'];
-        }
-        return array('sections' => $result); 
-      }      
+      return $rows;   
     }
   }
 
