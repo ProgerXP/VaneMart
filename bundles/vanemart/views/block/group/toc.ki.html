@@ -1,2 +1,4 @@
-$=list $tree
-<include vanemart::block.group.subgroups>
+<div ${ !empty($tree) } "vmart-toc">
+  $=list $tree
+  <include vanemart::block.group.subgroups>
+</enddiv>
