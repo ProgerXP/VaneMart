@@ -148,7 +148,31 @@ class Block_Group extends ModelBlock {
     }
   }
 
+  /*---------------------------------------------------------------------
+  | GET group/sectionized /ID
+  |
+  | Displays goods in sections for given group ID. 
+  | Each section has goods from a toplevel subgroup plus it's 
+  | own subgroups.
+  |--------------------------------------------------------------------*/
   function get_sectionized($id = null) {
+    $rows = $this->ajax($id);
+
+    $result = array();
+    foreach ($rows as $gid => $goods) {
+      $tmp = static::listResponse(320, $goods);
+      $result[$gid] = $tmp['rows'];
+    }
+    return array('sections' => $result); 
+  }
+
+  /*---------------------------------------------------------------------
+  | GET group/sectionized /ID
+  |
+  | Returns an array of goods with it's indexes equal to IDs of 
+  | toplevel subgroups.
+  |--------------------------------------------------------------------*/
+  function ajax_get_sectionized($id = null) {
     if ($group = static::find($id)) {
       $subgroups = array();
       $gidsTree = array();
@@ -157,28 +181,25 @@ class Block_Group extends ModelBlock {
       foreach ($subgroups as $v) {
         $groups[$v->id] = $v;
       }
-
       $this->title = $group->title;
       $this->layoutVars = array(
         'groups' => $groups,
         'gidsTree' => $gidsTree,
       );
-      
-      if (Request::ajax()) {
-        return $rows;
-      } elseif ($rows) {
-        $result = array();
-        foreach ($rows as $gid => $goods) {
-          $tmp = static::listResponse(320, $goods);
-          $result[$gid] = $tmp['rows'];
-        }
-        return array('sections' => $result); 
-      }      
+      return $rows;   
     }
   }
 
-  function get_toc($depth = 0) {
-    $id = $this->in('id', null);
+  /*---------------------------------------------------------------------
+  | GET group/toc /DEPTH /ID
+  | Displays TOC for given group.
+  |
+  |----------------------------------------------------------------------
+  | DEPTH - 0 - there is no limit for depth, 
+  |         1 - outputs only the first level, 2 - second, and so on.
+  | ID    - group's ID, should be set.
+  |--------------------------------------------------------------------*/
+  function get_toc($depth = 0, $id = null) {
     if ($group = static::find($id)) {
       $depth = $depth == 0 ? ($depth - 1) : ($depth + 1);
       $subgroups = $group->subgroups($depth);

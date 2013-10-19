@@ -121,12 +121,11 @@ class Group extends BaseModel {
   }
 
   static function cutTree($tree, $depth) {
-    $count = count($tree);
     $result = array();
     --$depth;
     foreach ($tree as $item) {
       $result[] = $item;
-      if ($depth > 0 && !empty($item->childs)) {
+      if ($depth > 0 or !empty($item->childs)) {
         $item->childs = array_merge($item->childs, static::cutTree($item->childs, $depth));
       } 
     }
