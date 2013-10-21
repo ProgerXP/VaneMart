@@ -195,11 +195,11 @@ class Block_Group extends ModelBlock {
   | Displays TOC for given group.
   |
   |----------------------------------------------------------------------
-  | DEPTH - 0 - there is no limit for depth, 
+  | * ID    - group's ID, should be set.
+  | * DEPTH - 0 - there is no limit for depth, 
   |         1 - outputs only the first level, 2 - second, and so on.
-  | ID    - group's ID, should be set.
   |--------------------------------------------------------------------*/
-  function get_toc($depth = 0, $id = null) {
+  function get_toc($id = null, $depth = 0) {
     if ($group = static::find($id)) {
       $depth = $depth == 0 ? ($depth - 1) : ($depth + 1);
       $subgroups = $group->subgroups($depth);

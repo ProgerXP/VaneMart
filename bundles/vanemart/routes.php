@@ -15,7 +15,7 @@ VRoute::on('(:bundle)/groups/(\d+-?[^/]*)')
   ->servers('VaneMart::group@sectionized')
   ->layout(array(
     '=nav #group'         => array(),
-    '+#content'           => array('VaneMart::group@toc 0 (:1)', '!'),
+    '+#content'           => array('VaneMart::group@toc (:1) 0', '!'),
   ));
 
 VRoute::on('(:bundle)/goods/(\d+-?[^/]*)')
