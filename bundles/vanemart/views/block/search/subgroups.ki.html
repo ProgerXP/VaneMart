@@ -1,0 +1,11 @@
+<ul $list>
+  <if $item->found>
+    <li>
+      <a href="#{ $item->slug }">{ $item->title }</a>
+      <if !empty($item->childs)>
+        $=list $item->childs
+        <include vanemart::block.search.subgroups>
+      </if>
+    </li>
+  </if>
+</endul>

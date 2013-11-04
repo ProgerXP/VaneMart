@@ -1,0 +1,8 @@
+<?$mail->subject('search.mail.message.subject', \Vane\Current::config('company'))?>
+
+$=content
+  <h3>{= htmlLang('search.mail.message.intro', array('from' => $from)) }</h3>
+  <p>{ $message }</p>
+$^content
+
+<include vanemart::mail.full>

@@ -84,14 +84,14 @@ class Group extends BaseModel {
     return null;
   }
 
-  static function calcGoodsCount($tree, $counts) {
+  static function calcGoodsCount($tree, $counts, $var = 'goodsCount') {
     $sum = 0;
     foreach ($tree as $group) {
-      $group->goodsCount = isset($counts[$group->id]) ? $counts[$group->id] : 0;
+      $group->$var = isset($counts[$group->id]) ? $counts[$group->id] : 0;
       if ($group->childs) {
-        $group->goodsCount += static::calcGoodsCount($group->childs, $counts);
+        $group->$var += static::calcGoodsCount($group->childs, $counts, $var);
       }
-      $sum += $group->goodsCount;
+      $sum += $group->$var;
     }
     return $sum;
   }
@@ -128,6 +128,59 @@ class Group extends BaseModel {
       if ($depth > 0 or !empty($item->childs)) {
         $item->childs = array_merge($item->childs, static::cutTree($item->childs, $depth));
       } 
+    }
+    return $result;
+  }
+
+  static function removeChild($tree, $var = 'goodsCount') {
+    $result = array();
+    foreach ($tree as $item) {
+      if ($item->$var == 0) {
+        continue;
+      }
+      if (!empty($item->childs)) {
+        $item->childs = static::removeChild($item->childs, $var);
+      }
+      $result[] = $item;
+    }
+    return $result;
+  }
+
+  static function groupsWithGoods($products, $allGroups) {
+    $result = array();
+    $groups = array();
+    $subgroups = array();
+
+    $tree = static::buildTree($allGroups);
+
+    foreach ($tree as $group) {
+      $groups[$group->id] = array('group' => $group);
+      if (!empty($group->childs)) {
+        foreach ($group->childs as $subgroup) {
+          $subgroups[$subgroup->id] = array('group' => $subgroup);
+          if (!empty($subgroup->childs)) {
+            $subgroups[$subgroup->id]['subIds'] = static::findChildrenIds($subgroup->childs);
+          }
+        }
+      }
+    }
+
+    foreach ($products as $product) {
+      $gid = $product->group; 
+      if (isset($groups[$gid])) {
+        $result[$gid]['products'][] = $product;
+      } elseif (isset($subgroups[$gid])) {
+        $parent = $subgroups[$gid]['group']->parent;
+        $result[$parent]['subgroups'][$gid]['products'][] = $product;
+      } else {
+        foreach ($subgroups as $subId => $subgroup) {
+          $parent = $subgroup->parent;
+          if (in_array($gid, $subgroup['subIds'])) {
+            $result[$parent]['subgroups'][$subId]['products'][] = $product;
+            break;
+          }
+        }
+      }
     }
     return $result;
   }

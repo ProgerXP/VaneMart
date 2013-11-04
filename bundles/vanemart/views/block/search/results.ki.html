@@ -1,0 +1,43 @@
+<div "vmart-search">
+  <if !empty($hasResults)>
+    <if $groupsTree>
+      <div "vmart-search-source">
+        <h2>Группы товаров</h2>
+        $=list $groupsTree
+        <include vanemart::block.search.subgroups>
+      </div>
+    </if>
+
+    <if $goods>
+      <div "vmart-search-source">
+        <h2>Найденные товары</h2>
+        $=rows $goods
+        <include vanemart::block.search.sectionized>
+      </div>
+    </if>
+
+    <if $skuGoods>
+      <div "vmart-search-source">
+        <h2>Товары по артикулу</h2>
+        $=rows $skuGoods
+        <include vanemart::block.group.index>
+      </div>
+    </if>
+
+    <if isset($results['orders'])>
+      <div $results['orders'] "vmart-search-source sm-list">
+        <h2>Заказы</h2>
+        <p "res-item">
+          <b>Заказ №{ $item->id }</b> от <time>{ HLEx::time($item->created_at) }</time>,
+          <span "name">{ $item->name }</span>
+        </p>
+      </enddiv>
+    </if>
+  <else>
+    <if !empty($messageForm)>
+      <include vanemart::block.search.message>
+    <else>
+      Результатов нет
+    </if>
+  </if>
+</div>
