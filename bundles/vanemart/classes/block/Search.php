@@ -1,9 +1,14 @@
 <?php namespace VaneMart;
 
 class Block_Search extends BaseBlock {
+  /*---------------------------------------------------------------------
+  | GET search/index /PHRASE
+  |
+  | Show search results for PHRASE
+  |--------------------------------------------------------------------*/
   function get_index() {
     $q = $this->in('phrase', null);
-    if ($q === null or Str::length($q) === 0) {
+    if (!preg_match('/\S/u', $q)) {
       $this->layoutVars = array( 'hasResults' => false );
       return true;
     }
@@ -54,7 +59,7 @@ class Block_Search extends BaseBlock {
     }
 
     $adminEmail = \Config::get('vanemart::company.email', null);
-    $hasResults = $this->resultsNotEmpty($results);
+    $hasResults = (bool) $this->resultsCount($results);
     $messageForm = !$hasResults && $adminEmail;
     if ($messageForm) {
       $this->title = 'Что вы искали?';
@@ -63,7 +68,12 @@ class Block_Search extends BaseBlock {
     return compact('results', 'q', 'messageForm', 'skuGoods', 'goods', 'current',
      'groupsTree', 'gidsTree', 'allGroups', 'hasResults');
   }
-
+  
+  /*---------------------------------------------------------------------
+  | GET search/index /PHRASE
+  |
+  | Show HTML search results for PHRASE
+  |--------------------------------------------------------------------*/
   function ajax_get_index() {
     $data = $this->get_index();
     if ($data === true) {
@@ -72,11 +82,37 @@ class Block_Search extends BaseBlock {
     return View::make('vanemart::block.search.results', $data)->render();
   }
 
-  /*function ajax_get_autocomplete() {
-    $results = $this->getResults();
-    return $results;
-  }*/
+  /*---------------------------------------------------------------------
+  | GET search/autocomplete /PHRASE
+  |
+  | Returns an array in JSON format with search results for PHRASE
+  |--------------------------------------------------------------------*/
+  function ajax_get_autocomplete() {
+    $maxResults = 15;
+    $data = array();
+    $results = $this->getResults($maxResults);
+    foreach ($results as $key=>$result) {
+      foreach ($result as $el) {
+        if ($key == 'orders') {
+          $title = 'Заказ №'.$el->id;
+        } else {
+          $title = $el->title;
+        }
+        $insert = array(
+          'title' => HLEx::q($title),
+          'url'   => $el->url(),
+        );
+        $data[$key][] = $insert;
+      }
+    }
+    return $data;
+  }
 
+  /*---------------------------------------------------------------------
+  | GET search/message
+  |
+  | Post a message via email, or shows a contact form with errors 
+  |--------------------------------------------------------------------*/
   function post_message() {
     $email = \Config::get('vanemart::company.email', null);
     if ($email != '') {
@@ -98,36 +134,58 @@ class Block_Search extends BaseBlock {
     }
   }
 
-  protected function getResults() {
+  protected function getResults($maxResults = null) {
     $q = $this->in('phrase', null);
+    if (!preg_match('/\S/u', $q)) {
+      return array();
+    }
     $qLike = strtr($q, array('%'=>'\%', '_'=>'\_'));
 
     $results = array();
-    $results['groups'] = Group::where('title', 'LIKE', '%'.$qLike.'%')
-      ->where_null('parent')->get();
-    $results['subgroups'] = Group::where('title', 'LIKE', '%'.$qLike.'%')
-      ->where_not_null('parent')->get();
-    $results['goods'] = Product::where('title', 'LIKE', '%'.$qLike.'%')->get();
-    // sku
-    if (preg_match('/[a-z0-9_\-]/i', $q)) {
-      $results['sku'] = Product::where('sku', 'LIKE', $qLike.'%')->get();
-    }
-    // order
-    if (preg_match('/^[0-9]$/i', $q)) {
-      $results['orders'] = Order::where('id', '=', $q)->first();
+
+    $funcs[] = function (&$results, $qLike, $q) {
+      // sku
+      if (preg_match('/[a-z0-9_\-]/i', $q)) {
+        $results['sku'] = Product::where('sku', 'LIKE', $qLike.'%')->get();
+      }
+    };
+
+    $funcs[] = function (&$results, $qLike, $q) {
+      // orders
+      if (preg_match('/^[0-9]$/i', $q)) {
+        $results['orders'] = Order::where('id', '=', $q)->get();
+      }
+    };
+
+    $funcs[] = function (&$results, $qLike, $q) {
+      $results['groups'] = Group::where('title', 'LIKE', '%'.$qLike.'%')
+        ->where_null('parent')->get();
+    };
+
+    $funcs[] = function (&$results, $qLike, $q) {
+      $results['subgroups'] = Group::where('title', 'LIKE', '%'.$qLike.'%')
+        ->where_not_null('parent')->get();
+    };
+
+    $funcs[] = function (&$results, $qLike, $q) {
+      $results['goods'] = Product::where('title', 'LIKE', '%'.$qLike.'%')->get();
+    };
+
+    foreach ($funcs as $func) {
+      $func($results, $qLike, $q);
+      if ($maxResults > 0 and $this->resultsCount($results) >= $maxResults) {
+        break;
+      }
     }
 
     return $results;
   }
 
-  protected function resultsNotEmpty($results) {
-    $return = false;
+  protected function resultsCount($results) {
+    $sum = 0;
     foreach ($results as $result) {
-      if (count($result) > 0) {
-        $return = true;
-        break;
-      }
+      $sum += count($result);
     }
-    return $return;
+    return $sum;
   }
 }

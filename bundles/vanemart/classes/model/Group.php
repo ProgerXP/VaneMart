@@ -157,7 +157,7 @@ class Group extends BaseModel {
       $groups[$group->id] = array('group' => $group);
       if (!empty($group->childs)) {
         foreach ($group->childs as $subgroup) {
-          $subgroups[$subgroup->id] = array('group' => $subgroup);
+          $subgroups[$subgroup->id] = array('group' => $subgroup, 'subIds' => array());
           if (!empty($subgroup->childs)) {
             $subgroups[$subgroup->id]['subIds'] = static::findChildrenIds($subgroup->childs);
           }
@@ -174,7 +174,7 @@ class Group extends BaseModel {
         $result[$parent]['subgroups'][$gid]['products'][] = $product;
       } else {
         foreach ($subgroups as $subId => $subgroup) {
-          $parent = $subgroup->parent;
+          $parent = $subgroup['group']->parent;
           if (in_array($gid, $subgroup['subIds'])) {
             $result[$parent]['subgroups'][$subId]['products'][] = $product;
             break;

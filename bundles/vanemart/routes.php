@@ -80,6 +80,7 @@ Vroute::on('(:bundle)/search')
   ));
 
 VRoute::map('(:bundle)/search/message', 'VaneMart::search@message', true);
+VRoute::map('(:bundle)/search/autocomplete', 'VaneMart::search@autocomplete', true);
 
 VRoute::map('(:bundle)/users/(:num)', 'VaneMart::user@show', true);
 VRoute::map('(:bundle)/users/reg', 'VaneMart::user@reg', 'vanemart::register');
