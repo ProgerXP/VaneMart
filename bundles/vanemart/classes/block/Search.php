@@ -62,7 +62,7 @@ class Block_Search extends BaseBlock {
     $hasResults = (bool) $this->resultsCount($results);
     $messageForm = !$hasResults && $adminEmail;
     if ($messageForm) {
-      $this->title = 'Что вы искали?';
+      $this->title = __('vanemart::search.message.title');
     }
     $current = null;
     return compact('results', 'q', 'messageForm', 'skuGoods', 'goods', 'current',
@@ -94,7 +94,7 @@ class Block_Search extends BaseBlock {
     foreach ($results as $key=>$result) {
       foreach ($result as $el) {
         if ($key == 'orders') {
-          $title = 'Заказ №'.$el->id;
+          $title = __('vanemart::search.results.order').' №'.$el->id;
         } else {
           $title = $el->title;
         }

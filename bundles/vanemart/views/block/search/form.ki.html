@@ -1,4 +1,4 @@
 <form "vanemart::search" get class="vmart-search-form" data-url={ action("vanemart::search") } data-autocomplete-url={ action("vanemart::search@autocomplete") } data-autocomplete-limit={ \Config::get('vanemart::search.live.limit') }>
-  <input name=phrase placeholder="Название группы, товара, артикул или номер заказа" autocomplete=off>
-  <noscript><submit>Искать</submit></noscript>
+  <input name=phrase placeholder="{ __('vanemart::search.form.placeholder') }" autocomplete=off>
+  <noscript><submit>"vanemart::search.form.submit"</submit></noscript>
 </form>
