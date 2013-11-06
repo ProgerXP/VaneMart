@@ -86,7 +86,7 @@ class Menu implements \IteratorAggregate, \Countable {
 
   function addLink($item, $name = null) {
     $item = arrize($item, 'url') + compact('name');
-    $item['url'] = static::expand($item['url']);
+    $item['url'] = static::expand(array_get($item, 'url'));
 
     if (!isset($item['caption'])) {
       $item['caption'] = "$name" === '' ? $url : static::caption($name);
