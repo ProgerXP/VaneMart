@@ -1,0 +1,15 @@
+<each $goods>
+  <h2 "block-subtitle" id="{ $allGroups[$key]->slug }">{ $allGroups[$key]->title }</h2>
+  <if !empty($item['products'])>
+    $=rows  $item['products']
+    <include vanemart::block.group.index>
+  </if>
+
+  <if !empty($item['subgroups'])>
+    <each $s{ $item['subgroups'] }>
+      <h3 "block-subtitle" id="{ $allGroups[$key_s]->slug }">{ $allGroups[$key_s]->title }</h3>
+      $=rows $item_s['products']
+      <include vanemart::block.group.index>
+    </each>
+  </if>
+</each>
