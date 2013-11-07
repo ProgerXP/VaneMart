@@ -12,7 +12,7 @@
       <div $results['orders'] "vmart-search-source sm-list">
         <h2>"vanemart::search.results.headers.orders"</h2>
         <p "res-item">
-          <b>"vanemart::search.results.order" №{ $item->id }</b> от {= HLEx::time($item->created_at) },
+          <b>{ __("vanemart::search.results.order", $item->id) }</b> "vanemart::search.results.orderdate" {= HLEx::time($item->created_at) },
           <span "name">{ $item->name }</span>
         </p>
       </enddiv>
