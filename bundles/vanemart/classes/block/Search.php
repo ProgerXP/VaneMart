@@ -2,6 +2,7 @@
 
 class Block_Search extends BaseBlock {
   public $searchTemplate = 'vanemart::block.search.results';
+  static $query = '';
   /*---------------------------------------------------------------------
   | GET search/index /PHRASE
   |
@@ -76,7 +77,7 @@ class Block_Search extends BaseBlock {
       $this->title = __('vanemart::search.message.title');
     }
     $current = null;
-    $data = compact('results', 'q', 'messageForm', 'skuGoods', 'goods', 'current',
+    $data = compact('results', 'query', 'messageForm', 'skuGoods', 'goods', 'current',
      'groupsTree', 'gidsTree', 'allGroups', 'hasResults');
 
     return View::make($this->searchTemplate, $data)->render();
@@ -140,11 +141,28 @@ class Block_Search extends BaseBlock {
     }
   }
 
+  static function mark($string) {
+    $string = str_replace(array('<mark>','</mark>'), '', $string);
+    return static::markResult(q($string));
+  }
+
+  protected static function markResult($s) {
+    $querySafe = preg_quote(static::$query);
+    $s = preg_replace_callback('/^'.$querySafe.'/iu', function ($matches) {
+      return '<mark>'.$matches[0].'</mark>';
+    }, $s);
+    $s = preg_replace_callback('/(\s+)('.$querySafe.')/iu', function ($matches) {
+      return $matches[1].'<mark>'.$matches[2].'</mark>';
+    }, $s);
+    return $s;
+  }
+
   protected function getQuery() {
     $query = $this->in('phrase', null);
     if ($query === null or !preg_match('/\S/u', $query)) {
-      return null;
+      $query = null;
     }
+    static::$query = $query;
     return $query;
   }
 
@@ -200,19 +218,14 @@ class Block_Search extends BaseBlock {
       }
     }
 
-    $querySafe = preg_quote($query);
     foreach ($results as $type => $subresults) {
       if ($type === 'orders' or $type === 'sku') {
         continue;
       }
       foreach ($subresults as $i => $result) {
-        $s = preg_replace_callback('/^'.$querySafe.'/iu', function ($matches) {
-          return '<mark>'.$matches[0].'</mark>';
-        }, $result->title);
-        $result->title = $s;
+        $result->title = static::markResult($result->title);
       }
     }
-
     return $results;
   }
 
