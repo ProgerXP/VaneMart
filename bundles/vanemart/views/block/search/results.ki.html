@@ -8,15 +8,13 @@
       </div>
     </if>
 
-    <if isset($results['orders'])>
-      <div $results['orders'] "vmart-search-source sm-list">
-        <h2>"vanemart::search.results.headers.orders"</h2>
-        <p "res-item">
-          <b>{ __("vanemart::search.results.order", $item->id) }</b> "vanemart::search.results.orderdate" {= HLEx::time($item->created_at) },
-          <span "name">{ $item->name }</span>
-        </p>
-      </enddiv>
-    </if>
+    <div ${ array_get($results, 'orders') } "vmart-search-source sm-list">
+      <h2>"vanemart::search.results.headers.orders"</h2>
+      <p "res-item">
+        <b>{ __("vanemart::search.results.order", $item->id) }</b> "vanemart::search.results.orderdate" {= HLEx::time($item->created_at) },
+        <span "name">{ $item->name }</span>
+      </p>
+    </enddiv>
 
     <if $groupsTree>
       <div "vmart-search-source">
@@ -34,11 +32,9 @@
       </div>
     </if>
     
+  <elseif !empty($messageForm)>
+    <include vanemart::block.search.message>
   <else>
-    <if !empty($messageForm)>
-      <include vanemart::block.search.message>
-    <else>
-      "vanemart::search.results.empty"
-    </if>
+    "vanemart::search.results.empty"
   </if>
 </div>

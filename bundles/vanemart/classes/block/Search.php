@@ -200,6 +200,19 @@ class Block_Search extends BaseBlock {
       }
     }
 
+    $querySafe = preg_quote($query);
+    foreach ($results as $type => $subresults) {
+      if ($type === 'orders' or $type === 'sku') {
+        continue;
+      }
+      foreach ($subresults as $i => $result) {
+        $s = preg_replace_callback('/^'.$querySafe.'/iu', function ($matches) {
+          return '<mark>'.$matches[0].'</mark>';
+        }, $result->title);
+        $result->title = $s;
+      }
+    }
+
     return $results;
   }
 
