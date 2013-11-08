@@ -1,9 +1,9 @@
-<p "info">
-  "vanemart::search.message.info"
-</p>
-<form "vanemart::search@message" post class="vmart-message-form">
-  <input name=from placeholder="{ __('vanemart::search.message.placeholder') }">
-  <textarea name=message></textarea>
+<form "vanemart::search@message" post class="vmart-search-message-form errorable">
+  <p "b-info">"vanemart::search.message.info"</p>
+
+  <input name=from placeholder={ __('vanemart::search.message.placeholder') }>
   <errors>
-  <submit>"vanemart::search.message.submit"</submit>
+  <textarea name=message />
+  <errors>
+  <submit class="big default">"vanemart::search.message.submit"</submit>
 </form>

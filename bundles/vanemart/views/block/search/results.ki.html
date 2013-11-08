@@ -1,37 +1,41 @@
 <div "vmart-search">
   <if !empty($hasResults)>
-    <if $skuGoods>
-      <div "vmart-search-source">
-        <h2>"vanemart::search.results.headers.sku"</h2>
-        $=rows $skuGoods
-        <include vanemart::block.search.goods>
-      </div>
-    </if>
-
-    <div ${ array_get($results, 'orders') } "vmart-search-source sm-list">
-      <h2>"vanemart::search.results.headers.orders"</h2>
-      <p "res-item">
-        <b>{ __("vanemart::search.results.order", $item->id) }</b> "vanemart::search.results.orderdate" {= HLEx::time($item->created_at) },
-        <span "name">{ $item->name }</span>
-      </p>
+    <div ${ !!$skuGoods } "vmart-search-source">
+      <h2>"vanemart::search.results.headers.sku"</h2>
+      $=rows $skuGoods
+      <include vanemart::block.search.goods>
     </enddiv>
 
-    <if $groupsTree>
-      <div "vmart-search-source">
-        <h2>"vanemart::search.results.headers.groups"</h2>
+    <div ${ !empty($results['orders']) } "vmart-search-source sm-list">
+      <h2>"vanemart::search.results.headers.orders"</h2>
+
+      <each ${ $results['orders'] }>
+        $=id        $item->id
+        $=created   strtotime($item->created_at)
+        $=created   HLEx::time(date('d.m.Y', $created), $created, true)
+
+        <p "res-item">
+          <a "{ $item->url() }">
+            {= htmlLang('order.index.item_title', compact('id', 'created'), false) }
+          </a>
+          — { $item->name }
+        </p>
+      </each>
+    </enddiv>
+
+    <div ${ !!$groupsTree } "vmart-search-source">
+      <h2>"vanemart::search.results.headers.groups"</h2>
+      <div "vmart-toc">
         $=list $groupsTree
         <include vanemart::block.search.subgroups>
       </div>
-    </if>
+    </enddiv>
 
-    <if $goods>
-      <div "vmart-search-source">
-        <h2>"vanemart::search.results.headers.goods"</h2>
-        $=rows $goods
-        <include vanemart::block.search.sectionized>
-      </div>
-    </if>
-    
+    <div ${ !!$goods } "vmart-search-source goods">
+      <h2>"vanemart::search.results.headers.goods"</h2>
+      $=rows $goods
+      <include vanemart::block.search.sectionized>
+    </enddiv>
   <elseif !empty($messageForm)>
     <include vanemart::block.search.message>
   <else>

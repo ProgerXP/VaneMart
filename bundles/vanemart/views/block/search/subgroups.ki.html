@@ -1,11 +1,7 @@
 <ul $list>
-  <if $item->found>
-    <li>
-      <a href="#{ $item->slug }">{= Block_Search::mark($item->title) }</a>
-      <if !empty($item->childs)>
-        $=list $item->childs
-        <include vanemart::block.search.subgroups>
-      </if>
-    </li>
-  </if>
+  <li $_{ $item->found }>
+    <a href="#{ $item->slug }">{= Block_Search::mark($item->title) }</a>
+    $=list $item->childs
+    <include vanemart::block.search.subgroups>
+  </endli>
 </endul>

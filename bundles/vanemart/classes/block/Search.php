@@ -3,6 +3,7 @@
 class Block_Search extends BaseBlock {
   public $searchTemplate = 'vanemart::block.search.results';
   static $query = '';
+
   /*---------------------------------------------------------------------
   | GET search/index /PHRASE
   |
@@ -12,7 +13,7 @@ class Block_Search extends BaseBlock {
     $this->searchTemplate = 'vanemart::block.search.index';
     return $this->ajax_get_index();
   }
-  
+
   /*---------------------------------------------------------------------
   | GET search/index /PHRASE
   |
@@ -24,7 +25,7 @@ class Block_Search extends BaseBlock {
       $this->layoutVars = array( 'hasResults' => false );
       return true;
     }
-    
+
     $results = $this->getResults($query);
 
     // making a tree from found groups
@@ -118,7 +119,7 @@ class Block_Search extends BaseBlock {
   /*---------------------------------------------------------------------
   | GET search/message
   |
-  | Post a message via email, or shows a contact form with errors 
+  | Post a message via email, or shows a contact form with errors
   |--------------------------------------------------------------------*/
   function post_message() {
     $email = \Config::get('vanemart::company.email', null);
@@ -130,7 +131,7 @@ class Block_Search extends BaseBlock {
       if ($valid->fails()) {
         return $valid;
       }
-      
+
       \Vane\Mail::sendTo($email, 'vanemart::mail.search.message', array(
         'message'     => $this->in('message'),
         'from'        => $this->in('from', '')
@@ -173,7 +174,7 @@ class Block_Search extends BaseBlock {
 
     $funcs[] = function (&$results, $qLike, $query) {
       // sku
-      if (preg_match('/[a-z0-9_\-]/i', $query)) {
+      if (strlen($query) > 2 and preg_match('/[a-z0-9_\-]+/i', $query)) {
         $results['sku'] = Product::where('sku', 'LIKE', $qLike.'%')
           ->where_null('variation')
           ->where('available', '=', 1)
@@ -184,7 +185,7 @@ class Block_Search extends BaseBlock {
 
     $funcs[] = function (&$results, $qLike, $query) {
       // orders
-      if (preg_match('/^[0-9]$/i', $query)) {
+      if (!ltrim($query, '0..9')) {
         $results['orders'] = Order::where('id', '=', $query)->get();
       }
     };
