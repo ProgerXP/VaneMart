@@ -27,6 +27,7 @@ return array(
   // Product
   'title'                 => 'Название:',
   'price'                 => 'Цена:',
+  'price_whole_retail'    => 'Цена опт/розница:',
   'sku'                   => 'Артикул:',
   'country'               => 'Страна происхождения:',
   'maker'                 => 'Изготовитель:',
