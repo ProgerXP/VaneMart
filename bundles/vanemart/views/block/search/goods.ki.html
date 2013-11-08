@@ -1,0 +1,24 @@
+<ul $rows "v-rows vmart-goods">
+  <li "{ $current ? 'current' : '' } { Cart::has($id) ? 'in-cart' : ''}" data-id=$id>
+    <p $_{ $image } "title thumb">
+      <a "$url">
+        <img $image "$image" "thumb" alt=$title>
+        <span "title">{= Block_Search::mark($title) }</span>
+      </a>
+    <else>
+      <p "title">
+        <a "$url"><span "title">{= Block_Search::mark($title) }</span></a>
+      </p>
+    </endp>
+
+    <p "origin">
+      <span>$country</span>
+      <span>$maker</span>
+    </p>
+
+    <p "price">
+      $=price langNum('general.currency_short', $retail ?: $wholesale)
+      {= __('vanemart::group.index.price', compact('price') + $item) }
+    </p>
+  </li>
+</endul>
