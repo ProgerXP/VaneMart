@@ -8,6 +8,7 @@ return array(
     'message'             => array(
       'subject'           => ':short — обратная связь',
       'intro'             => 'Сообщение от :from',
+      'default'           => 'пользователя',
     ),
   ),
 

@@ -2,7 +2,6 @@
 
 class Block_Search extends BaseBlock {
   public $searchTemplate = 'vanemart::block.search.results';
-  static $query = '';
 
   /*---------------------------------------------------------------------
   | GET search/index /PHRASE
@@ -20,27 +19,38 @@ class Block_Search extends BaseBlock {
   | Show HTML search results for PHRASE
   |--------------------------------------------------------------------*/
   function ajax_get_index() {
-    $query = $this->getQuery();
-    if ($query === null) {
+    $results = $this->getResults();
+    if ($results === null) {
       $this->layoutVars = array( 'hasResults' => false );
-      return true;
+      return true;      
     }
 
-    $results = $this->getResults($query);
-
     // making a tree from found groups
-    $groups = array_merge($results['groups'], $results['subgroups']);
+    $groups = array_merge(array_get($results, 'groups', array()),
+      array_get($results, 'subgroups', array()));
     $tmp = Group::order_by('sort')->get();
     foreach ($tmp as $group) {
       $allGroups[$group->id] = $group;
     }
     $allTree = Group::buildTree($allGroups);
+
     $groupsTree = array();
     $hits = prop('id', $groups);
     if ($hits) {
       // [id1 => 1, id2 => 1, id3 => 1]
       $hits = array_combine($hits, array_fill(0, count($hits), 1));
-      $groupsTree = $allTree;
+      // making copy of groups to prevent overlapping
+      $copiedGroups = array();
+      foreach ($allGroups as $key => $value) {
+        $copiedGroups[$key] = clone $value;
+        // installing a marked title
+        foreach ($groups as $group) {
+          if ($group->id === $value->id) {
+            $copiedGroups[$key]->titleQ = $group->titleQ;
+          }
+        }
+      }
+      $groupsTree = Group::buildTree($copiedGroups);
       Group::calcGoodsCount($groupsTree, $hits, 'found');
       $groupsTree = Group::removeChild($groupsTree, 'found');
     }
@@ -93,21 +103,23 @@ class Block_Search extends BaseBlock {
     $maxResults = 15;
     $data = array();
 
-    $query = $this->getQuery();
-    if ($query === null) {
+    $results = $this->getResults($maxResults);
+    if ($results === null) {
       return null;
     }
 
-    $results = $this->getResults($query, $maxResults);
     foreach ($results as $key => $result) {
       foreach ($result as $el) {
         if ($key == 'orders') {
           $title = __('vanemart::search.results.order', $el->id) . '';
+          $titleQ = $title;
         } else {
           $title = $el->title;
+          $titleQ = $el->titleQ;
         }
         $insert = array(
           'title' => $title,
+          'titleQ' => $titleQ,
           'url'   => $el->url(),
         );
         $data[$key][] = $insert;
@@ -131,10 +143,13 @@ class Block_Search extends BaseBlock {
       if ($valid->fails()) {
         return $valid;
       }
-
+      $from = trim($this->in('from', ''));
+      if ($from == '') {
+        $from = __('vanemart::search.mail.message.default') . '';
+      }
       \Vane\Mail::sendTo($email, 'vanemart::mail.search.message', array(
         'message'     => $this->in('message'),
-        'from'        => $this->in('from', '')
+        'from'        => $from,
       ));
 
       $this->status('message_sent');
@@ -142,40 +157,36 @@ class Block_Search extends BaseBlock {
     }
   }
 
-  static function mark($string) {
-    $string = str_replace(array('<mark>','</mark>'), '', $string);
-    return static::markResult(q($string));
+  protected static function checkResult($str, $query, $mark = true) {
+    $querySafe = preg_quote($query);
+    $found = false;
+    $str = q($str);
+    $str = preg_replace_callback('/^'.$querySafe.'/iu', function ($matches) use($mark, &$found) {
+      $found = true;
+      return $mark ? '<mark>'.$matches[0].'</mark>' : $matches[0];
+    }, $str);
+
+    $str = preg_replace_callback('/(\s+)('.$querySafe.')/iu', function ($matches) use($mark, &$found) {
+      $found = true;
+      return $mark ? $matches[1].'<mark>'.$matches[2].'</mark>' : $matches[0];
+    }, $str);
+
+    return $found ? $str : false;
   }
 
-  protected static function markResult($s) {
-    $querySafe = preg_quote(static::$query);
-    $s = preg_replace_callback('/^'.$querySafe.'/iu', function ($matches) {
-      return '<mark>'.$matches[0].'</mark>';
-    }, $s);
-    $s = preg_replace_callback('/(\s+)('.$querySafe.')/iu', function ($matches) {
-      return $matches[1].'<mark>'.$matches[2].'</mark>';
-    }, $s);
-    return $s;
-  }
-
-  protected function getQuery() {
+  protected function getResults($maxResults = null) {
     $query = $this->in('phrase', null);
     if ($query === null or !preg_match('/\S/u', $query)) {
-      $query = null;
+      return null;
     }
-    static::$query = $query;
-    return $query;
-  }
-
-  protected function getResults($query, $maxResults = null) {
     $qLike = strtr($query, array('%'=>'\%', '_'=>'\_'));
 
     $results = array();
 
-    $funcs[] = function (&$results, $qLike, $query) {
+    $funcs['sku'] = function ($qLike, $query) {
       // sku
       if (strlen($query) > 2 and preg_match('/[a-z0-9_\-]+/i', $query)) {
-        $results['sku'] = Product::where('sku', 'LIKE', $qLike.'%')
+        return Product::where('sku', 'LIKE', $qLike.'%')
           ->where_null('variation')
           ->where('available', '=', 1)
           ->order_by('sort')
@@ -183,50 +194,59 @@ class Block_Search extends BaseBlock {
       }
     };
 
-    $funcs[] = function (&$results, $qLike, $query) {
+    $funcs['orders'] = function ($qLike, $query) {
       // orders
       if (!ltrim($query, '0..9')) {
-        $results['orders'] = Order::where('id', '=', $query)->get();
+        return Order::where('id', '=', $query)->get();
       }
     };
 
-    $funcs[] = function (&$results, $qLike, $query) {
-      $results['groups'] = Group::where('title', 'LIKE', '%'.$qLike.'%')
+    $funcs['groups'] = function ($qLike, $query) {
+      return Group::where('title', 'LIKE', '%'.$qLike.'%')
         ->where_null('parent')
         ->order_by('sort')
         ->get();
     };
 
-    $funcs[] = function (&$results, $qLike, $query) {
-      $results['subgroups'] = Group::where('title', 'LIKE', '%'.$qLike.'%')
+    $funcs['subgroups'] = function ($qLike, $query) {
+      return Group::where('title', 'LIKE', '%'.$qLike.'%')
         ->where_not_null('parent')
         ->order_by('sort')
         ->get();
     };
 
-    $funcs[] = function (&$results, $qLike, $query) {
-      $results['goods'] = Product::where('title', 'LIKE', '%'.$qLike.'%')
+    $funcs['goods'] = function ($qLike, $query) {
+      return Product::where('title', 'LIKE', '%'.$qLike.'%')
         ->where_null('variation')
         ->where('available', '=', 1)
         ->order_by('sort')
         ->get();
     };
 
-    foreach ($funcs as $func) {
-      $func($results, $qLike, $query);
+    foreach ($funcs as $type => $func) {
+      $data = $func($qLike, $query);
+      if ($data == null) {
+        continue;
+      }
+
+      foreach ($data as $result) {      
+        if (in_array($type, array('orders', 'sku'))) {
+          $result->titleQ = q($result->title);
+          $results[$type][] = $result;
+        } else {
+          $titleQ = static::checkResult($result->title, $query);
+          if ($titleQ !== false) {
+            $result->titleQ = $titleQ;
+            $results[$type][] = $result;
+          }
+        }
+      }
+
       if ($maxResults > 0 and $this->resultsCount($results) >= $maxResults) {
         break;
       }
     }
 
-    foreach ($results as $type => $subresults) {
-      if ($type === 'orders' or $type === 'sku') {
-        continue;
-      }
-      foreach ($subresults as $i => $result) {
-        $result->title = static::markResult($result->title);
-      }
-    }
     return $results;
   }
 

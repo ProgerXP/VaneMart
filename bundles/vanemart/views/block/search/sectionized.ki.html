@@ -1,11 +1,11 @@
 <each $goods>
   <h2 "block-subtitle" id="{ $allGroups[$key]->slug }">{ $allGroups[$key]->title }</h2>
   $=rows  array_get($item, 'products')
-  <include vanemart::block.search.goods>
+  <include vanemart::block.group.index>
       
   <each $s{ array_get($item, 'subgroups') }>
     <h3 "block-subtitle" id="{ $allGroups[$key_s]->slug }">{ $allGroups[$key_s]->title }</h3>
     $=rows $item_s['products']
-    <include vanemart::block.search.goods>
+    <include vanemart::block.group.index>
   </each>
 </each>

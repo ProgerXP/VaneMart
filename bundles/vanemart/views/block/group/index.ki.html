@@ -3,11 +3,11 @@
     <p $_{ $image } "title thumb">
       <a "$url">
         <img $image "$image" "thumb" alt=$title>
-        <span "title">$title</span>
+        <span "title">{= isset($titleQ) ? $titleQ : q($title) }</span>
       </a>
     <else>
       <p "title">
-        <a "$url"><span "title">$title</span></a>
+        <a "$url"><span "title">{= isset($titleQ) ? $titleQ : q($title) }</span></a>
       </p>
     </endp>
 

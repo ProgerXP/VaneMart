@@ -3,7 +3,7 @@
     <div ${ !!$skuGoods } "vmart-search-source">
       <h2>"vanemart::search.results.headers.sku"</h2>
       $=rows $skuGoods
-      <include vanemart::block.search.goods>
+      <include vanemart::block.group.index>
     </enddiv>
 
     <div ${ !empty($results['orders']) } "vmart-search-source sm-list">
