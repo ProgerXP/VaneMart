@@ -30,6 +30,7 @@ class Block_Search extends BaseBlock {
     $groups = array_merge(array_get($results, 'groups', array()),
       array_get($results, 'subgroups', array()));
     $tmp = Group::order_by('sort')->get();
+    $allGroups = array();
     foreach ($tmp as $group) {
       $allGroups[$group->id] = $group;
     }
@@ -90,7 +91,7 @@ class Block_Search extends BaseBlock {
     }
     $current = null;
     $data = compact('results', 'query', 'messageForm', 'skuGoods', 'goods', 'current',
-     'groupsTree', 'gidsTree', 'allGroups', 'hasResults');
+     'groupsTree', 'allGroups', 'hasResults');
 
     return View::make($this->searchTemplate, $data)->render();
   }
@@ -159,15 +160,15 @@ class Block_Search extends BaseBlock {
   }
 
   protected static function checkResult($str, $query, $mark = true) {
-    $querySafe = preg_quote($query);
+    $querySafe = preg_quote($query, '/');
     $found = false;
     $str = q($str);
-    $str = preg_replace_callback('/^'.$querySafe.'/iu', function ($matches) use($mark, &$found) {
+    $str = preg_replace_callback('/^'.$querySafe.'/iu', function ($matches) use ($mark, &$found) {
       $found = true;
       return $mark ? '<mark>'.$matches[0].'</mark>' : $matches[0];
     }, $str);
 
-    $str = preg_replace_callback('/(\s+)('.$querySafe.')/iu', function ($matches) use($mark, &$found) {
+    $str = preg_replace_callback('/(\s+)('.$querySafe.')/iu', function ($matches) use ($mark, &$found) {
       $found = true;
       return $mark ? $matches[1].'<mark>'.$matches[2].'</mark>' : $matches[0];
     }, $str);
