@@ -1,9 +1,12 @@
 <form "vanemart::search@message" post class="vmart-search-message-form errorable">
   <p "b-info">"vanemart::search.message.info"</p>
 
-  <input name=from placeholder={ __('vanemart::search.message.placeholder') }>
+  <input name=from placeholder={ __('vanemart::search.message.placeholder') } size=40>
   <errors>
-  <textarea name=message />
+
+  $=tpl   isset($query) ? __('vanemart::search.message.template', $query) : ''
+  <textarea name=message>$tpl</textarea>
   <errors>
+
   <submit class="big default">"vanemart::search.message.submit"</submit>
 </form>

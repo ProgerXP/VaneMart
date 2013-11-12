@@ -2,7 +2,7 @@
 
 $=content
   <h3>{= htmlLang('search.mail.message.intro', array('from' => $from)) }</h3>
-  <blockquote "post">{ $message }</blockquote>
+  <blockquote "post">{= $messageQ }</blockquote>
 $^content
 
 <include vanemart::mail.full>

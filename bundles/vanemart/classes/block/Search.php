@@ -19,10 +19,11 @@ class Block_Search extends BaseBlock {
   | Show HTML search results for PHRASE
   |--------------------------------------------------------------------*/
   function ajax_get_index() {
+    $query = $this->in('phrase', '');
     $results = $this->getResults();
     if ($results === null) {
       $this->layoutVars = array( 'hasResults' => false );
-      return true;      
+      return true;
     }
 
     // making a tree from found groups
@@ -148,7 +149,7 @@ class Block_Search extends BaseBlock {
         $from = __('vanemart::search.mail.message.default') . '';
       }
       \Vane\Mail::sendTo($email, 'vanemart::mail.search.message', array(
-        'message'     => $this->in('message'),
+        'messageQ'    => nl2br(HLEx::q( $this->in('message') )),
         'from'        => $from,
       ));
 
@@ -229,7 +230,7 @@ class Block_Search extends BaseBlock {
         continue;
       }
 
-      foreach ($data as $result) {      
+      foreach ($data as $result) {
         if (in_array($type, array('orders', 'sku'))) {
           $result->titleQ = q($result->title);
           $results[$type][] = $result;

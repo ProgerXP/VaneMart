@@ -1,13 +1,15 @@
 <ul $rows "v-rows vmart-goods">
   <li "{ $current ? 'current' : '' } { Cart::has($id) ? 'in-cart' : ''}" data-id=$id>
+    $=titleQ  isset($titleQ) ? $titleQ : q($title)
+
     <p $_{ $image } "title thumb">
       <a "$url">
         <img $image "$image" "thumb" alt=$title>
-        <span "title">{= isset($titleQ) ? $titleQ : q($title) }</span>
+        <span "title">{= $titleQ }</span>
       </a>
     <else>
       <p "title">
-        <a "$url"><span "title">{= isset($titleQ) ? $titleQ : q($title) }</span></a>
+        <a "$url"><span "title">{= $titleQ }</span></a>
       </p>
     </endp>
 
