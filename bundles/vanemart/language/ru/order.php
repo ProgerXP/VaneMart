@@ -48,7 +48,6 @@ return array(
     'user_reset'          => 'Всех пользователей',
     'status'              => 'Статус:',
     'status_any'          => 'Любой',
-    'except_archive'      => 'Все кроме > Архив',
     'status_keep'         => 'Не менять фильтр',
     'status_is'           => 'Равен',
     'status_not'          => 'Не равен',

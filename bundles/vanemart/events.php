@@ -216,14 +216,12 @@ Event::listen(VANE_NS.'order.list.query', function (Query $query, Block_Order $b
 
 Event::listen(VANE_NS.'order.list.query', function (Query $query, Block_Order $block, array &$can) {
   // '' or '!' - don't filter, '!xxx' - all but 'xxx', array of 'xxx'
-  $ofStatus = $block->arrayInput('status', 'except_archive');
+  $ofStatus = $block->arrayInput('status', '!archive');
 
   if ($ofStatus === '!' or !$ofStatus) {
     // Don't filter.
   } elseif (is_string($ofStatus) and $ofStatus[0] === '!') {
     $query->where('status', '!=', substr($ofStatus, 1));
-  } elseif ($ofStatus === 'except_archive') {
-    $query->where('status', '!=', 'archive');
   } else {
     $query->where_in('status', $ofStatus);
   }
@@ -343,15 +341,6 @@ Event::listen(VANE_NS.'user.inserted', function (User $user) {
 //= str like 'Name Surname<e@ma.il>' or just 'e@ma.il'
 Event::listen(VANE_NS.'user.recipient', function (User $user) {
   return $user->name.' '.$user->surname.'<'.$user->email.'>';
-});
-
-// Fired when a user logs in
-//
-//= bool
-Event::listen(VANE_NS.'user.login', function (&$response, User $user, BaseBlock $block) {
-  $user->login_ip = Request::ip();
-  $user->login_time = date('Y-m-d H:i:s');
-  return $user->save();
 });
 
 /*-----------------------------------------------------------------------
@@ -651,6 +640,9 @@ Event::listen(VANE_NS.'user.inserted', function (User $user) {
 // automatic/administrative logins, only when he has manually entered via regular
 // login form.
 Event::listen(VANE_NS.'user.login', function (&$response, User $user, Block_User $block) {
+  $user->login_ip = Request::ip();
+  $user->login_time = date('Y-m-d H:i:s');
+  return $user->save();
 });
 
 // Fired after a User manually logs out from the system.
