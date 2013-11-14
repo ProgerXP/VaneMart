@@ -43,6 +43,22 @@ class Block_Order extends BaseBlock {
       'user'              => $this->user(false),
     );
 
+    // archive old orders
+    if ($vars['isManager']) {
+      $currentTime = time();
+      $sKey = 'orders_archived_time';
+      $days = \Vane\Current::config('general.order_archive_days');
+
+      $lastTime = \Session::get($sKey);
+      if (date('d.m.Y', $lastTime) !== date('d.m.Y', $currentTime)) {
+        $date = strtotime('-'.$days.' days', strtotime(date('Y-m-d', $currentTime)));
+        $date = date('Y-m-d H:i:s', $date);
+        Order::where('updated_at', '<', $date)
+          ->update(array( 'status' => 'archive' ));
+        \Session::put($sKey, time());
+      }
+    }
+
     $query = Order::with('manager')->name('o');
     Event::fire('order.list.query', array($query, $this, &$vars['can']));
 

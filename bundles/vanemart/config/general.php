@@ -10,6 +10,8 @@ return array(
   'post_notify_users'     => array(),
   'default_city'          => '',
 
+  'order_archive_days'    => 30,
+
   // Custom extra columns in various forms. Corresponding database tables must
   // contain listed fields and with proper types.
   'user_fields'           => array(

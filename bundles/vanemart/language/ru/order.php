@@ -12,6 +12,7 @@ return array(
     'invoice'             => 'Счёт на согласовании',
     'paid'                => 'Оплата получена',
     'sent'                => 'Отгружен',
+    'archive'             => 'Архив',
   ),
 
   'ctlstatus'             => array(
@@ -47,6 +48,7 @@ return array(
     'user_reset'          => 'Всех пользователей',
     'status'              => 'Статус:',
     'status_any'          => 'Любой',
+    'except_archive'      => 'Все кроме > Архив',
     'status_keep'         => 'Не менять фильтр',
     'status_is'           => 'Равен',
     'status_not'          => 'Не равен',
