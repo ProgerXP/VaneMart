@@ -49,7 +49,7 @@
           <optgroup "{ __('vanemart::order.filter.status_not') }">
             <each ${ Order::statuses() }>
               <option "!$item" selected={ $can['ofStatus'] === "!$item" }>
-                <lang "vanemart::order.status.$item">
+                { __("vanemart::order.status.not", __("vanemart::order.status.$item")->get()) }
               </option>
             </each>
           </optgroup>

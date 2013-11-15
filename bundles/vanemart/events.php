@@ -216,7 +216,7 @@ Event::listen(VANE_NS.'order.list.query', function (Query $query, Block_Order $b
 
 Event::listen(VANE_NS.'order.list.query', function (Query $query, Block_Order $block, array &$can) {
   // '' or '!' - don't filter, '!xxx' - all but 'xxx', array of 'xxx'
-  $ofStatus = $block->arrayInput('status', '!archive');
+  $ofStatus = $block->arrayInput('status', $block->in() ? '' : '!archive');
 
   if ($ofStatus === '!' or !$ofStatus) {
     // Don't filter.
