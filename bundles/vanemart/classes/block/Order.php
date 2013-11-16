@@ -65,9 +65,13 @@ class Block_Order extends BaseBlock {
     $rows = S::keys($query->get(), '?->id');
 
     if ($rows) {
-      foreach ($rows as &$order) { $order->current = false; }
-      $current = static::detectCurrentOrder();
-      $current and $rows[$current->id]->current = true;
+      foreach ($rows as &$order) {
+        $order->current = false;
+      }
+
+      if ($current = static::detectCurrentOrder() and isset($rows[$current->id])) {
+        $rows[$current->id]->current = true;
+      }
 
       Event::fire('order.list.populate', array(&$rows, $this, &$vars));
     }
