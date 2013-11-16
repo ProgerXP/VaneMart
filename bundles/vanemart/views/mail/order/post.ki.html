@@ -1,7 +1,7 @@
 <?$mail->subject('order.mail.post.subject', $order + \Vane\Current::config('company'))?>
 
 $=content
-  <p>{= __('order.mail.post.legend', $order + array('l0' => HLEx::tag('a', $order['url']), 'l1' => '</a>')) }</p>
+  <p>{= __('vanemart::order.mail.post.legend', $order + array('l0' => HLEx::tag('a', $order['url']), 'l1' => '</a>')) }</p>
 
   <blockquote "post">{= $post['html'] }</blockquote>
   <p "sign">{= htmlLang('order.mail.post.signature', $user) }</p>
@@ -12,7 +12,7 @@ $=content
     </li>
   </endul>
 
-  <p>{= __('order.mail.post.to_reply', array('l0' => HLEx::tag('a', $order['url']), 'l1' => '</a>')) }</p>
+  <p>{= __('vanemart::order.mail.post.to_reply', array('l0' => HLEx::tag('a', $order['url']), 'l1' => '</a>')) }</p>
 $^content
 
 <include vanemart::mail.full>
