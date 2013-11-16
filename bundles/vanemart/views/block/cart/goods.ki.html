@@ -7,7 +7,7 @@ $=total             0
 
 <table "vmart-cart { $thumbless ? 'thumbless' : '' }">
   <each $rows>
-    <tr ${ $showGroups and $prevGroup != $group } "group">
+    <tr $_{ $showGroups and $prevGroup != $group } "group">
       $=prevGroup   $group
       <th colspan=$colCount>
         $group
