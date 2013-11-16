@@ -151,25 +151,31 @@ class Block_Group extends ModelBlock {
   /*---------------------------------------------------------------------
   | GET group/sectionized /ID
   |
-  | Displays goods in sections for given group ID. 
-  | Each section has goods from a toplevel subgroup plus it's 
+  | Displays goods in sections for given group ID.
+  | Each section has goods from a toplevel subgroup plus it's
   | own subgroups.
   |--------------------------------------------------------------------*/
   function get_sectionized($id = null) {
-    $rows = $this->ajax($id);
+    $result = $this->ajax($id);
 
-    $result = array();
-    foreach ($rows as $gid => $goods) {
-      $tmp = static::listResponse(320, $goods);
-      $result[$gid] = $tmp['rows'];
+    if (is_array($result)) {
+      $sections = array();
+
+      foreach ($result as $gid => $goods) {
+        $tmp = static::listResponse(320, $goods);
+        $sections[$gid] = $tmp['rows'];
+      }
+
+      $result = compact('sections');
     }
-    return array('sections' => $result); 
+
+    return $result;
   }
 
   /*---------------------------------------------------------------------
   | GET group/sectionized /ID
   |
-  | Returns an array of goods with it's indexes equal to IDs of 
+  | Returns an array of goods with it's indexes equal to IDs of
   | toplevel subgroups.
   |--------------------------------------------------------------------*/
   function ajax_get_sectionized($id = null) {
@@ -186,7 +192,7 @@ class Block_Group extends ModelBlock {
         'groups' => $groups,
         'gidsTree' => $gidsTree,
       );
-      return $rows;   
+      return $rows;
     }
   }
 
@@ -196,7 +202,7 @@ class Block_Group extends ModelBlock {
   |
   |----------------------------------------------------------------------
   | * ID    - group's ID, should be set.
-  | * DEPTH - 0 - there is no limit for depth, 
+  | * DEPTH - 0 - there is no limit for depth,
   |         1 - outputs only the first level, 2 - second, and so on.
   |--------------------------------------------------------------------*/
   function get_toc($id = null, $depth = 0) {
