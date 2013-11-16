@@ -2,7 +2,7 @@
 
 $=content
   <h3>{= htmlLang('user.mail.reset_instructions.intro') }</h3>
-  <p>{= htmlLang('user.mail.reset_instructions.link', array('l0' => '<a href="'.trim($link).'">', 'l1' => '</a>'), false) }</p>
+  <p>{= __('user.mail.reset_instructions.link', array('l0' => '<a href="'.trim($link).'">', 'l1' => '</a>')) }</p>
 $^content
 
 <include vanemart::mail.full>

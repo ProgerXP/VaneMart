@@ -8,7 +8,7 @@ $=content
   <h3>{= htmlLang('user.mail.reg_on_order.intro', compact('name' ,'surname')) }</h3>
 
   <p>{= htmlLang('user.mail.reg_on_order.legend') }</p>
-  <p>{= htmlLang('user.mail.reg_on_order.login', array('l0' => trim($loginLink), 'l1' => '</a>'), false) }</p>
+  <p>{= __('user.mail.reg_on_order.login', array('l0' => trim($loginLink), 'l1' => '</a>')) }</p>
 
   <table "col-2 color">
     <tr "email">
