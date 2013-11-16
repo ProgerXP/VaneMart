@@ -1,5 +1,7 @@
 <div "vmart-search">
-  <if !empty($hasResults)>
+  <if !empty($init)>
+    <? // Empty block. ?>
+  <elseif !empty($hasResults)>
     <div ${ !!$skuGoods } "vmart-search-source">
       <h2>"vanemart::search.results.headers.sku"</h2>
       $=rows $skuGoods
@@ -39,6 +41,6 @@
   <elseif !empty($messageForm)>
     <include vanemart::block.search.message>
   <else>
-    "vanemart::search.results.empty"
+    <p class=empty><span>"vanemart::search.results.empty"</span></p>
   </if>
 </div>

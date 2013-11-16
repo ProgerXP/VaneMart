@@ -22,8 +22,7 @@ class Block_Search extends BaseBlock {
     $query = $this->in('phrase', '');
     $results = $this->getResults();
     if ($results === null) {
-      $this->layoutVars = array( 'hasResults' => false );
-      return true;
+      return array('init' => true);
     }
 
     // making a tree from found groups

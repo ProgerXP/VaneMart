@@ -10,6 +10,7 @@ return array(
   'wholesale'             => 'Оптовикам',
   'contacts'              => 'Контакты',
 
+  'search'                => 'Поиск',
   'login'                 => 'Вход',
   'register'              => 'Регистрация',
   'user'                  => ':name',

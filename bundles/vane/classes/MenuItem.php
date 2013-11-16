@@ -12,6 +12,7 @@ class MenuItem {
 
   //= bool, null autodetect if $html or $caption is set
   public $visible;
+  public $classes = array();  //= array of CSS classes
 
   // If $custom is set properties below are ignored (filled by the handler).
   // $html is put after the $caption block of properties.
@@ -21,7 +22,6 @@ class MenuItem {
   // If $caption is unset properties below are ignored.
   public $hint;
   public $icon;               //= null, str icon URL
-  public $classes = array();  //= array of CSS classes
   public $url;                //= str target URL
   //= bool if it opens in new window, null autodetect for external $url
   public $popup;
