@@ -7,12 +7,8 @@
     <tr "email">
       <th>"vanemart::field.email"</th>
       <td>
-        <input "email" id=email>
+        <input "email" data-autofocus>
         <errors>
-
-        <script>
-          try {{ document.getElementById('email').focus() } catch (e) {}
-        </script>
       </td>
     </tr>
     <include vanemart::block.checkout.fields>

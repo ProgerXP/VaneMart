@@ -30,12 +30,8 @@
 
       <tr "cart">
         <th>
-          <input "id[$id]" "gen shade qty" id=qty value={ Cart::qty($id) ?: 1 } onfocus="this.select()">
+          <input "id[$id]" "gen shade qty" value={ Cart::qty($id) ?: 1 } data-autofocus>
           &times; $volume
-
-          <script>
-            try {{ document.getElementById('qty').focus() } catch (e) {}
-          </script>
         </th>
         <td>
           <submit class=default>
