@@ -10,13 +10,14 @@ return array(
   'bodyCharsets'          => array(),
   'forceBodyCharset'      => false,
   'makeTextBodyFromHTML'  => true,
+  'inlineCSS'             => null,
   'textBodyFormat'        => 'flowed',
   'allowedAttachments'    => '1',
   'headerEOLN'            => "\n",
   'sortHeaders'           => true,
   // sendmail CLI parameters.
   'params'                => '',
-  'eoln'                  => "\r\n",
+  'eoln'                  => "\n",
   'skipRelatedAttIfNoHtmlBody'  => true,
   // 0 (low), 1 (normal), 2 (high).
   'priority'              => 1,
