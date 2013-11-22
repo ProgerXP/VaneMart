@@ -1,6 +1,6 @@
 <each $sections>
   <if !empty($sections[$key]) or !empty($gidsTree[$key])>
-    <h2 "block-subtitle" id="{ $groups[$key]->slug }">{ $groups[$key]->title }</h2>
+    <h2 "block-title" id="{ $groups[$key]->slug }">{ $groups[$key]->title }</h2>
     $=rows  $sections[$key]
     <include vanemart::block.group.index>
   </endif>

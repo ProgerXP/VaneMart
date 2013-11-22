@@ -28,7 +28,6 @@ hr {
 }
 
 .vane-logo { font-style: italic; }
-.vane-logo:after { display: table; content: ""; clear: both; }
 .vane-logo > a { float: left; margin-right: 20px; }
 .vane-logo p { margin: 0.6em 0 0; }
 .vane-logo p.short { font-weight: bold; }
@@ -41,8 +40,6 @@ hr {
   padding-top: 0.3em 1em 1em;
   text-align: center;
 }
-
-#content, #footer { clear: both; }
 
 table.col-2 th {
   text-align: left;

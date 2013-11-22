@@ -9,7 +9,7 @@
     <tr>
       <th>"vanemart::field.email"</th>
       <td>
-        <input "email" id=email class={ $ok === false ? 'invalid' : '' }>
+        <input "email" class={ $ok === false ? 'invalid' : '' } data-autofocus>
         <errors>
         <ul ${ $ok === false } "errors">
           <if $reset_error == 'unknown_email'>
@@ -25,10 +25,6 @@
             <li>"vanemart::user.login.wrong"</li>
           </if>
         </endul>
-
-        <script>
-          try {{ document.getElementById('email').focus() } catch (e) {}
-        </script>
       </td>
     </tr>
     <tr>

@@ -219,7 +219,7 @@ Event::listen(VANE_NS.'order.list.query', function (Query $query, Block_Order $b
 
 Event::listen(VANE_NS.'order.list.query', function (Query $query, Block_Order $block, array &$can) {
   // '' or '!' - don't filter, '!xxx' - all but 'xxx', array of 'xxx'
-  $ofStatus = $block->arrayInput('status', '!archive');
+  $ofStatus = $block->arrayInput('status', $block->in() ? '' : '!archive');
 
   if ($ofStatus === '!' or !$ofStatus) {
     // Don't filter.
@@ -387,10 +387,11 @@ Event::preview(VANE_NS.'cart.from_skus', function (array &$models, &$skus) {
 // Fired to transform $skus (hash of 'sku' => int qty) into Product models with
 // 'sku' attribute set.
 Event::listen(VANE_NS.'cart.from_skus', function (array &$models, &$skus) {
+  $skus = S::combine(array_map('strtolower', array_keys($skus)), $skus);
   $goods = Product::where_in('sku', array_keys($skus))->get();
 
   foreach ($goods as $model) {
-    $model->qty = $skus[$model->sku];
+    $model->qty = $skus[strtolower($model->sku)];
     $models[] = $model;
   }
 });
