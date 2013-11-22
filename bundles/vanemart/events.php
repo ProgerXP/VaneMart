@@ -21,6 +21,9 @@ Event::listen(VANE_NS.'format.post', function (&$text) {
 Event::listen(VANE_NS.'format.product', function (&$text) {
   return format('generic', $text);
 });
+Event::listen(VANE_NS.'format.mail', function (&$text) {
+  return format('generic', $text);
+});
 
 /*-----------------------------------------------------------------------
 | FILE MODEL
