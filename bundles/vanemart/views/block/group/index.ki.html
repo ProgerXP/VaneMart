@@ -4,7 +4,7 @@
 
     <p $_{ $image } "title thumb">
       <a "$url">
-        <img $image "$image" "thumb" alt=$title>
+        <img $_{ $image } "$image" "thumb" alt=$title>
         <span "title">{= $titleQ }</span>
       </a>
     <else>
@@ -22,5 +22,7 @@
       $=price langNum('general.currency_short', $retail ?: $wholesale)
       {= __('vanemart::group.index.price', compact('price') + $item) }
     </p>
+
+    $=titleQ  null
   </li>
 </endul>

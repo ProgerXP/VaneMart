@@ -592,7 +592,7 @@ Event::listen(VANE_NS.'post.added', function (array $options) {
   }
 
   foreach ($to as $recipient) {
-    if (!$poster or $poster->email != $recipient->email) {
+    if ($recipient and (!$poster or $poster->email != $recipient->email)) {
       \Vane\Mail::sendTo($recipient->emailRecipient(), 'vanemart::mail.order.post', array(
         'order'         => $order->to_array(),
         'user'          => $block->user()->to_array(),
