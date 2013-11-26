@@ -72,16 +72,7 @@ VRoute::on('(:bundle)/orders/(:num)')
     ),
   ));
 
-Vroute::on('(:bundle)/search')
-  ->as('vanemart::search')
-  ->servers('VaneMart::search')
-  ->layout(array(
-    '+#content'           => '!',
-  ));
-
-VRoute::map('(:bundle)/search/message', 'VaneMart::search@message', true);
-VRoute::map('(:bundle)/search/autocomplete', 'VaneMart::search@autocomplete', true);
-
+VRoute::map('(:bundle)/search/(:any?)', 'VaneMart::search@(:1)', true);
 VRoute::map('(:bundle)/users/(:num)', 'VaneMart::user@show', true);
 VRoute::map('(:bundle)/users/reg', 'VaneMart::user@reg', 'vanemart::register');
 VRoute::map('(:bundle)/users/login', 'VaneMart::user@login', 'vanemart::login');
