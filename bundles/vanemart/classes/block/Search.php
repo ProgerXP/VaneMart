@@ -104,10 +104,7 @@ class Block_Search extends BaseBlock {
     $maxResults = 15;
     $data = array();
 
-    $results = $this->getResults($maxResults);
-    if ($results === null) {
-      return null;
-    }
+    $results = arrize($this->getResults($maxResults));
 
     foreach ($results as $key => $result) {
       foreach ($result as $el) {
@@ -162,17 +159,13 @@ class Block_Search extends BaseBlock {
     $querySafe = preg_quote($query, '/');
     $found = false;
     $str = q($str);
-    $str = preg_replace_callback('/^'.$querySafe.'/iu', function ($matches) use ($mark, &$found) {
-      $found = true;
-      return $mark ? '<mark>'.$matches[0].'</mark>' : $matches[0];
-    }, $str);
 
     $str = preg_replace_callback('/(\s+)('.$querySafe.')/iu', function ($matches) use ($mark, &$found) {
       $found = true;
       return $mark ? $matches[1].'<mark>'.$matches[2].'</mark>' : $matches[0];
-    }, $str);
+    }, " $str ");
 
-    return $found ? $str : false;
+    return $found ? trim($str) : false;
   }
 
   protected function getResults($maxResults = null) {
@@ -225,10 +218,7 @@ class Block_Search extends BaseBlock {
     };
 
     foreach ($funcs as $type => $func) {
-      $data = $func($qLike, $query);
-      if ($data == null) {
-        continue;
-      }
+      $data = arrize($func($qLike, $query));
 
       foreach ($data as $result) {
         if (in_array($type, array('orders', 'sku'))) {
